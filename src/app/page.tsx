@@ -27,6 +27,7 @@ export default function Home() {
   const [language, setLanguage] = useState<'en' | 'hi'>('en');
   const [lowBandwidth, setLowBandwidth] = useState<boolean>(false);
   const [textSize, setTextSize] = useState<'normal' | 'large'>('normal');
+  const [helpCategory, setHelpCategory] = useState<'All' | 'Basics' | 'Fees' | 'Process' | 'Appeals' | 'Exemptions'>('All');
 
   // RTI Applications Mock DB (prefilled with default data, persisted to LocalStorage)
   const [rtis, setRtis] = useState<RTIApplication[]>([]);
@@ -165,6 +166,32 @@ export default function Home() {
     }
   };
 
+  // Second Appeal submission handler
+  const fileSecondAppeal = async (id: string, reason: string, appealText: string) => {
+    const rand = Math.floor(10000 + Math.random() * 90000);
+    const secRegNo = `CIC/MEXTA/A/2026/${rand}`;
+    try {
+      const res = await fetch(`/api/rtis/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          status: 'Second Appeal Filed',
+          secondAppealReason: reason,
+          secondAppealDate: new Date().toISOString().substring(0, 10),
+          secondAppealText: appealText,
+          secondAppealRegNo: secRegNo
+        })
+      });
+      if (res.ok) {
+        await fetchRtis();
+        addNotification(`Second Appeal filed with CIC successfully. Ref: ${secRegNo}`, 'update');
+        alert(`Second Appeal successfully filed and registered with the Central Information Commission (CIC) under reference ID: ${secRegNo}.`);
+      }
+    } catch (err) {
+      console.error('Failed to file second appeal:', err);
+    }
+  };
+
   return (
     <div className={`min-h-screen flex flex-col ${lowBandwidth ? 'low-data-mode' : ''} ${textSize === 'large' ? 'text-lg' : 'text-sm'}`}>
       
@@ -236,6 +263,7 @@ export default function Home() {
             setActiveView={setActiveView}
             language={language}
             fileFirstAppeal={fileFirstAppeal}
+            fileSecondAppeal={fileSecondAppeal}
           />
         )}
 
@@ -248,6 +276,8 @@ export default function Home() {
         {activeView === 'help' && (
           <HelpView 
             language={language} 
+            activeCategory={helpCategory}
+            setActiveCategory={setHelpCategory}
           />
         )}
 
@@ -276,6 +306,7 @@ export default function Home() {
       <Footer 
         language={language} 
         setActiveView={setActiveView} 
+        setHelpCategory={setHelpCategory}
       />
 
       {/* Floating Contextual Help Assistant */}

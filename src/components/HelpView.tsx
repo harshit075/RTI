@@ -9,6 +9,8 @@ import { FAQ } from '../data/mockData';
 
 interface HelpViewProps {
   language: 'en' | 'hi';
+  activeCategory?: 'All' | 'Basics' | 'Fees' | 'Process' | 'Appeals' | 'Exemptions';
+  setActiveCategory?: (cat: 'All' | 'Basics' | 'Fees' | 'Process' | 'Appeals' | 'Exemptions') => void;
 }
 
 export interface Ticket {
@@ -21,8 +23,18 @@ export interface Ticket {
   reply?: string;
 }
 
-export default function HelpView({ language }: HelpViewProps) {
-  const [activeCategory, setActiveCategory] = useState<'All' | 'Basics' | 'Fees' | 'Process' | 'Appeals' | 'Exemptions'>('All');
+export default function HelpView({ 
+  language,
+  activeCategory: propActiveCategory,
+  setActiveCategory: propSetActiveCategory
+}: HelpViewProps) {
+  const [localActiveCategory, localSetActiveCategory] = useState<'All' | 'Basics' | 'Fees' | 'Process' | 'Appeals' | 'Exemptions'>('All');
+  const [activeHelpTab, setActiveHelpTab] = useState<'faqs' | 'guide' | 'glossary'>('faqs');
+  const [activeGuideStep, setActiveGuideStep] = useState(0);
+  const [glossarySearch, setGlossarySearch] = useState('');
+  
+  const activeCategory = propActiveCategory !== undefined ? propActiveCategory : localActiveCategory;
+  const setActiveCategory = propSetActiveCategory !== undefined ? propSetActiveCategory : localSetActiveCategory;
   const [ticketIssue, setTicketIssue] = useState('Payment completed but registration number missing');
   const [ticketDetails, setTicketDetails] = useState('');
   const [ticketRegNo, setTicketRegNo] = useState('RTI-2026-DEMO-001');
@@ -104,41 +116,293 @@ export default function HelpView({ language }: HelpViewProps) {
         {/* Grid layout */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
-          {/* Left Column: FAQ Explorer */}
+          {/* Left Column: FAQ, Guide & Glossary Explorer */}
           <div className="lg:col-span-2 space-y-6">
             
-            {/* Category tabs */}
-            <div className="rounded-xl border border-slate-200 bg-white p-2 flex flex-wrap gap-1 shadow-sm dark:bg-slate-900 dark:border-slate-800">
-              {categories.map(c => (
-                <button
-                  key={c}
-                  onClick={() => setActiveCategory(c as any)}
-                  className={`rounded-lg px-3 py-1.5 text-xs font-bold transition-all cursor-pointer ${
-                    activeCategory === c
-                      ? 'bg-primary-navy text-white'
-                      : 'text-slate-550 hover:bg-slate-50'
-                  }`}
-                >
-                  {c}
-                </button>
-              ))}
+            {/* Top-Level Help Tabs */}
+            <div className="flex border border-slate-200 bg-white rounded-xl p-1 shadow-sm dark:bg-slate-900 dark:border-slate-800">
+              <button
+                onClick={() => setActiveHelpTab('faqs')}
+                className={`flex-1 rounded-lg py-2.5 text-xs font-bold text-center transition-all cursor-pointer ${
+                  activeHelpTab === 'faqs' ? 'bg-primary-navy text-white shadow-xs' : 'text-slate-500 hover:bg-slate-50/50'
+                }`}
+              >
+                {language === 'en' ? 'Frequently Asked Questions' : 'अक्सर पूछे जाने वाले प्रश्न'}
+              </button>
+              <button
+                onClick={() => setActiveHelpTab('guide')}
+                className={`flex-1 rounded-lg py-2.5 text-xs font-bold text-center transition-all cursor-pointer ${
+                  activeHelpTab === 'guide' ? 'bg-primary-navy text-white shadow-xs' : 'text-slate-500 hover:bg-slate-50/50'
+                }`}
+              >
+                {language === 'en' ? 'Citizen Guide Stepper' : 'नागरिक गाइड'}
+              </button>
+              <button
+                onClick={() => setActiveHelpTab('glossary')}
+                className={`flex-1 rounded-lg py-2.5 text-xs font-bold text-center transition-all cursor-pointer ${
+                  activeHelpTab === 'glossary' ? 'bg-primary-navy text-white shadow-xs' : 'text-slate-500 hover:bg-slate-50/50'
+                }`}
+              >
+                {language === 'en' ? 'Legal Jargon Glossary' : 'कानूनी शब्दावली'}
+              </button>
             </div>
 
-            {/* FAQs List */}
-            <div className="space-y-4">
-              {filteredFAQs.map(faq => (
-                <div key={faq.id} className="rounded-2xl border border-slate-250 bg-white p-5 shadow-sm dark:bg-slate-900 dark:border-slate-800">
-                  <div className="flex justify-between items-start gap-2 border-b border-slate-100 pb-2 mb-3">
-                    <span className="text-[10px] uppercase font-bold text-secondary-saffron tracking-wider bg-blue-50 px-2 py-0.5 rounded">
-                      {faq.category}
-                    </span>
-                    <span className="text-[10px] font-bold text-slate-400 font-mono">{faq.citation}</span>
-                  </div>
-                  <h4 className="font-extrabold text-slate-850 text-sm dark:text-slate-100">{faq.question}</h4>
-                  <p className="text-xs text-slate-600 mt-2 leading-relaxed dark:text-slate-400">{faq.answer}</p>
+            {/* TAB 1: FAQ PANEL */}
+            {activeHelpTab === 'faqs' && (
+              <div className="space-y-6">
+                {/* Category tabs */}
+                <div className="rounded-xl border border-slate-200 bg-white p-2 flex flex-wrap gap-1 shadow-sm dark:bg-slate-900 dark:border-slate-800">
+                  {categories.map(c => (
+                    <button
+                      key={c}
+                      onClick={() => setActiveCategory(c as any)}
+                      className={`rounded-lg px-3 py-1.5 text-xs font-bold transition-all cursor-pointer ${
+                        activeCategory === c
+                          ? 'bg-primary-navy text-white'
+                          : 'text-slate-550 hover:bg-slate-50'
+                      }`}
+                    >
+                      {c}
+                    </button>
+                  ))}
                 </div>
-              ))}
-            </div>
+
+                {/* FAQs List */}
+                <div className="space-y-4">
+                  {filteredFAQs.map(faq => (
+                    <div key={faq.id} className="rounded-2xl border border-slate-250 bg-white p-5 shadow-sm dark:bg-slate-900 dark:border-slate-800">
+                      <div className="flex justify-between items-start gap-2 border-b border-slate-100 pb-2 mb-3">
+                        <span className="text-[10px] uppercase font-bold text-secondary-saffron tracking-wider bg-blue-50 px-2 py-0.5 rounded">
+                          {faq.category}
+                        </span>
+                        <span className="text-[10px] font-bold text-slate-400 font-mono">{faq.citation}</span>
+                      </div>
+                      <h4 className="font-extrabold text-slate-855 text-sm dark:text-slate-100">{faq.question}</h4>
+                      <p className="text-xs text-slate-600 mt-2 leading-relaxed dark:text-slate-400">{faq.answer}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* TAB 2: INTERACTIVE STEPPER CITIZEN GUIDE */}
+            {activeHelpTab === 'guide' && (
+              <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm dark:bg-slate-900 dark:border-slate-800 space-y-6">
+                <div>
+                  <h3 className="font-extrabold text-sm text-slate-855 dark:text-white uppercase tracking-wider mb-1">
+                    Interactive Citizen Guide & User Manual
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Follow the standard 5-step lifecycle of an RTI application under the Right to Information Act, 2005.
+                  </p>
+                </div>
+
+                {/* Stepper Steps Indicators */}
+                <div className="flex justify-between items-center relative gap-2 pb-2">
+                  <div className="absolute top-4 left-0 right-0 h-0.5 bg-slate-200 -z-10" />
+                  {[1, 2, 3, 4, 5].map((step, idx) => (
+                    <button
+                      key={step}
+                      type="button"
+                      onClick={() => setActiveGuideStep(idx)}
+                      className={`h-8 w-8 rounded-full font-bold text-xs flex items-center justify-center border transition-all cursor-pointer z-10 ${
+                        activeGuideStep === idx
+                          ? 'bg-primary-navy text-white border-primary-navy scale-110 shadow'
+                          : activeGuideStep > idx
+                          ? 'bg-emerald-500 text-white border-emerald-500'
+                          : 'bg-white text-slate-400 border-slate-200 hover:bg-slate-50'
+                      }`}
+                    >
+                      {step}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Stepper Content */}
+                <div className="bg-slate-50/50 border border-slate-200 rounded-2xl p-5 space-y-4">
+                  {activeGuideStep === 0 && (
+                    <div className="space-y-2.5">
+                      <span className="text-[10px] font-black uppercase text-secondary-saffron tracking-wider bg-amber-100 px-2.5 py-0.5 rounded-full">
+                        Step 1: Drafting with AI Nudges
+                      </span>
+                      <h4 className="font-bold text-sm text-slate-800">Framing Specific RTI Questions</h4>
+                      <p className="text-xs text-slate-600 leading-relaxed">
+                        CPIO officers often reject vague or interrogative requests such as <em>"Why are roads broken?"</em>. 
+                        Under the Act, you must request <strong>specific official records</strong> (e.g. work orders, bills, inspection reports, maps). 
+                        Our AI Assistant scans your description and converts it into precise queries targeting actual documents.
+                      </p>
+                    </div>
+                  )}
+
+                  {activeGuideStep === 1 && (
+                    <div className="space-y-2.5">
+                      <span className="text-[10px] font-black uppercase text-secondary-saffron tracking-wider bg-amber-100 px-2.5 py-0.5 rounded-full">
+                        Step 2: Statutory Fee Payment
+                      </span>
+                      <h4 className="font-bold text-sm text-slate-800">Fee Exemption & Gateway Checkout</h4>
+                      <p className="text-xs text-slate-600 leading-relaxed">
+                        Filing an RTI with a Central Authority requires a statutory fee of <strong>₹10</strong>. 
+                        If you belong to the Below Poverty Line (BPL) category, select the BPL waiver and upload a scan of your BPL card; the fee will be waived. 
+                        For simulated purposes, our portal provides transaction tokens instantly.
+                      </p>
+                    </div>
+                  )}
+
+                  {activeGuideStep === 2 && (
+                    <div className="space-y-2.5">
+                      <span className="text-[10px] font-black uppercase text-secondary-saffron tracking-wider bg-amber-100 px-2.5 py-0.5 rounded-full">
+                        Step 3: The 30-Day Clock
+                      </span>
+                      <h4 className="font-bold text-sm text-slate-800">Statutory Response Windows</h4>
+                      <p className="text-xs text-slate-600 leading-relaxed">
+                        Under Section 7(1) of the Act, the CPIO must either supply the information or reject the request with grounds within <strong>30 calendar days</strong>. 
+                        If no reply is received by this deadline, it is legally treated as a <strong>Deemed Refusal</strong>, allowing you to file an appeal immediately for free.
+                      </p>
+                    </div>
+                  )}
+
+                  {activeGuideStep === 3 && (
+                    <div className="space-y-2.5">
+                      <span className="text-[10px] font-black uppercase text-secondary-saffron tracking-wider bg-amber-100 px-2.5 py-0.5 rounded-full">
+                        Step 4: First Appeal to FAA
+                      </span>
+                      <h4 className="font-bold text-sm text-slate-800">Escalating to Appellate Officers</h4>
+                      <p className="text-xs text-slate-600 leading-relaxed">
+                        If the CPIO fails to respond within 30 days, or if they provide incomplete or misleading answers, you can file a <strong>First Appeal</strong> under Section 19(1). 
+                        This appeal is routed to the department's senior <strong>First Appellate Authority (FAA)</strong>, who has 30 to 45 days to issue a deciding order.
+                      </p>
+                    </div>
+                  )}
+
+                  {activeGuideStep === 4 && (
+                    <div className="space-y-2.5">
+                      <span className="text-[10px] font-black uppercase text-secondary-saffron tracking-wider bg-amber-100 px-2.5 py-0.5 rounded-full">
+                        Step 5: Second Appeal to CIC
+                      </span>
+                      <h4 className="font-bold text-sm text-slate-800">Central Information Commission</h4>
+                      <p className="text-xs text-slate-600 leading-relaxed">
+                        If the FAA rejects your appeal, ignores the deadline, or issues an unsatisfactory decision, you can escalate by filing a <strong>Second Appeal</strong> under Section 19(3) to the Central Information Commission (CIC). 
+                        Our system provides an automated CIC wizard to compile the petition for filing.
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Navigation buttons inside stepper */}
+                  <div className="flex justify-between border-t border-slate-200/60 pt-4 mt-2">
+                    <button
+                      type="button"
+                      disabled={activeGuideStep === 0}
+                      onClick={() => setActiveGuideStep(activeGuideStep - 1)}
+                      className="px-3.5 py-1.5 text-xs font-bold text-slate-500 hover:text-slate-700 bg-white border border-slate-200 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                    >
+                      ← Previous Step
+                    </button>
+                    <button
+                      type="button"
+                      disabled={activeGuideStep === 4}
+                      onClick={() => setActiveGuideStep(activeGuideStep + 1)}
+                      className="px-3.5 py-1.5 text-xs font-bold text-white bg-primary-navy hover:bg-primary-blue rounded-lg disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                    >
+                      Next Step →
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* TAB 3: LEGAL JARGON GLOSSARY LOOKUP */}
+            {activeHelpTab === 'glossary' && (
+              <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm dark:bg-slate-900 dark:border-slate-800 space-y-6">
+                <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3 border-b border-slate-100 pb-4">
+                  <div>
+                    <h3 className="font-extrabold text-sm text-slate-855 dark:text-white uppercase tracking-wider mb-1">
+                      Legal Jargon Explained
+                    </h3>
+                    <p className="text-xs text-slate-500">
+                      Translate complex RTI legal definitions into simple plain-language terms.
+                    </p>
+                  </div>
+                  {/* Glossary Search Box */}
+                  <div className="relative w-full sm:w-[200px]">
+                    <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-slate-400" />
+                    <input
+                      type="text"
+                      value={glossarySearch}
+                      onChange={(e) => setGlossarySearch(e.target.value)}
+                      placeholder="Search glossary..."
+                      className="w-full pl-9 pr-3 py-1.5 border border-slate-300 rounded-lg text-xs outline-none bg-slate-50 focus:border-primary-blue focus:bg-white"
+                    />
+                  </div>
+                </div>
+
+                {/* Glossary Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {[
+                    {
+                      term: 'CPIO',
+                      full: 'Central Public Information Officer',
+                      definition: 'The nodal officer designated in every government department to receive, process, and answer incoming RTI requests.',
+                      sec: 'Section 5(1)'
+                    },
+                    {
+                      term: 'FAA',
+                      full: 'First Appellate Authority',
+                      definition: 'A senior departmental officer designated to review appeals if the CPIO refuses or ignores your original RTI request.',
+                      sec: 'Section 19(1)'
+                    },
+                    {
+                      term: 'Section 4 Disclosures',
+                      full: 'Proactive Information Publishing',
+                      definition: 'The statutory requirement for government departments to pre-emptively publish budgets, structure, and salary details online so citizens do not need to file requests.',
+                      sec: 'Section 4(1)(b)'
+                    },
+                    {
+                      term: 'Section 8 Exemptions',
+                      full: 'Withheld Information Clauses',
+                      definition: 'Clauses under which CPIOs can refuse info (e.g. security, privacy, cabinet notes), provided there is no larger public interest.',
+                      sec: 'Section 8(1)'
+                    },
+                    {
+                      term: 'Deemed Refusal',
+                      full: 'Implied Rejection due to Delay',
+                      definition: 'If the CPIO fails to reply within 30 days, the law assumes the request was refused, enabling appeals immediately for free.',
+                      sec: 'Section 7(2)'
+                    },
+                    {
+                      term: 'CIC',
+                      full: 'Central Information Commission',
+                      definition: 'The supreme oversight body that hears Second Appeals. Their decisions are binding and carry penalty powers against officers.',
+                      sec: 'Section 12 / 19(3)'
+                    }
+                  ]
+                  .filter(item => 
+                    item.term.toLowerCase().includes(glossarySearch.toLowerCase()) || 
+                    item.full.toLowerCase().includes(glossarySearch.toLowerCase()) ||
+                    item.definition.toLowerCase().includes(glossarySearch.toLowerCase())
+                  )
+                  .map((item, idx) => (
+                    <div 
+                      key={idx} 
+                      className="group border border-slate-200 hover:border-primary-blue bg-slate-50/50 hover:bg-white rounded-xl p-4.5 transition-all shadow-3xs flex flex-col justify-between"
+                      title={`Statutory Reference: ${item.sec}`}
+                    >
+                      <div>
+                        <div className="flex justify-between items-start gap-1">
+                          <span className="font-extrabold text-sm text-primary-navy group-hover:text-primary-blue">{item.term}</span>
+                          <span className="text-[9px] bg-slate-200/60 font-bold px-1.5 py-0.5 rounded text-slate-500 font-mono">{item.sec}</span>
+                        </div>
+                        <span className="text-[10px] text-slate-400 font-bold block mt-0.5">{item.full}</span>
+                        <p className="text-xs text-slate-600 leading-relaxed mt-2.5">{item.definition}</p>
+                      </div>
+                      <div className="border-t border-slate-200/60 pt-2 mt-3 flex justify-between items-center text-[10px] text-slate-400 font-bold">
+                        <span>Translate: Citizens English</span>
+                        <span className="text-primary-blue group-hover:underline">Section Details →</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
           </div>
 

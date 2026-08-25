@@ -45,6 +45,8 @@ export default function DashboardView({
         return 'bg-emerald-50 text-emerald-800 border-emerald-300 font-extrabold';
       case 'First Appeal Filed':
         return 'bg-purple-50 text-purple-700 border-purple-200';
+      case 'Second Appeal Filed':
+        return 'bg-red-50 text-red-700 border-red-200 font-extrabold';
       case 'FAA Decision Received':
         return 'bg-slate-100 text-slate-700 border-slate-350';
       default:
@@ -60,6 +62,7 @@ export default function DashboardView({
         'Response Pending': 'Response Pending',
         'Response Received': 'Response Received',
         'First Appeal Filed': 'First Appeal Filed',
+        'Second Appeal Filed': 'Second Appeal Filed',
         'FAA Decision Received': 'Appeal Final Decision'
       },
       hi: {
@@ -68,6 +71,7 @@ export default function DashboardView({
         'Response Pending': 'उत्तर लंबित',
         'Response Received': 'उत्तर प्राप्त हुआ',
         'First Appeal Filed': 'प्रथम अपील दायर',
+        'Second Appeal Filed': 'द्वितीय अपील दायर',
         'FAA Decision Received': 'अपील अंतिम निर्णय'
       }
     }[language];

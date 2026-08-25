@@ -25,6 +25,10 @@ export async function PATCH(
     
     // Ensure notes column exists
     await query('ALTER TABLE rtis ADD COLUMN IF NOT EXISTS notes TEXT;', []);
+    await query('ALTER TABLE rtis ADD COLUMN IF NOT EXISTS second_appeal_reason TEXT;', []);
+    await query('ALTER TABLE rtis ADD COLUMN IF NOT EXISTS second_appeal_date TEXT;', []);
+    await query('ALTER TABLE rtis ADD COLUMN IF NOT EXISTS second_appeal_text TEXT;', []);
+    await query('ALTER TABLE rtis ADD COLUMN IF NOT EXISTS second_appeal_reg_no TEXT;', []);
     
     // Dynamically build SET query fields based on body params
     const fields: string[] = [];
@@ -43,7 +47,11 @@ export async function PATCH(
       totalQuestions: 'total_questions',
       paymentStatus: 'payment_status',
       paymentId: 'payment_id',
-      notes: 'notes'
+      notes: 'notes',
+      secondAppealReason: 'second_appeal_reason',
+      secondAppealDate: 'second_appeal_date',
+      secondAppealText: 'second_appeal_text',
+      secondAppealRegNo: 'second_appeal_reg_no'
     };
 
     for (const [key, val] of Object.entries(body)) {
@@ -92,7 +100,11 @@ export async function PATCH(
       totalQuestions: r.total_questions,
       appealReason: r.appeal_reason,
       appealDate: r.appeal_date,
-      notes: r.notes
+      notes: r.notes,
+      secondAppealReason: r.second_appeal_reason,
+      secondAppealDate: r.second_appeal_date,
+      secondAppealText: r.second_appeal_text,
+      secondAppealRegNo: r.second_appeal_reg_no
     };
 
     return NextResponse.json(updated);

@@ -143,9 +143,13 @@ export default function Navbar({
           </button>
           <button
             onClick={() => setActiveView('reconciliation')}
-            className="rounded-md px-3.5 py-2 text-xs font-bold text-secondary-saffron hover:bg-slate-50 animate-pulse border border-dashed border-secondary-saffron focus-ring cursor-pointer"
+            className={`rounded-md px-3.5 py-2 text-sm font-semibold transition-colors focus-ring cursor-pointer ${
+              activeView === 'reconciliation'
+                ? 'bg-slate-100 text-primary-navy font-bold' 
+                : 'text-slate-600 hover:bg-slate-50 hover:text-primary-navy'
+            }`}
           >
-            Reconcile Payment
+            {language === 'en' ? 'Reconcile' : 'भुगतान मिलान'}
           </button>
         </nav>
 
@@ -285,6 +289,12 @@ export default function Navbar({
           className={`flex-1 py-2 text-center text-xs font-semibold ${activeView === 'authorities' ? 'text-primary-navy font-bold bg-white' : 'text-slate-500'}`}
         >
           {t.authorities}
+        </button>
+        <button 
+          onClick={() => setActiveView('reconciliation')} 
+          className={`flex-1 py-2 text-center text-xs font-semibold ${activeView === 'reconciliation' ? 'text-primary-navy font-bold bg-white' : 'text-slate-500'}`}
+        >
+          {language === 'en' ? 'Reconcile' : 'मिलान'}
         </button>
         <button 
           onClick={() => setActiveView('help')} 

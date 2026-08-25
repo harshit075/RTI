@@ -25,8 +25,6 @@ export default function LandingView({ setActiveView, language }: LandingViewProp
       .catch(err => console.error('Failed to load FAQs:', err));
   }, []);
 
-
-
   const t = {
     en: {
       heroTitle: 'Get the information you have a right to know.',
@@ -38,7 +36,7 @@ export default function LandingView({ setActiveView, language }: LandingViewProp
       searchPlaceholder: 'Search FAQs, authorities, or published documents (e.g. passport delay, railway tenders)...',
       searchBtn: 'Search',
       trustOfficial: 'Demo Concept Portal',
-      trustPayment: '₹10 Secure Payment',
+      trustPayment: 'Free demo, no real fee',
       trustTrack: 'Live Status Timeline',
       trustAlerts: 'Sms / Email Updates',
       trustSupport: 'Accessibility & Support',
@@ -56,17 +54,13 @@ export default function LandingView({ setActiveView, language }: LandingViewProp
       step5Desc: 'If FAA appeal is unsatisfactory, legally appeal to the Central Information Commission (CIC) at cic.gov.in.',
       faqTitle: 'Frequently Asked Questions',
       viewAllFaqs: 'View Help Centre FAQs',
-      quickActionsTitle: 'What do you want to do today?',
-      quickFile: 'File New RTI',
-      quickFileSub: 'Draft, review, and submit',
-      quickTrack: 'Track RTI',
-      quickTrackSub: 'Check status and dates',
+      quickSearch: 'Search Disclosures',
+      quickSearchSub: 'Browse public files',
       quickAppeal: 'File First Appeal',
       quickAppealSub: 'Address incomplete replies',
       quickAuth: 'Find Department',
       quickAuthSub: 'Search government CPIOs',
-      quickSearch: 'Search Disclosures',
-      quickSearchSub: 'Browse public files',
+      quickSearchTitle: 'More things you can do',
       quickReconcile: 'Reconcile Payment',
       quickReconcileSub: 'Money deducted, request pending?'
     },
@@ -80,7 +74,7 @@ export default function LandingView({ setActiveView, language }: LandingViewProp
       searchPlaceholder: 'आरटीआई नियम, विभाग या पहले से पूछे गए सवालों को खोजें...',
       searchBtn: 'खोजें',
       trustOfficial: 'डेमो वैचारिक मॉडल',
-      trustPayment: '₹10 सुरक्षित भुगतान',
+      trustPayment: 'निःशुल्क डेमो, कोई वास्तविक शुल्क नहीं',
       trustTrack: 'लाइव स्टेटस टाइमलाइन',
       trustAlerts: 'एसएमएस / ईमेल अपडेट',
       trustSupport: 'अभिगम्यता और सहायता',
@@ -89,9 +83,9 @@ export default function LandingView({ setActiveView, language }: LandingViewProp
       step1: 'सीपीआईओ को अनुरोध भेजें',
       step1Desc: 'सीपीआईओ को अपना प्रश्न प्रारूपित करके प्रस्तुत करें।',
       step2: 'सीपीआईओ निर्णय (30 दिन)',
-      step2Desc: 'सीपीआईओ को 30 दिनों के भीतर दस्तावेज़ देने होंगे या धारा 8 के तहत अस्वीकार करना होगा।',
-      step3: 'प्रथम अपील (FAA)',
-      step3Desc: 'यदि जवाब अधूरा है या देरी हुई है, तो 30 दिनों के भीतर वरिष्ठ अपील अधिकारी को प्रथम अपील भेजें।',
+      step2Desc: 'सीपीआईओ को 30 दिनों के भीतर आवश्यक रिकॉर्ड प्रदान करना चाहिए या धारा 8 के तहत अस्वीकार करना चाहिए।',
+      step3: 'FAA प्रथम अपील',
+      step3Desc: 'यदि सीपीआईओ अस्वीकार करता है या देरी करता है, तो 30 दिनों के भीतर वरिष्ठ FAA अधिकारी को प्रथम अपील दायर करें।',
       step4: 'FAA आदेश (30-45 दिन)',
       step4Desc: 'प्रथम अपील अधिकारी आपकी अपील पर सुनवाई करके अंतिम आदेश जारी करता है।',
       step5: 'CIC को द्वितीय अपील',
@@ -109,6 +103,7 @@ export default function LandingView({ setActiveView, language }: LandingViewProp
       quickAuthSub: 'सरकारी अधिकारियों को खोजें',
       quickSearch: 'प्रकाशित दस्तावेज़',
       quickSearchSub: 'सार्वजनिक फाइलों को ब्राउज़ करें',
+      quickSearchTitle: 'अन्य उपलब्ध विकल्प',
       quickReconcile: 'भुगतान मिलान (Reconciliation)',
       quickReconcileSub: 'असफल भुगतानों को सिंक्रोनाइज़ करें'
     }
@@ -157,62 +152,42 @@ export default function LandingView({ setActiveView, language }: LandingViewProp
             {t.heroTitle}
           </h2>
           
-          <p className="mx-auto mt-6 max-w-2xl text-base sm:text-lg text-slate-600 leading-relaxed dark:text-slate-400">
+          <p className="mx-auto mt-6 max-w-2xl text-base sm:text-lg text-slate-605 leading-relaxed dark:text-slate-400">
             {t.heroSub}
           </p>
 
-          <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-            <button
-              onClick={() => setActiveView('onboarding')}
-              className="w-full sm:w-auto inline-flex items-center justify-center rounded-xl bg-primary-navy px-6 py-4 text-sm font-bold text-white shadow-md hover:bg-primary-blue hover:-translate-y-0.5 transition-all focus-ring cursor-pointer"
-            >
-              {t.ctaStart}
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </button>
-            <button
-              onClick={() => setActiveView('dashboard')}
-              className="w-full sm:w-auto inline-flex items-center justify-center rounded-xl bg-white border border-slate-200 px-6 py-4 text-sm font-bold text-slate-700 hover:bg-slate-50 transition-all focus-ring cursor-pointer"
-            >
-              {t.ctaTrack}
-            </button>
-            <button
-              onClick={() => setActiveView('onboarding')}
-              className="w-full sm:w-auto inline-flex items-center justify-center rounded-xl bg-blue-50/80 border border-blue-200 text-secondary-saffron px-6 py-4 text-sm font-bold hover:bg-blue-100/50 transition-all focus-ring cursor-pointer"
-            >
-              {t.ctaNotSure}
-            </button>
-          </div>
-        </div>
-      </section>
+          <p className="mx-auto mt-3 max-w-xl text-xs sm:text-sm text-slate-500 font-semibold leading-relaxed dark:text-slate-400">
+            {language === 'en' 
+              ? 'Covers Central Government departments. State requests are routed to the official state portal.' 
+              : 'केवल केंद्र सरकार के विभागों को कवर करता है। राज्य के आवेदनों को उनके आधिकारिक राज्य पोर्टल पर भेजा जाता है।'}
+          </p>
 
-      {/* Central Government Scope Warning Banner */}
-      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 -mt-6 mb-8 animate-in fade-in duration-300">
-        <div className="rounded-2xl border border-[#E5E2D9] bg-[#FAF9F5] p-5 text-xs text-slate-700 leading-relaxed flex flex-col md:flex-row items-center justify-between gap-4 shadow-2xs">
-          <div className="flex items-start gap-3">
-            <AlertTriangle className="h-5 w-5 text-[#B94A48] shrink-0 mt-0.5" />
-            <div>
-              <span className="font-extrabold text-xs block uppercase tracking-wider text-[#B94A48]">
-                CRITICAL COMPLIANCE NOTICE: CENTRAL GOVERNMENT ONLY
-              </span>
-              This portal is strictly for filing requests with **Central Government Ministries, Departments, and Central Public Authorities** (such as Railways, UIDAI, EPFO, Passport Office, Income Tax). 
-              State Government authorities (e.g. Uttar Pradesh, Maharashtra, Karnataka, Delhi NCT, local municipalities, state police) **cannot** be filed here. Submitting state-level applications will result in rejection with <span className="font-extrabold text-[#B94A48]">NO REFUND</span>.
-            </div>
-          </div>
-          <div className="flex flex-col sm:flex-row gap-2 shrink-0 w-full md:w-auto">
-            <a 
-              href="https://rtionline.gov.in/request/allpa.php" 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="bg-[#123B5D] hover:bg-[#1e5885] text-white text-center font-bold px-4 py-2.5 rounded-xl text-[10.5px] shadow-sm transition-colors cursor-pointer flex items-center justify-center gap-1.5"
-            >
-              <Search className="h-3.5 w-3.5 text-white" /> Public Authorities List (2,000+) ↗
-            </a>
+          <div className="mt-8 flex flex-col items-center gap-4">
+            {/* One dominant primary button */}
             <button
-              onClick={() => setActiveView('authorities')}
-              className="bg-white hover:bg-red-50/20 border border-[#B94A48] text-[#B94A48] text-center font-bold px-4 py-2.5 rounded-xl text-[10.5px] shadow-sm transition-colors cursor-pointer"
+              onClick={() => setActiveView('onboarding')}
+              className="w-full sm:w-80 inline-flex items-center justify-center rounded-xl bg-primary-navy px-8 py-4.5 text-sm font-extrabold text-white shadow-md hover:bg-primary-blue hover:-translate-y-0.5 transition-all focus-ring cursor-pointer dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100"
             >
-              Explore Database
+              {language === 'en' ? 'Start an RTI ↗' : 'आरटीआई शुरू करें ↗'}
             </button>
+
+            {/* Two smaller secondary actions */}
+            <div className="flex flex-wrap justify-center gap-3">
+              <button
+                onClick={() => setActiveView('dashboard')}
+                className="inline-flex items-center justify-center rounded-xl bg-white border border-slate-200 px-5 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-all focus-ring cursor-pointer shadow-3xs dark:bg-slate-900 dark:border-slate-800 dark:text-slate-350"
+              >
+                {t.ctaTrack}
+              </button>
+
+              <button
+                onClick={() => setActiveView('onboarding')}
+                className="inline-flex items-center gap-1.5 rounded-xl border border-blue-200 bg-blue-50/50 hover:bg-blue-100/40 px-5 py-2.5 text-xs font-bold text-primary-blue hover:text-primary-navy transition-all focus-ring cursor-pointer shadow-3xs dark:bg-blue-950/20 dark:border-blue-900/30"
+              >
+                <HelpCircle className="h-3.5 w-3.5" />
+                <span>{language === 'en' ? 'Not sure? Start here' : 'पता नहीं कहाँ से शुरू करें? यहाँ क्लिक करें'}</span>
+              </button>
+            </div>
           </div>
         </div>
       </section>
@@ -220,120 +195,182 @@ export default function LandingView({ setActiveView, language }: LandingViewProp
       {/* Trust Strip */}
       <section className="bg-white border-y border-slate-200 py-6 dark:bg-slate-900 dark:border-slate-800">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-6 text-center">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-center">
             
-            <div className="flex flex-col items-center gap-1.5 p-2">
-              <ShieldCheck className="h-6 w-6 text-primary-blue" />
-              <span className="text-xs font-bold text-slate-800 dark:text-slate-200">{t.trustOfficial}</span>
+            <div className="flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl bg-emerald-50/40 border border-emerald-100/50 dark:bg-emerald-950/10 dark:border-emerald-900/20">
+              <ShieldCheck className="h-5 w-5 text-emerald-600" />
+              <span className="text-[11px] font-bold text-emerald-800 dark:text-emerald-350">{t.trustOfficial}</span>
             </div>
 
-            <div className="flex flex-col items-center gap-1.5 p-2">
-              <CreditCard className="h-6 w-6 text-emerald-500" />
-              <span className="text-xs font-bold text-slate-800 dark:text-slate-200">{t.trustPayment}</span>
+            <div className="flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl bg-emerald-50/40 border border-emerald-100/50 dark:bg-emerald-950/10 dark:border-emerald-900/20">
+              <CreditCard className="h-5 w-5 text-emerald-600" />
+              <span className="text-[11px] font-bold text-emerald-800 dark:text-emerald-350">{t.trustPayment}</span>
             </div>
 
-            <div className="flex flex-col items-center gap-1.5 p-2">
-              <Clock className="h-6 w-6 text-secondary-saffron" />
-              <span className="text-xs font-bold text-slate-800 dark:text-slate-200">{t.trustTrack}</span>
+            <div className="flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl bg-emerald-50/40 border border-emerald-100/50 dark:bg-emerald-950/10 dark:border-emerald-900/20">
+              <Clock className="h-5 w-5 text-emerald-600" />
+              <span className="text-[11px] font-bold text-emerald-800 dark:text-emerald-350">{t.trustTrack}</span>
             </div>
 
-            <div className="flex flex-col items-center gap-1.5 p-2">
-              <BellRing className="h-6 w-6 text-purple-500" />
-              <span className="text-xs font-bold text-slate-800 dark:text-slate-200">{t.trustAlerts}</span>
+            <div className="flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl bg-emerald-50/40 border border-emerald-100/50 dark:bg-emerald-950/10 dark:border-emerald-900/20">
+              <BellRing className="h-5 w-5 text-emerald-600" />
+              <span className="text-[11px] font-bold text-emerald-800 dark:text-emerald-350">{t.trustAlerts}</span>
             </div>
 
-            <div className="flex flex-col items-center gap-1.5 p-2 col-span-2 md:col-span-1">
-              <HelpCircle className="h-6 w-6 text-blue-500" />
-              <span className="text-xs font-bold text-slate-800 dark:text-slate-200">{t.trustSupport}</span>
+            <div className="flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl bg-emerald-50/40 border border-emerald-100/50 dark:bg-emerald-950/10 dark:border-emerald-900/20 col-span-2 md:col-span-1">
+              <HelpCircle className="h-5 w-5 text-emerald-600" />
+              <span className="text-[11px] font-bold text-emerald-800 dark:text-emerald-350">{t.trustSupport}</span>
             </div>
 
           </div>
         </div>
       </section>
 
-      {/* Quick Actions Grid */}
-      <section className="py-12 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <h3 className="text-xl font-bold text-primary-navy mb-6 text-center sm:text-left dark:text-white">
-          {t.quickActionsTitle}
+      {/* 5-Step Process "How RTI Works" (Promoted Higher) */}
+      <section className="py-16 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="text-center max-w-3xl mx-auto mb-12">
+          <h3 className="text-2xl font-bold text-primary-navy dark:text-white">{t.howItWorksTitle}</h3>
+          <p className="text-sm text-slate-500 mt-2">{t.howItWorksSub}</p>
+        </div>
+
+        <div className="relative">
+          {/* Connector Line (Desktop) */}
+          <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-slate-200 -translate-y-1/2 z-0 hidden lg:block" />
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-8 relative z-10">
+            
+            {/* Step 1 */}
+            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm dark:bg-slate-900 dark:border-slate-800 flex flex-col justify-between h-full">
+              <div>
+                <div className="flex justify-between items-center mb-4">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-navy text-white text-sm font-bold shadow">
+                    01
+                  </div>
+                  <span className="text-[9px] font-bold bg-blue-50 text-primary-blue px-2 py-0.5 rounded dark:bg-blue-950/40 dark:text-blue-300">
+                    Sec 6(1)
+                  </span>
+                </div>
+                <h4 className="font-bold text-slate-900 text-sm dark:text-white">{t.step1}</h4>
+                <p className="text-xs text-slate-500 mt-2 leading-relaxed dark:text-slate-400">{t.step1Desc}</p>
+              </div>
+              <div className="text-[10px] font-bold text-slate-400 mt-4 pt-2 border-t border-slate-100 dark:border-slate-800">
+                Action: Draft & File
+              </div>
+            </div>
+
+            {/* Step 2 */}
+            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm dark:bg-slate-900 dark:border-slate-800 flex flex-col justify-between h-full">
+              <div>
+                <div className="flex justify-between items-center mb-4">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-navy text-white text-sm font-bold shadow">
+                    02
+                  </div>
+                  <span className="text-[9px] font-bold bg-amber-50 text-amber-600 px-2 py-0.5 rounded dark:bg-amber-950/40 dark:text-amber-300">
+                    Sec 7(1)
+                  </span>
+                </div>
+                <h4 className="font-bold text-slate-900 text-sm dark:text-white">{t.step2}</h4>
+                <p className="text-xs text-slate-500 mt-2 leading-relaxed dark:text-slate-400">{t.step2Desc}</p>
+              </div>
+              <div className="text-[10px] font-bold text-amber-600 mt-4 pt-2 border-t border-slate-100 dark:border-slate-800">
+                Limit: 30 Days
+              </div>
+            </div>
+
+            {/* Step 3 */}
+            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm dark:bg-slate-900 dark:border-slate-800 flex flex-col justify-between h-full">
+              <div>
+                <div className="flex justify-between items-center mb-4">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-navy text-white text-sm font-bold shadow">
+                    03
+                  </div>
+                  <span className="text-[9px] font-bold bg-purple-50 text-purple-700 px-2 py-0.5 rounded dark:bg-purple-950/40 dark:text-purple-300">
+                    Sec 19(1)
+                  </span>
+                </div>
+                <h4 className="font-bold text-slate-900 text-sm dark:text-white">{t.step3}</h4>
+                <p className="text-xs text-slate-500 mt-2 leading-relaxed dark:text-slate-400">{t.step3Desc}</p>
+              </div>
+              <div className="text-[10px] font-bold text-purple-700 mt-4 pt-2 border-t border-slate-100 dark:border-slate-800">
+                Limit: 30 Days
+              </div>
+            </div>
+
+            {/* Step 4 */}
+            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm dark:bg-slate-900 dark:border-slate-800 flex flex-col justify-between h-full">
+              <div>
+                <div className="flex justify-between items-center mb-4">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-navy text-white text-sm font-bold shadow">
+                    04
+                  </div>
+                  <span className="text-[9px] font-bold bg-purple-50 text-purple-700 px-2 py-0.5 rounded dark:bg-purple-950/40 dark:text-purple-300">
+                    Sec 19(6)
+                  </span>
+                </div>
+                <h4 className="font-bold text-slate-900 text-sm dark:text-white">{t.step4}</h4>
+                <p className="text-xs text-slate-500 mt-2 leading-relaxed dark:text-slate-400">{t.step4Desc}</p>
+              </div>
+              <div className="text-[10px] font-bold text-purple-700 mt-4 pt-2 border-t border-slate-100 dark:border-slate-800">
+                Limit: 30-45 Days
+              </div>
+            </div>
+
+            {/* Step 5 */}
+            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm dark:bg-slate-900 dark:border-slate-800 flex flex-col justify-between h-full">
+              <div>
+                <div className="flex justify-between items-center mb-4">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-secondary-saffron text-white text-sm font-bold shadow animate-pulse">
+                    05
+                  </div>
+                  <span className="text-[9px] font-bold bg-red-50 text-red-705 px-2 py-0.5 rounded dark:bg-red-950/40 dark:text-red-300">
+                    Sec 19(3)
+                  </span>
+                </div>
+                <h4 className="font-bold text-slate-900 text-sm dark:text-white">{t.step5}</h4>
+                <p className="text-xs text-slate-500 mt-2 leading-relaxed dark:text-slate-400">{t.step5Desc}</p>
+              </div>
+              <div className="text-[10px] font-bold text-red-700 mt-4 pt-2 border-t border-slate-100 dark:border-slate-800">
+                External Appeal
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* More things you can do (2 secondary actions) */}
+      <section className="py-12 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 border-t border-slate-250/60 dark:border-slate-850">
+        <h3 className="text-xs font-extrabold text-slate-400 uppercase tracking-widest mb-6 text-center sm:text-left">
+          {t.quickSearchTitle}
         </h3>
         
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          
-          {/* Action 1: File RTI */}
-          <div 
-            onClick={() => setActiveView('onboarding')}
-            className="group rounded-2xl bg-white border border-slate-200 p-6 hover:shadow-md hover:border-slate-300 hover:-translate-y-0.5 transition-all cursor-pointer dark:bg-slate-900 dark:border-slate-850"
-          >
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary-navy/5 text-primary-navy group-hover:bg-primary-navy group-hover:text-white transition-colors mb-4">
-              <FileText className="h-6 w-6" />
-            </div>
-            <h4 className="font-bold text-slate-900 text-base dark:text-white">{t.quickFile}</h4>
-            <p className="text-xs text-slate-500 mt-2 leading-relaxed dark:text-slate-400">{t.quickFileSub}</p>
-          </div>
-
-          {/* Action 2: Track RTI */}
-          <div 
-            onClick={() => setActiveView('dashboard')}
-            className="group rounded-2xl bg-white border border-slate-200 p-6 hover:shadow-md hover:border-slate-300 hover:-translate-y-0.5 transition-all cursor-pointer dark:bg-slate-900 dark:border-slate-850"
-          >
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 text-secondary-saffron group-hover:bg-secondary-saffron group-hover:text-white transition-colors mb-4">
-              <Clock className="h-6 w-6" />
-            </div>
-            <h4 className="font-bold text-slate-900 text-base dark:text-white">{t.quickTrack}</h4>
-            <p className="text-xs text-slate-500 mt-2 leading-relaxed dark:text-slate-400">{t.quickTrackSub}</p>
-          </div>
-
-          {/* Action 3: File Appeal */}
-          <div 
-            onClick={() => setActiveView('dashboard')}
-            className="group rounded-2xl bg-white border border-slate-200 p-6 hover:shadow-md hover:border-slate-300 hover:-translate-y-0.5 transition-all cursor-pointer dark:bg-slate-900 dark:border-slate-850"
-          >
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-red-50 text-red-500 group-hover:bg-red-500 group-hover:text-white transition-colors mb-4">
-              <Scale className="h-6 w-6" />
-            </div>
-            <h4 className="font-bold text-slate-900 text-base dark:text-white">{t.quickAppeal}</h4>
-            <p className="text-xs text-slate-500 mt-2 leading-relaxed dark:text-slate-400">{t.quickAppealSub}</p>
-          </div>
-
-          {/* Action 4: Authority Explorer */}
-          <div 
-            onClick={() => setActiveView('authorities')}
-            className="group rounded-2xl bg-white border border-slate-200 p-6 hover:shadow-md hover:border-slate-300 hover:-translate-y-0.5 transition-all cursor-pointer dark:bg-slate-900 dark:border-slate-850"
-          >
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 text-blue-500 group-hover:bg-blue-500 group-hover:text-white transition-colors mb-4">
-              <Search className="h-6 w-6" />
-            </div>
-            <h4 className="font-bold text-slate-900 text-base dark:text-white">{t.quickAuth}</h4>
-            <p className="text-xs text-slate-500 mt-2 leading-relaxed dark:text-slate-400">{t.quickAuthSub}</p>
-          </div>
-
-          {/* Action 5: Search disclosures */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-3xl">
+          {/* Action 1: Search disclosures */}
           <div 
             onClick={() => {
               const el = document.getElementById('search-info-bar');
               if (el) el.scrollIntoView({ behavior: 'smooth' });
             }}
-            className="group rounded-2xl bg-white border border-slate-200 p-6 hover:shadow-md hover:border-slate-300 hover:-translate-y-0.5 transition-all cursor-pointer dark:bg-slate-900 dark:border-slate-850"
+            className="group rounded-2xl bg-white border border-slate-200 p-6 hover:shadow-md hover:border-slate-350 transition-all cursor-pointer dark:bg-slate-900 dark:border-slate-850"
           >
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-purple-50 text-purple-500 group-hover:bg-purple-500 group-hover:text-white transition-colors mb-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-purple-50 text-purple-500 group-hover:bg-purple-500 group-hover:text-white transition-colors mb-4 dark:bg-purple-950/20">
               <BookOpen className="h-6 w-6" />
             </div>
             <h4 className="font-bold text-slate-900 text-base dark:text-white">{t.quickSearch}</h4>
             <p className="text-xs text-slate-500 mt-2 leading-relaxed dark:text-slate-400">{t.quickSearchSub}</p>
           </div>
 
-          {/* Action 6: Reconcile Payment */}
+          {/* Action 2: File an appeal */}
           <div 
-            onClick={() => setActiveView('reconciliation')}
-            className="group rounded-2xl bg-white border border-slate-200 p-6 hover:shadow-md hover:border-slate-350 hover:-translate-y-0.5 transition-all cursor-pointer dark:bg-slate-900 dark:border-slate-850"
+            onClick={() => setActiveView('dashboard')}
+            className="group rounded-2xl bg-white border border-slate-200 p-6 hover:shadow-md hover:border-slate-350 transition-all cursor-pointer dark:bg-slate-900 dark:border-slate-850"
           >
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-50 text-emerald-500 group-hover:bg-emerald-500 group-hover:text-white transition-colors mb-4 animate-pulse">
-              <RefreshCw className="h-6 w-6" />
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-red-50 text-red-500 group-hover:bg-red-500 group-hover:text-white transition-colors mb-4 dark:bg-red-950/20">
+              <Scale className="h-6 w-6" />
             </div>
-            <h4 className="font-bold text-slate-900 text-base dark:text-white">{t.quickReconcile}</h4>
-            <p className="text-xs text-slate-500 mt-2 leading-relaxed dark:text-slate-400">{t.quickReconcileSub}</p>
+            <h4 className="font-bold text-slate-900 text-base dark:text-white">{t.quickAppeal}</h4>
+            <p className="text-xs text-slate-500 mt-2 leading-relaxed dark:text-slate-400">{t.quickAppealSub}</p>
           </div>
-
         </div>
       </section>
 
@@ -345,7 +382,7 @@ export default function LandingView({ setActiveView, language }: LandingViewProp
             <p className="text-xs text-slate-500 mt-1">Section 4 of the RTI Act mandates proactive government disclosures. Search them here before filing.</p>
           </div>
 
-          <form onSubmit={handleSearch} className="flex gap-2 p-1.5 border border-slate-350 rounded-2xl bg-slate-50 focus-within:border-primary-blue shadow-sm">
+          <form onSubmit={handleSearch} className="flex gap-2 p-1.5 border border-slate-350 rounded-2xl bg-slate-50 focus-within:border-primary-blue shadow-sm dark:bg-slate-900 dark:border-slate-850">
             <div className="flex items-center pl-3 text-slate-400">
               <Search className="h-5 w-5" />
             </div>
@@ -354,7 +391,7 @@ export default function LandingView({ setActiveView, language }: LandingViewProp
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={t.searchPlaceholder}
-              className="flex-1 bg-transparent px-3 py-2 text-sm font-medium text-slate-800 outline-none placeholder:text-slate-400"
+              className="flex-1 bg-transparent px-3 py-2 text-sm font-medium text-slate-800 outline-none placeholder:text-slate-400 dark:text-white"
             />
             <button
               type="submit"
@@ -409,7 +446,7 @@ export default function LandingView({ setActiveView, language }: LandingViewProp
           )}
 
           {searchResults.length > 0 && (
-            <div className="mt-6 rounded-xl border border-slate-200 bg-slate-50 p-4 divide-y divide-slate-200">
+            <div className="mt-6 rounded-xl border border-slate-200 bg-slate-50 p-4 divide-y divide-slate-200 dark:bg-slate-900 dark:border-slate-800">
               {searchResults.map(faq => (
                 <div key={faq.id} className="py-3 first:pt-0 last:pb-0">
                   <div className="flex items-center gap-1.5">
@@ -418,14 +455,14 @@ export default function LandingView({ setActiveView, language }: LandingViewProp
                     </span>
                     <span className="text-[10px] font-bold text-slate-400 font-mono">{faq.citation}</span>
                   </div>
-                  <h4 className="text-sm font-bold text-slate-800 mt-1">{faq.question}</h4>
-                  <p className="text-xs text-slate-650 mt-1 leading-relaxed">{faq.answer}</p>
+                  <h4 className="text-sm font-bold text-slate-800 mt-1 dark:text-white">{faq.question}</h4>
+                  <p className="text-xs text-slate-650 mt-1 leading-relaxed dark:text-slate-455">{faq.answer}</p>
                 </div>
               ))}
             </div>
           )}
           {searchQuery && searchResults.length === 0 && disclosureResults.length === 0 && (
-            <div className="mt-4 text-center text-xs text-slate-500 py-4 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+            <div className="mt-4 text-center text-xs text-slate-500 py-4 bg-slate-50 rounded-xl border border-dashed border-slate-200 dark:bg-slate-900 dark:border-slate-800">
               We couldn't find a matching official result. Try searching with other terms or check out the{' '}
               <button onClick={() => setActiveView('help')} className="text-primary-blue font-bold hover:underline cursor-pointer">
                 Help Centre FAQ
@@ -436,125 +473,13 @@ export default function LandingView({ setActiveView, language }: LandingViewProp
         </div>
       </section>
 
-      {/* 5-Step Process "How RTI Works" */}
-      <section className="py-16 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-3xl mx-auto mb-12">
-          <h3 className="text-2xl font-bold text-primary-navy dark:text-white">{t.howItWorksTitle}</h3>
-          <p className="text-sm text-slate-500 mt-2">{t.howItWorksSub}</p>
-        </div>
-
-        <div className="relative">
-          {/* Connector Line (Desktop) */}
-          <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-slate-200 -translate-y-1/2 z-0 hidden lg:block" />
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-8 relative z-10">
-            
-            {/* Step 1 */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm dark:bg-slate-900 dark:border-slate-800 flex flex-col justify-between h-full">
-              <div>
-                <div className="flex justify-between items-center mb-4">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-navy text-white text-sm font-bold shadow">
-                    01
-                  </div>
-                  <span className="text-[9px] font-bold bg-blue-50 text-primary-blue px-2 py-0.5 rounded">
-                    Sec 6(1)
-                  </span>
-                </div>
-                <h4 className="font-bold text-slate-900 text-sm dark:text-white">{t.step1}</h4>
-                <p className="text-xs text-slate-500 mt-2 leading-relaxed dark:text-slate-400">{t.step1Desc}</p>
-              </div>
-              <div className="text-[10px] font-bold text-slate-400 mt-4 pt-2 border-t border-slate-100 dark:border-slate-800">
-                Action: Draft & File
-              </div>
-            </div>
-
-            {/* Step 2 */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm dark:bg-slate-900 dark:border-slate-800 flex flex-col justify-between h-full">
-              <div>
-                <div className="flex justify-between items-center mb-4">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-navy text-white text-sm font-bold shadow">
-                    02
-                  </div>
-                  <span className="text-[9px] font-bold bg-amber-50 text-amber-600 px-2 py-0.5 rounded">
-                    Sec 7(1)
-                  </span>
-                </div>
-                <h4 className="font-bold text-slate-900 text-sm dark:text-white">{t.step2}</h4>
-                <p className="text-xs text-slate-500 mt-2 leading-relaxed dark:text-slate-400">{t.step2Desc}</p>
-              </div>
-              <div className="text-[10px] font-bold text-amber-600 mt-4 pt-2 border-t border-slate-100 dark:border-slate-800">
-                Limit: 30 Days
-              </div>
-            </div>
-
-            {/* Step 3 */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm dark:bg-slate-900 dark:border-slate-800 flex flex-col justify-between h-full">
-              <div>
-                <div className="flex justify-between items-center mb-4">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-navy text-white text-sm font-bold shadow">
-                    03
-                  </div>
-                  <span className="text-[9px] font-bold bg-purple-50 text-purple-700 px-2 py-0.5 rounded">
-                    Sec 19(1)
-                  </span>
-                </div>
-                <h4 className="font-bold text-slate-900 text-sm dark:text-white">{t.step3}</h4>
-                <p className="text-xs text-slate-500 mt-2 leading-relaxed dark:text-slate-400">{t.step3Desc}</p>
-              </div>
-              <div className="text-[10px] font-bold text-purple-700 mt-4 pt-2 border-t border-slate-100 dark:border-slate-800">
-                Limit: 30 Days
-              </div>
-            </div>
-
-            {/* Step 4 */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm dark:bg-slate-900 dark:border-slate-800 flex flex-col justify-between h-full">
-              <div>
-                <div className="flex justify-between items-center mb-4">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-navy text-white text-sm font-bold shadow">
-                    04
-                  </div>
-                  <span className="text-[9px] font-bold bg-purple-50 text-purple-700 px-2 py-0.5 rounded">
-                    Sec 19(6)
-                  </span>
-                </div>
-                <h4 className="font-bold text-slate-900 text-sm dark:text-white">{t.step4}</h4>
-                <p className="text-xs text-slate-500 mt-2 leading-relaxed dark:text-slate-400">{t.step4Desc}</p>
-              </div>
-              <div className="text-[10px] font-bold text-purple-700 mt-4 pt-2 border-t border-slate-100 dark:border-slate-800">
-                Limit: 30-45 Days
-              </div>
-            </div>
-
-            {/* Step 5 */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm dark:bg-slate-900 dark:border-slate-800 flex flex-col justify-between h-full">
-              <div>
-                <div className="flex justify-between items-center mb-4">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-secondary-saffron text-white text-sm font-bold shadow animate-pulse">
-                    05
-                  </div>
-                  <span className="text-[9px] font-bold bg-red-50 text-red-705 px-2 py-0.5 rounded">
-                    Sec 19(3)
-                  </span>
-                </div>
-                <h4 className="font-bold text-slate-900 text-sm dark:text-white">{t.step5}</h4>
-                <p className="text-xs text-slate-500 mt-2 leading-relaxed dark:text-slate-400">{t.step5Desc}</p>
-              </div>
-              <div className="text-[10px] font-bold text-red-700 mt-4 pt-2 border-t border-slate-100 dark:border-slate-800">
-                External Appeal
-              </div>
-            </div>
-
-          </div>
-        </div>
-      </section>
-
       {/* Basic FAQ Previews */}
       <section className="py-12 bg-slate-100/50 border-t border-slate-200 dark:bg-slate-900/30 dark:border-slate-800">
         <div className="mx-auto max-w-4xl px-4 sm:px-6">
           <h3 className="text-xl font-bold text-primary-navy text-center mb-8 dark:text-white">{t.faqTitle}</h3>
           
           <div className="space-y-4">
-            {faqs.slice(0, 3).map(faq => (
+            {faqs.slice(0, 4).map(faq => (
               <div key={faq.id} className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:bg-slate-900 dark:border-slate-800">
                 <div className="flex justify-between items-start gap-2">
                   <h4 className="font-bold text-slate-800 text-sm flex items-start gap-1.5 dark:text-slate-200">

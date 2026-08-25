@@ -6,9 +6,10 @@ import { FileText, ShieldAlert } from 'lucide-react';
 interface FooterProps {
   language: 'en' | 'hi';
   setActiveView: (view: string) => void;
+  setHelpCategory?: (cat: 'All' | 'Basics' | 'Fees' | 'Process' | 'Appeals' | 'Exemptions') => void;
 }
 
-export default function Footer({ language, setActiveView }: FooterProps) {
+export default function Footer({ language, setActiveView, setHelpCategory }: FooterProps) {
   const t = {
     en: {
       brand: 'RTI Saathi',
@@ -131,7 +132,22 @@ export default function Footer({ language, setActiveView }: FooterProps) {
             {t.col2Items.map((item, idx) => (
               <li key={idx}>
                 <button
-                  onClick={() => setActiveView(item.view)}
+                  onClick={() => {
+                    if (setHelpCategory) {
+                      const categoryMap: Record<string, 'All' | 'Basics' | 'Fees' | 'Process' | 'Appeals' | 'Exemptions'> = {
+                        'RTI Act Basics': 'Basics',
+                        'Exempted Items (Sec 8)': 'Exemptions',
+                        'Fee Schedule': 'Fees',
+                        'Appeals Process': 'Appeals',
+                        'आरटीआई कानून मूल बातें': 'Basics',
+                        'छूट प्राप्त वस्तुएं (Sec 8)': 'Exemptions',
+                        'शुल्क सूची': 'Fees',
+                        'अपील प्रक्रिया': 'Appeals'
+                      };
+                      setHelpCategory(categoryMap[item.label] || 'All');
+                    }
+                    setActiveView(item.view);
+                  }}
                   className="hover:text-secondary-gold text-left transition-colors cursor-pointer"
                 >
                   {item.label}
@@ -169,7 +185,7 @@ export default function Footer({ language, setActiveView }: FooterProps) {
         </div>
         <div className="text-center md:text-right shrink-0">
           <p className="font-bold text-slate-400">© 2026 {t.brand}.</p>
-          <p className="text-[10px] mt-1 text-slate-500">Built for Citizens of India</p>
+          <p className="text-[10px] mt-1 text-slate-500 font-medium">Version 2.0 Concept Redesign, DoPT Initiative</p>
         </div>
       </div>
     </footer>

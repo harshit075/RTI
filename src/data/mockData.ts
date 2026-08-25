@@ -30,7 +30,7 @@ export interface RTIApplication {
   questions: string[];
   submittedDate: string;
   expectedDate: string;
-  status: 'Draft' | 'Processing' | 'Submitted' | 'Response Pending' | 'Response Received' | 'First Appeal Filed' | 'FAA Decision Received';
+  status: 'Draft' | 'Processing' | 'Submitted' | 'Response Pending' | 'Response Received' | 'First Appeal Filed' | 'FAA Decision Received' | 'Second Appeal Filed';
   paymentId?: string;
   paymentStatus: 'Pending' | 'Success' | 'Failed';
   registrationNumber?: string;
@@ -42,6 +42,10 @@ export interface RTIApplication {
   appealReason?: string;
   appealDate?: string;
   notes?: string;
+  secondAppealReason?: string;
+  secondAppealDate?: string;
+  secondAppealText?: string;
+  secondAppealRegNo?: string;
 }
 
 export const mockAuthorities: Authority[] = [
@@ -134,6 +138,51 @@ export const mockAuthorities: Authority[] = [
     faaAddress: 'Bahadur Shah Zafar Marg, New Delhi - 110002',
     website: 'https://ugc.gov.in',
     description: 'Regulates higher education, distributes university research grants, and verifies degrees/accreditations.'
+  },
+  {
+    id: 'djb',
+    name: 'Delhi Jal Board (DJB)',
+    department: 'Water Billing & Distribution Division',
+    ministry: 'Government of NCT of Delhi',
+    level: 'State',
+    cpioName: 'Shri Ramesh Chand',
+    cpioDesignation: 'Assistant Commissioner & CPIO',
+    cpioAddress: 'Varunalaya Phase-II, Karol Bagh, New Delhi - 110005',
+    faaName: 'Shri K. C. Sharma',
+    faaDesignation: 'Member (Administration) & First Appellate Authority',
+    faaAddress: 'Varunalaya Phase-II, Karol Bagh, New Delhi - 110005',
+    website: 'https://rtionline.delhi.gov.in/',
+    description: 'Responsible for potable water supply, sewage systems, and billing disputes in Delhi.'
+  },
+  {
+    id: 'uppolice',
+    name: 'Uttar Pradesh Police Headquarters',
+    department: 'Public Grievance Cell',
+    ministry: 'Home Department, Government of Uttar Pradesh',
+    level: 'State',
+    cpioName: 'Shri Akhilesh Prasad',
+    cpioDesignation: 'Superintendent of Police & CPIO',
+    cpioAddress: 'Signature Building, Gomti Nagar Extension, Lucknow, UP - 226002',
+    faaName: 'Shri R. K. Vishwakarma',
+    faaDesignation: 'Additional Director General & FAA',
+    faaAddress: 'Signature Building, Gomti Nagar Extension, Lucknow, UP - 226002',
+    website: 'https://rtionline.up.gov.in/',
+    description: 'Responsible for law enforcement, crime investigation, and local police station queries in Uttar Pradesh.'
+  },
+  {
+    id: 'bbmp',
+    name: 'Bruhat Bengaluru Mahanagara Palike (BBMP)',
+    department: 'Revenue & Public Works Division',
+    ministry: 'Urban Development, Government of Karnataka',
+    level: 'State',
+    cpioName: 'Smt. Lakshmi Devi',
+    cpioDesignation: 'Joint Commissioner & CPIO',
+    cpioAddress: 'BBMP Head Office, Hudson Circle, Bengaluru, Karnataka - 560002',
+    faaName: 'Shri Tushar Giri Nath',
+    faaDesignation: 'Chief Commissioner & FAA',
+    faaAddress: 'BBMP Head Office, Bengaluru, Karnataka - 560002',
+    website: 'https://rtionline.karnataka.gov.in/',
+    description: 'Responsible for civic administration, city roads, property tax, and municipal infrastructure in Bengaluru.'
   }
 ];
 
@@ -186,6 +235,13 @@ export const mockFAQs: FAQ[] = [
     answer: 'Use the "Payment Reconciliation" page. Enter your transaction ID or Bank UTR. The portal queries the bank network ledger to reconcile payment statuses within 24 hours, registering and dispatching your application once verified.',
     category: 'Fees',
     citation: 'DoPT Guidelines'
+  },
+  {
+    id: 'faq-8',
+    question: 'What happens if 30 days pass with no response from the CPIO?',
+    answer: 'Under Section 7(2) of the RTI Act, if the CPIO fails to reply within 30 days, it is deemed a refusal. You are entitled to file a First Appeal immediately on our portal without paying any appeal fees. The senior FAA officer must decide the appeal within 30 to 45 days.',
+    category: 'Appeals',
+    citation: 'RTI Act 2005, Section 7(2) & 19(1)'
   }
 ];
 

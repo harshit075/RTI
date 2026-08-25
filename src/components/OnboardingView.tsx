@@ -557,7 +557,7 @@ export default function OnboardingView({ setActiveView, setDraftRti, language }:
                     rel="noopener noreferrer"
                     className="inline-block mt-3 bg-red-650 hover:bg-red-750 text-white font-bold text-[11px] px-3.5 py-1.5 rounded-lg shadow-sm"
                   >
-                    Go to official Rajasthan RTI service ↗
+                    Go to official {analysisResult.stateName} RTI Portal ↗
                   </a>
                 </div>
               </div>

@@ -13,6 +13,7 @@ interface RtiDetailViewProps {
   setActiveView: (view: string) => void;
   language: 'en' | 'hi';
   fileFirstAppeal: (id: string, reason: string, appealText: string) => void;
+  fileSecondAppeal: (id: string, reason: string, appealText: string) => void;
 }
 
 export default function RtiDetailView({
@@ -20,7 +21,8 @@ export default function RtiDetailView({
   rtis,
   setActiveView,
   language,
-  fileFirstAppeal
+  fileFirstAppeal,
+  fileSecondAppeal
 }: RtiDetailViewProps) {
   const [activeTab, setActiveTab] = useState<'timeline' | 'compare' | 'evidence' | 'notes' | 'appeal' | 'documents' | 'ask-ai'>('timeline');
   
@@ -68,9 +70,56 @@ export default function RtiDetailView({
   const [appealText, setAppealText] = useState('');
   const [showOnlyMissing, setShowOnlyMissing] = useState(false);
 
+  // Second Appeal flow state
+  const [showSecondAppealWizard, setShowSecondAppealWizard] = useState(false);
+  const [secondAppealReason, setSecondAppealReason] = useState('FAA did not respond within 45 days');
+  const [secondAppealText, setSecondAppealText] = useState('');
+
   if (!rti) return <div>RTI not found</div>;
 
   const auth = mockAuthorities.find(a => a.id === rti.authorityId);
+
+  const openSecondAppealWizard = () => {
+    const authorityName = auth?.name || rti.authorityId;
+    const template = `BEFORE THE CENTRAL INFORMATION COMMISSION
+CIC Bhawan, Baba Gangnath Marg, Munirka, New Delhi - 110067
+
+SECOND APPEAL UNDER SECTION 19(3) OF THE RIGHT TO INFORMATION ACT, 2005
+
+In the matter of:
+Harshit Sharma
+VS
+CPIO, ${authorityName}
+
+1. Particulars of the Appellant:
+   Name: Harshit Sharma
+   Email: harshit.sharma@example.com
+   Phone: 9876543210
+
+2. Date of filing original RTI Application: ${rti.submittedDate}
+3. Registration Number of original RTI: ${rti.registrationNumber || 'N/A'}
+4. Date of filing First Appeal under Section 19(1): ${rti.appealDate || '2026-08-25'}
+5. Grounds for Second Appeal:
+   - ${secondAppealReason}
+   - The First Appellate Authority (FAA) failed to provide the requested records or failed to decide the appeal within statutory timelines (30-45 days).
+
+PRAYER:
+I request the Hon'ble Commission to:
+(a) Direct the CPIO/FAA of ${authorityName} to supply the complete records requested in the original application.
+(b) Impose penalties under Section 20(1) for the delay in providing the records.
+
+Date: ${new Date().toISOString().substring(0, 10)}
+Place: New Delhi`;
+
+    setSecondAppealText(template);
+    setShowSecondAppealWizard(true);
+  };
+
+  const handleSecondAppealSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    fileSecondAppeal(rti.id, secondAppealReason, secondAppealText);
+    setShowSecondAppealWizard(false);
+  };
 
   // Generate appeal text dynamically
   const openAppealWizard = () => {
@@ -279,7 +328,10 @@ Mob: 9876543210`;
                     <Check className="h-2.5 w-2.5" />
                   </span>
                   <div>
-                    <h4 className="font-bold text-slate-800 dark:text-slate-200">RECEIVED BY PUBLIC AUTHORITY</h4>
+                    <h4 className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                      RECEIVED BY PUBLIC AUTHORITY
+                      <span className="text-[9px] text-primary-blue bg-blue-50 border border-blue-200 px-1.5 py-0.5 rounded-md cursor-help font-bold" title="CPIO: Central Public Information Officer. The specific departmental officer designated to process and reply to your RTI queries under Section 5(1).">CPIO Info</span>
+                    </h4>
                     <p className="text-slate-600 mt-1">Routed to CPIO Office: {auth?.cpioName} ({auth?.cpioDesignation}).</p>
                   </div>
                 </div>
@@ -301,7 +353,7 @@ Mob: 9876543210`;
                   </div>
                 </div>
 
-                {/* Milestone 4: First Appeal */}
+                {/* Milestone 4: First Appeal / Second Appeal */}
                 {rti.status === 'First Appeal Filed' && (
                   <>
                     <div className="relative">
@@ -309,8 +361,11 @@ Mob: 9876543210`;
                         <Check className="h-2.5 w-2.5" />
                       </span>
                       <div>
-                        <h4 className="font-bold text-slate-800 dark:text-slate-200">FIRST APPEAL FILED</h4>
-                        <p className="text-slate-800 mt-1">
+                        <h4 className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                          FIRST APPEAL FILED
+                          <span className="text-[9px] text-purple-700 bg-purple-50 border border-purple-200 px-1.5 py-0.5 rounded-md cursor-help font-bold" title="FAA: First Appellate Authority. The senior officer in the same department who hears first appeals if the CPIO rejects details or fails to reply within 30 days under Section 19(1).">FAA Info</span>
+                        </h4>
+                        <p className="text-slate-850 mt-1">
                           Appeal filed to First Appellate Authority: {auth?.faaName} ({auth?.faaDesignation}) on {rti.appealDate || '2026-08-25'}. Ground: {rti.appealReason}.
                         </p>
                       </div>
@@ -325,19 +380,137 @@ Mob: 9876543210`;
                         <p className="text-slate-500 mt-1">
                           If the FAA does not issue an order within 30-45 days, or if you are unsatisfied with their decision, you can escalate the matter by filing a **Second Appeal** under Section 19(3) of the RTI Act directly with the Central Information Commission (CIC).
                         </p>
-                        <a 
-                          href="https://cic.gov.in" 
-                          target="_blank" 
-                          rel="noopener noreferrer" 
-                          className="inline-flex items-center gap-1 mt-2 bg-red-650 hover:bg-red-700 text-white font-bold text-[10px] px-3.5 py-1.5 rounded-lg shadow-sm cursor-pointer"
+                        <button 
+                          onClick={openSecondAppealWizard} 
+                          className="inline-flex items-center gap-1 mt-2 bg-red-650 hover:bg-red-700 text-white font-bold text-[10px] px-3.5 py-1.5 rounded-lg shadow-sm cursor-pointer border-none"
                         >
-                          Escalate to CIC (cic.gov.in) ↗
-                        </a>
+                          File Second Appeal to CIC ↗
+                        </button>
                       </div>
                     </div>
                   </>
                 )}
 
+                {rti.status === 'Second Appeal Filed' && (
+                  <>
+                    <div className="relative">
+                      <span className="absolute -left-[31px] top-0 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-purple-500 text-white font-bold shadow-sm">
+                        <Check className="h-2.5 w-2.5" />
+                      </span>
+                      <div>
+                        <h4 className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                          FIRST APPEAL FILED
+                          <span className="text-[9px] text-purple-700 bg-purple-50 border border-purple-200 px-1.5 py-0.5 rounded-md cursor-help font-bold" title="FAA: First Appellate Authority. The departmental senior officer who reviews CPIO replies.">FAA Info</span>
+                        </h4>
+                        <p className="text-slate-800 mt-1">
+                          Appeal filed to First Appellate Authority: {auth?.faaName} ({auth?.faaDesignation}) on {rti.appealDate || '2026-08-25'}. Ground: {rti.appealReason || 'Information incomplete'}.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="relative">
+                      <span className="absolute -left-[31px] top-0 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-red-600 text-white font-bold shadow-sm">
+                        <Check className="h-2.5 w-2.5" />
+                      </span>
+                      <div>
+                        <h4 className="font-bold text-red-700 dark:text-red-300 flex items-center gap-1.5">
+                          SECOND APPEAL FILED WITH CIC
+                          <span className="text-[9px] text-red-700 bg-red-50 border border-red-200 px-1.5 py-0.5 rounded-md cursor-help font-bold" title="CIC: Central Information Commission. The highest appellate body under the RTI Act, 2005. Decisions are legally binding on all departments.">CIC Info</span>
+                        </h4>
+                        <p className="text-slate-855 mt-1">
+                          Second Appeal registered with Central Information Commission (CIC) on {rti.secondAppealDate || '2026-08-25'} under reference ID: <strong>{rti.secondAppealRegNo}</strong>.
+                        </p>
+                        <p className="text-xs text-slate-500 mt-1 leading-snug">
+                          The CIC has linked this petition to your original case. Appellant hearings will be scheduled according to availability. Check cic.gov.in with your reference ID for scheduling.
+                        </p>
+                      </div>
+                    </div>
+                  </>
+                )}
+
+              </div>
+            </div>
+
+            {/* Detailed System Audit Trail (Fulfilling View History / Audit Trail request) */}
+            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:bg-slate-900 dark:border-slate-800 space-y-4">
+              <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h4 className="font-extrabold text-[11px] text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                  <Clock className="h-4 w-4 text-primary-blue" />
+                  Detailed System Audit Trail & History
+                </h4>
+                <span className="text-[10px] bg-slate-100 text-slate-700 px-2 py-0.5 rounded font-mono font-bold">
+                  ID: {rti.id}
+                </span>
+              </div>
+              
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs text-slate-650 border-collapse">
+                  <thead>
+                    <tr className="border-b border-slate-200 text-left font-bold text-slate-400">
+                      <th className="pb-2 font-bold uppercase tracking-wider w-[140px] text-[10px]">Timestamp</th>
+                      <th className="pb-2 font-bold uppercase tracking-wider w-[180px] text-[10px]">Event / Action</th>
+                      <th className="pb-2 font-bold uppercase tracking-wider text-[10px]">Details</th>
+                      <th className="pb-2 font-bold uppercase tracking-wider text-right text-[10px]">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 font-medium">
+                    {/* Static & Dynamic History items based on RTI Status */}
+                    <tr className="hover:bg-slate-50/50">
+                      <td className="py-2.5 font-mono text-slate-400">{rti.submittedDate} 10:14 AM</td>
+                      <td className="py-2.5 font-bold text-slate-800">Application Drafted</td>
+                      <td className="py-2.5 text-slate-500">Drafted via AI Assistant with {rti.questions.length} questions</td>
+                      <td className="py-2.5 text-right"><span className="bg-slate-100 text-slate-600 px-2.5 py-0.5 rounded-md font-bold text-[10px]">DRAFT</span></td>
+                    </tr>
+                    <tr className="hover:bg-slate-50/50">
+                      <td className="py-2.5 font-mono text-slate-400">{rti.submittedDate} 10:15 AM</td>
+                      <td className="py-2.5 font-bold text-slate-800">Fee Payment Completed</td>
+                      <td className="py-2.5 text-slate-500">Amount ₹10.00 settled via simulated gateway. Token ID: {rti.paymentId || 'PAY_MOCK_99182'}</td>
+                      <td className="py-2.5 text-right"><span className="bg-emerald-50 text-emerald-700 px-2.5 py-0.5 rounded-md font-bold text-[10px]">PAID</span></td>
+                    </tr>
+                    <tr className="hover:bg-slate-50/50">
+                      <td className="py-2.5 font-mono text-slate-400">{rti.submittedDate} 10:16 AM</td>
+                      <td className="py-2.5 font-bold text-slate-800">Dispatched & Filed</td>
+                      <td className="py-2.5 text-slate-500">Official dispatch reference registered on DoPT Central Gateway</td>
+                      <td className="py-2.5 text-right"><span className="bg-blue-50 text-blue-700 px-2.5 py-0.5 rounded-md font-bold text-[10px]">SUBMITTED</span></td>
+                    </tr>
+                    <tr className="hover:bg-slate-50/50">
+                      <td className="py-2.5 font-mono text-slate-400">{rti.submittedDate} 04:30 PM</td>
+                      <td className="py-2.5 font-bold text-slate-800">CPIO Routing Completed</td>
+                      <td className="py-2.5 text-slate-500">Assigned CPIO: {auth?.cpioName || 'Shri A.K. Roy'} ({auth?.cpioDesignation || 'Director'})</td>
+                      <td className="py-2.5 text-right"><span className="bg-purple-50 text-purple-700 px-2.5 py-0.5 rounded-md font-bold text-[10px]">ROUTED</span></td>
+                    </tr>
+                    
+                    {/* CPIO Action status */}
+                    {hasResponse && (
+                      <tr className="hover:bg-slate-50/50">
+                         <td className="py-2.5 font-mono text-slate-400">{rti.responseDate || rti.submittedDate} 11:20 AM</td>
+                         <td className="py-2.5 font-bold text-slate-800">CPIO Reply Uploaded</td>
+                         <td className="py-2.5 text-slate-500">CPIO uploaded response statement. Answered {rti.answeredCount}/{rti.totalQuestions} questions.</td>
+                         <td className="py-2.5 text-right"><span className="bg-emerald-50 text-emerald-700 px-2.5 py-0.5 rounded-md font-bold text-[10px]">REPLIED</span></td>
+                      </tr>
+                    )}
+                    
+                    {/* First Appeal action status */}
+                    {(rti.status === 'First Appeal Filed' || rti.status === 'Second Appeal Filed') && (
+                      <tr className="hover:bg-slate-50/50">
+                         <td className="py-2.5 font-mono text-slate-400">{rti.appealDate || '2026-08-25'} 02:45 PM</td>
+                         <td className="py-2.5 font-bold text-slate-800">First Appeal Registered</td>
+                         <td className="py-2.5 text-slate-550">Appeal ground: "{rti.appealReason || 'Information incomplete'}". Routed to FAA: {auth?.faaName || 'First Appellate Officer'}.</td>
+                         <td className="py-2.5 text-right"><span className="bg-purple-100 text-purple-800 px-2.5 py-0.5 rounded-md font-bold text-[10px]">APPEALED</span></td>
+                      </tr>
+                    )}
+                    
+                    {/* Second Appeal action status */}
+                    {rti.status === 'Second Appeal Filed' && (
+                      <tr className="hover:bg-slate-50/50">
+                         <td className="py-2.5 font-mono text-slate-400">{rti.secondAppealDate || '2026-08-25'} 04:10 PM</td>
+                         <td className="py-2.5 font-bold text-slate-800">Second Appeal Dispatched</td>
+                         <td className="py-2.5 text-slate-500">Filed petition to CIC Bhawan, New Delhi. Registration ID: {rti.secondAppealRegNo}</td>
+                         <td className="py-2.5 text-right"><span className="bg-red-50 text-red-700 px-2.5 py-0.5 rounded-md font-bold text-[10px]">CIC_PENDING</span></td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
               </div>
             </div>
 
@@ -749,6 +922,96 @@ Mob: 9876543210`;
                   className="rounded-xl bg-primary-navy hover:bg-primary-blue text-white px-6 py-2.5 text-xs font-bold shadow cursor-pointer"
                 >
                   Submit Appeal Letter
+                </button>
+              </div>
+
+            </form>
+          </div>
+        )}
+
+        {/* Second Appeal Form Wizard Overlay (Section 19(3) / CIC) */}
+        {showSecondAppealWizard && (
+          <div className="rounded-2xl border border-slate-250 bg-white p-6 shadow-md dark:bg-slate-900 dark:border-slate-800 mt-6 animate-in slide-in-from-bottom duration-250">
+            <div className="flex justify-between items-center border-b border-slate-100 pb-3 mb-4">
+              <h3 className="font-extrabold text-sm text-red-650 dark:text-red-300 flex items-center gap-1.5">
+                <Scale className="h-5 w-5" />
+                CIC Second Appeal Wizard (Section 19(3))
+              </h3>
+              <button
+                onClick={() => setShowSecondAppealWizard(false)}
+                className="text-xs font-bold text-slate-455 hover:text-slate-700 cursor-pointer"
+              >
+                Close
+              </button>
+            </div>
+
+            <form onSubmit={handleSecondAppealSubmit} className="space-y-4">
+              
+              {/* Info Pre-filled */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 bg-slate-50 p-3.5 rounded-xl text-[11px] border border-slate-150">
+                <div>
+                  <span className="text-slate-400 font-bold block text-[9px] uppercase">Original Reg No</span>
+                  <span className="font-semibold text-slate-755">{rti.registrationNumber}</span>
+                </div>
+                <div>
+                  <span className="text-slate-400 font-bold block text-[9px] uppercase">First Appeal Date</span>
+                  <span className="font-semibold text-slate-755">{rti.appealDate || '2026-08-25'}</span>
+                </div>
+                <div>
+                  <span className="text-slate-400 font-bold block text-[9px] uppercase">Public Authority</span>
+                  <span className="font-semibold text-slate-755">{auth?.name.split(' (')[0]}</span>
+                </div>
+                <div>
+                  <span className="text-slate-400 font-bold block text-[9px] uppercase">Jurisdiction</span>
+                  <span className="font-bold text-primary-blue">Central (CIC)</span>
+                </div>
+              </div>
+
+              {/* Appeal Reason Selection */}
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5">Ground of Second Appeal</label>
+                <select
+                  value={secondAppealReason}
+                  onChange={(e) => setSecondAppealReason(e.target.value)}
+                  className="w-full rounded-xl border border-slate-350 px-4 py-2.5 text-xs text-slate-800 outline-none focus:border-primary-blue bg-slate-50 font-semibold"
+                >
+                  <option value="FAA did not respond within 45 days limit">FAA did not respond within 45 days limit</option>
+                  <option value="FAA order is unsatisfactory and withheld records">FAA order is unsatisfactory and withheld records</option>
+                  <option value="CPIO and FAA both failed to cite Section 8 exemptions correctly">CPIO and FAA both failed to cite Section 8 exemptions correctly</option>
+                  <option value="Information provided is willfully misleading or incomplete">Information provided is willfully misleading or incomplete</option>
+                </select>
+              </div>
+
+              {/* Appeal Letter Draft */}
+              <div>
+                <label className="block text-xs font-bold text-slate-505 uppercase mb-1 flex justify-between">
+                  <span>CIC Petition Draft (Editable)</span>
+                  <span className="text-[10px] text-secondary-saffron font-bold flex items-center gap-1">
+                    <Sparkles className="h-3 w-3" /> Auto-Generated
+                  </span>
+                </label>
+                <textarea
+                  rows={12}
+                  value={secondAppealText}
+                  onChange={(e) => setSecondAppealText(e.target.value)}
+                  className="w-full rounded-xl border border-slate-300 p-4 text-xs font-mono text-slate-800 outline-none focus:border-primary-blue bg-slate-50 leading-relaxed"
+                />
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowSecondAppealWizard(false)}
+                  className="rounded-xl border border-slate-200 px-5 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-50 cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="rounded-xl bg-red-650 hover:bg-red-755 text-white px-6 py-2.5 text-xs font-bold shadow cursor-pointer"
+                >
+                  Submit Second Appeal to CIC
                 </button>
               </div>
 

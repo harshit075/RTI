@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { 
   Sparkles, CheckCircle2, ChevronRight, CornerDownRight, Landmark, 
-  AlertCircle, Edit2, ShieldCheck, QrCode, CreditCard, Lock, ArrowRight,
+  AlertCircle, AlertTriangle, Edit2, ShieldCheck, QrCode, CreditCard, Lock, ArrowRight,
   TrendingUp, CircleDot, Info, UploadCloud
 } from 'lucide-react';
 import { mockAuthorities, Authority } from '../data/mockData';
@@ -25,6 +25,9 @@ export default function BuilderView({
 }: BuilderViewProps) {
   // Wizard steps: 'form' | 'editor' | 'review' | 'payment' | 'processing' | 'success'
   const [step, setStep] = useState<'form' | 'editor' | 'review' | 'payment' | 'processing' | 'success'>('form');
+
+  const currentAuth = mockAuthorities.find(a => a.id === (draftRti?.authorityId || 'morth'));
+  const isState = currentAuth?.level === 'State' || draftRti?.isStateDept;
   
   // Form fields
   const [location, setLocation] = useState(draftRti?.location || '');
@@ -185,6 +188,31 @@ export default function BuilderView({
       {/* STEP 1: Builder Form (Section 9) */}
       {step === 'form' && (
         <div className="space-y-6">
+          {isState && (
+            <div className="rounded-2xl border bg-red-50 border-red-200 text-red-950 p-5 shadow-sm animate-in fade-in">
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="h-5.5 w-5.5 text-red-600 shrink-0 mt-0.5 animate-bounce" />
+                <div>
+                  <h4 className="font-bold text-sm">State Jurisdiction Detected</h4>
+                  <p className="text-xs mt-1 leading-relaxed opacity-95">
+                    <strong>{currentAuth?.name || draftRti?.authorityName}</strong> belongs to the State government. Under Section 7(2) rules, Central RTI portal filings for State departments will be rejected with <strong>NO REFUND</strong>.
+                  </p>
+                  <p className="text-xs mt-1.5 opacity-90">
+                    To file this request successfully, please submit directly via the official State portal:
+                  </p>
+                  <a 
+                    href={currentAuth?.website || 'https://rtionline.gov.in'} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 mt-3 bg-red-650 hover:bg-red-750 text-white font-bold text-xs px-4 py-2.5 rounded-xl shadow-md transition-colors"
+                  >
+                    Go to official {currentAuth?.name.split(' (')[0] || 'State'} RTI Portal ↗
+                  </a>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:bg-slate-900 dark:border-slate-800">
             <h3 className="font-bold text-sm text-slate-800 mb-4 dark:text-slate-200">
               AI Request Planner
@@ -260,9 +288,14 @@ export default function BuilderView({
             </button>
             <button
               onClick={generateDraft}
-              className="rounded-xl bg-primary-navy hover:bg-primary-blue px-6 py-2.5 text-xs font-bold text-white shadow-sm cursor-pointer"
+              disabled={isState}
+              className={`rounded-xl px-6 py-2.5 text-xs font-bold text-white shadow-sm cursor-pointer transition-all ${
+                isState 
+                  ? 'bg-slate-300 text-slate-500 cursor-not-allowed' 
+                  : 'bg-primary-navy hover:bg-primary-blue'
+              }`}
             >
-              Generate AI RTI Draft
+              {isState ? 'Filing Blocked' : 'Generate AI RTI Draft'}
             </button>
           </div>
         </div>
@@ -324,9 +357,14 @@ export default function BuilderView({
             </button>
             <button
               onClick={submitToReview}
-              className="rounded-xl bg-primary-navy hover:bg-primary-blue px-6 py-2.5 text-xs font-bold text-white shadow cursor-pointer"
+              disabled={isState}
+              className={`rounded-xl px-6 py-2.5 text-xs font-bold text-white shadow cursor-pointer transition-all ${
+                isState 
+                  ? 'bg-slate-300 text-slate-500 cursor-not-allowed' 
+                  : 'bg-primary-navy hover:bg-primary-blue'
+              }`}
             >
-              Analyze Application Quality
+              {isState ? 'Filing Blocked' : 'Analyze Application Quality'}
             </button>
           </div>
         </div>
@@ -475,9 +513,14 @@ export default function BuilderView({
             </button>
             <button
               onClick={proceedToPayment}
-              className="rounded-xl bg-primary-navy hover:bg-primary-blue px-6 py-2.5 text-xs font-bold text-white shadow flex items-center gap-1 cursor-pointer"
+              disabled={isState}
+              className={`rounded-xl px-6 py-2.5 text-xs font-bold text-white shadow flex items-center gap-1 cursor-pointer transition-all ${
+                isState 
+                  ? 'bg-slate-300 text-slate-500 cursor-not-allowed' 
+                  : 'bg-primary-navy hover:bg-primary-blue'
+              }`}
             >
-              {bplStatus ? 'Submit Application (Free)' : 'Proceed to Payment (₹10)'}
+              {isState ? 'Filing Blocked' : (bplStatus ? 'Submit Application (Free)' : 'Proceed to Payment (₹10)')}
               <ArrowRight className="h-4 w-4" />
             </button>
           </div>
