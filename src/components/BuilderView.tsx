@@ -147,16 +147,26 @@ export default function BuilderView({
       
       {/* Visual Progress Stepper (Section 42) */}
       <div className="mb-8">
-        <div className="flex justify-between items-center text-xs font-bold text-slate-400">
-          <span className={step === 'form' ? 'text-primary-blue' : 'text-slate-500'}>1. AI parameters</span>
-          <ChevronRight className="h-3 w-3" />
-          <span className={step === 'editor' ? 'text-primary-blue' : 'text-slate-500'}>2. Draft builder</span>
-          <ChevronRight className="h-3 w-3" />
-          <span className={step === 'review' ? 'text-primary-blue' : 'text-slate-500'}>3. Quality Check</span>
-          <ChevronRight className="h-3 w-3" />
-          <span className={step === 'payment' ? 'text-primary-blue' : 'text-slate-500'}>4. Pay ₹10</span>
-          <ChevronRight className="h-3 w-3" />
-          <span className={step === 'success' ? 'text-emerald-600' : 'text-slate-500'}>5. Filed</span>
+        <div className="flex justify-between items-center text-[10.5px] sm:text-xs font-bold text-slate-400 gap-1">
+          <span className={step === 'form' ? 'text-primary-blue' : 'text-slate-500'}>
+            1.<span className="hidden sm:inline"> AI parameters</span>
+          </span>
+          <ChevronRight className="h-3 w-3 shrink-0" />
+          <span className={step === 'editor' ? 'text-primary-blue' : 'text-slate-500'}>
+            2.<span className="hidden sm:inline"> Draft builder</span>
+          </span>
+          <ChevronRight className="h-3 w-3 shrink-0" />
+          <span className={step === 'review' ? 'text-primary-blue' : 'text-slate-500'}>
+            3.<span className="hidden sm:inline"> Quality Check</span>
+          </span>
+          <ChevronRight className="h-3 w-3 shrink-0" />
+          <span className={step === 'payment' ? 'text-primary-blue' : 'text-slate-500'}>
+            4.<span className="hidden sm:inline"> Pay ₹10</span>
+          </span>
+          <ChevronRight className="h-3 w-3 shrink-0" />
+          <span className={step === 'success' ? 'text-emerald-600' : 'text-slate-500'}>
+            5.<span className="hidden sm:inline"> Filed</span>
+          </span>
         </div>
         <div className="mt-3 h-1.5 w-full rounded-full bg-slate-200 overflow-hidden">
           <div 
@@ -336,7 +346,7 @@ export default function BuilderView({
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
               
               {/* Score circle */}
-              <div className="text-center p-4 border-r border-border-slate">
+              <div className="text-center p-4 border-b md:border-b-0 md:border-r border-border-slate pb-6 md:pb-4">
                 <div className="inline-flex items-center justify-center h-24 w-24 rounded-full bg-emerald-50 text-success-green border-4 border-success-green">
                   <div>
                     <span className="text-2xl font-black">Strong</span>

@@ -21,8 +21,7 @@ export default function Home() {
   const [activeView, setActiveView] = useState<string>('landing');
   const [selectedRtiId, setSelectedRtiId] = useState<string>('');
 
-  // Expert Mode State
-  const [isExpertMode, setIsExpertMode] = useState<boolean>(false);
+
 
   // Accessibility & Localization States (Section 35)
   const [language, setLanguage] = useState<'en' | 'hi'>('en');
@@ -181,8 +180,6 @@ export default function Home() {
         setTextSize={setTextSize}
         notifications={notifications}
         markNotificationsRead={markNotificationsRead}
-        isExpertMode={isExpertMode}
-        setIsExpertMode={setIsExpertMode}
       />
 
       {/* Sticky Top Scrolling Marquee Warning */}
@@ -229,7 +226,6 @@ export default function Home() {
             language={language}
             triggerMockResponse={triggerMockResponse}
             notifications={notifications}
-            isExpertMode={isExpertMode}
           />
         )}
 

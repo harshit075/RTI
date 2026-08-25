@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { query } from '../../../../lib/db';
+import { inMemoryRtis } from '../../../../data/mockData';
 
 export async function PATCH(
   request: Request,
@@ -8,6 +9,19 @@ export async function PATCH(
   try {
     const { id } = await params;
     const body = await request.json();
+    
+    if (!process.env.DATABASE_URL) {
+      const idx = inMemoryRtis.findIndex(r => r.id === id);
+      if (idx === -1) {
+        return NextResponse.json({ error: 'RTI not found' }, { status: 404 });
+      }
+      const updated = {
+        ...inMemoryRtis[idx],
+        ...body
+      };
+      inMemoryRtis[idx] = updated;
+      return NextResponse.json(updated);
+    }
     
     // Ensure notes column exists
     await query('ALTER TABLE rtis ADD COLUMN IF NOT EXISTS notes TEXT;', []);

@@ -86,9 +86,13 @@ export default function Footer({ language, setActiveView }: FooterProps) {
         
         {/* Brand & Description */}
         <div className="md:col-span-2">
-          <div className="flex items-center gap-2 text-white mb-4">
-            <div className="flex h-8 w-8 items-center justify-center rounded bg-secondary-saffron text-slate-900">
-              <FileText className="h-5 w-5 font-bold" />
+          <div className="flex items-center gap-2.5 text-white mb-4">
+            <div className="flex h-9 w-8 items-center justify-center rounded bg-white p-0.5 shadow-sm border border-slate-700 shrink-0">
+              <img 
+                src="https://upload.wikimedia.org/wikipedia/commons/5/55/Emblem_of_India.svg" 
+                alt="State Emblem of India" 
+                className="h-8 w-auto object-contain"
+              />
             </div>
             <span className="text-lg font-bold tracking-tight">{t.brand}</span>
           </div>

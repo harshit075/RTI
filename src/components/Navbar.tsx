@@ -20,8 +20,6 @@ interface NavbarProps {
     read: boolean;
   }>;
   markNotificationsRead: () => void;
-  isExpertMode: boolean;
-  setIsExpertMode: (val: boolean) => void;
 }
 
 export default function Navbar({
@@ -34,9 +32,7 @@ export default function Navbar({
   textSize,
   setTextSize,
   notifications,
-  markNotificationsRead,
-  isExpertMode,
-  setIsExpertMode
+  markNotificationsRead
 }: NavbarProps) {
   const [showNotifications, setShowNotifications] = useState(false);
   const unreadCount = notifications.filter(n => !n.read).length;
@@ -86,8 +82,12 @@ export default function Navbar({
           className="flex items-center gap-2.5 cursor-pointer group"
           onClick={() => setActiveView('landing')}
         >
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-navy text-white transition-transform group-hover:scale-105">
-            <FileText className="h-5.5 w-5.5 text-secondary-gold" />
+          <div className="flex h-11 w-10 items-center justify-center rounded-lg bg-white p-0.5 shadow-xs border border-slate-200 transition-transform group-hover:scale-105 shrink-0">
+            <img 
+              src="https://upload.wikimedia.org/wikipedia/commons/5/55/Emblem_of_India.svg" 
+              alt="State Emblem of India" 
+              className="h-10 w-auto object-contain"
+            />
           </div>
           <div>
             <h1 className="text-xl font-bold tracking-tight text-primary-navy flex items-center gap-1">
@@ -150,46 +150,25 @@ export default function Navbar({
         </nav>
 
         {/* Accessibility, Localization and User Icons */}
-        <div className="flex items-center gap-3">
-          
-          {/* Mode Selector (Simple / Expert Mode Toggle) */}
-          <div className="flex items-center rounded-full border border-slate-200 bg-slate-50 p-0.5 text-[10.5px] font-bold text-slate-700 shadow-2xs">
-            <button
-              onClick={() => setIsExpertMode(false)}
-              className={`rounded-full px-2.5 py-1 transition-colors cursor-pointer ${
-                !isExpertMode 
-                  ? 'bg-primary-navy text-white font-extrabold' 
-                  : 'text-slate-650 hover:text-primary-navy'
-              }`}
-            >
-              Simple
-            </button>
-            <button
-              onClick={() => setIsExpertMode(true)}
-              className={`rounded-full px-2.5 py-1 transition-colors cursor-pointer ${
-                isExpertMode 
-                  ? 'bg-secondary-saffron text-slate-900 font-black' 
-                  : 'text-slate-650 hover:text-primary-navy'
-              }`}
-            >
-              Expert
-            </button>
-          </div>
+        <div className="flex items-center gap-1.5 sm:gap-3">
           
           {/* Language Toggle */}
           <button
             onClick={() => setLanguage(language === 'en' ? 'hi' : 'en')}
-            className="flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-100 transition-colors focus-ring"
+            className="flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-2 sm:px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-100 transition-colors focus-ring cursor-pointer"
             aria-label="Toggle Language"
           >
             <Globe className="h-3.5 w-3.5 text-primary-blue" />
-            <span>{language === 'en' ? 'हिंदी' : 'English'}</span>
+            <span>
+              <span className="sm:hidden">{language === 'en' ? 'हि' : 'EN'}</span>
+              <span className="hidden sm:inline">{language === 'en' ? 'हिंदी' : 'English'}</span>
+            </span>
           </button>
 
           {/* Text Size Accessibility Toggle */}
           <button
             onClick={() => setTextSize(textSize === 'normal' ? 'large' : 'normal')}
-            className={`rounded-full border px-2.5 py-1 text-xs font-bold transition-colors focus-ring ${
+            className={`rounded-full border px-2 sm:px-2.5 py-1 text-xs font-bold transition-colors focus-ring cursor-pointer ${
               textSize === 'large' 
                 ? 'bg-primary-blue text-white border-primary-blue' 
                 : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
@@ -199,19 +178,18 @@ export default function Navbar({
             A<span className="text-[10px] font-extrabold">+</span>
           </button>
 
-
-
           {/* Low Bandwidth Toggle */}
           <button
             onClick={() => setLowBandwidth(!lowBandwidth)}
-            className={`rounded-full border px-3 py-1 text-xs font-semibold transition-colors focus-ring ${
+            className={`rounded-full border px-2 sm:px-3 py-1 text-xs font-semibold transition-colors focus-ring cursor-pointer ${
               lowBandwidth 
                 ? 'bg-blue-600 text-white border-blue-600 font-extrabold' 
                 : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
             }`}
             title="Optimizes site by removing animation, shadows and graphics"
           >
-            {t.lowData}: {lowBandwidth ? 'ON' : 'OFF'}
+            <span className="sm:hidden">Lite: {lowBandwidth ? 'ON' : 'OFF'}</span>
+            <span className="hidden sm:inline">{t.lowData}: {lowBandwidth ? 'ON' : 'OFF'}</span>
           </button>
 
           {/* Notifications Bell Dropdown */}

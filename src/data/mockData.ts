@@ -419,3 +419,5 @@ export const geographicHierarchy: GeoState[] = [
     ]
   }
 ];
+
+export const inMemoryRtis: RTIApplication[] = [...initialRTIs];

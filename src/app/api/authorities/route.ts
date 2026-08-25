@@ -1,10 +1,14 @@
 import { NextResponse } from 'next/server';
 import { query } from '../../../lib/db';
+import { mockAuthorities } from '../../../data/mockData';
 
 export async function GET() {
   try {
+    if (!process.env.DATABASE_URL) {
+      return NextResponse.json(mockAuthorities);
+    }
     const { rows } = await query('SELECT * FROM authorities ORDER BY name ASC');
-    const mapped = rows.map(r => ({
+    const mapped = rows.map((r: any) => ({
       id: r.id,
       name: r.name,
       department: r.department,
@@ -21,6 +25,7 @@ export async function GET() {
     }));
     return NextResponse.json(mapped);
   } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    console.error('Database connection failed, falling back to mock authorities:', err.message);
+    return NextResponse.json(mockAuthorities);
   }
 }

@@ -693,7 +693,7 @@ Mob: 9876543210`;
             <form onSubmit={handleAppealSubmit} className="space-y-4">
               
               {/* Info Pre-filled */}
-              <div className="grid grid-cols-2 gap-4 bg-slate-50 p-3 rounded-xl text-xs border border-slate-150">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50 p-3 rounded-xl text-xs border border-slate-150">
                 <div>
                   <span className="text-slate-400 font-bold block text-[9.5px] uppercase">RTI Reg No</span>
                   <span className="font-semibold text-slate-750">{rti.registrationNumber}</span>

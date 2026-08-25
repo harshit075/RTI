@@ -1,13 +1,17 @@
 import { NextResponse } from 'next/server';
 import { query } from '../../../lib/db';
+import { inMemoryRtis } from '../../../data/mockData';
 
 export async function GET() {
   try {
+    if (!process.env.DATABASE_URL) {
+      return NextResponse.json(inMemoryRtis);
+    }
     // Ensure notes column exists
     await query('ALTER TABLE rtis ADD COLUMN IF NOT EXISTS notes TEXT;', []);
     
     const { rows } = await query('SELECT * FROM rtis ORDER BY created_at DESC');
-    const mapped = rows.map(r => ({
+    const mapped = rows.map((r: any) => ({
       id: r.id,
       title: r.title,
       authorityId: r.authority_id,
@@ -30,13 +34,25 @@ export async function GET() {
     }));
     return NextResponse.json(mapped);
   } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    console.error('Database connection failed, falling back to in-memory RTIs:', err.message);
+    return NextResponse.json(inMemoryRtis);
   }
 }
 
 export async function POST(request: Request) {
+  let body: any;
   try {
-    const body = await request.json();
+    body = await request.json();
+  } catch (e) {
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+  }
+
+  try {
+    if (!process.env.DATABASE_URL) {
+      inMemoryRtis.unshift(body);
+      return NextResponse.json(body);
+    }
+
     const {
       id, title, authorityId, subject, questions, submittedDate, expectedDate,
       status, paymentStatus, registrationNumber, responseDocumentUrl, responseDate,
@@ -85,6 +101,8 @@ export async function POST(request: Request) {
 
     return NextResponse.json(created);
   } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    console.error('Database connection failed, falling back to saving in-memory:', err.message);
+    inMemoryRtis.unshift(body);
+    return NextResponse.json(body);
   }
 }
