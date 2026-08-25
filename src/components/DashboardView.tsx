@@ -314,7 +314,7 @@ export default function DashboardView({
                           <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Expected Response</span>
                           <div className="flex items-center gap-1 mt-0.5">
                             <Clock className={`h-4 w-4 ${daysLeft <= 7 ? 'text-red-500 animate-pulse' : 'text-slate-500'}`} />
-                            <span className={`text-xs font-bold ${daysLeft <= 7 ? 'text-red-650' : 'text-slate-700'}`}>
+                            <span className={`text-xs font-bold ${daysLeft <= 7 ? 'text-red-600 font-black' : 'text-slate-700'}`}>
                               {daysLeft > 0 ? `${daysLeft} Days Remaining` : 'Deadline Expired'}
                             </span>
                           </div>

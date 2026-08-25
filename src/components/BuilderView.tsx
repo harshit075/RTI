@@ -189,25 +189,28 @@ export default function BuilderView({
       {step === 'form' && (
         <div className="space-y-6">
           {isState && (
-            <div className="rounded-2xl border bg-red-50 border-red-200 text-red-950 p-5 shadow-sm animate-in fade-in">
-              <div className="flex items-start gap-3">
-                <AlertTriangle className="h-5.5 w-5.5 text-red-600 shrink-0 mt-0.5 animate-bounce" />
-                <div>
-                  <h4 className="font-bold text-sm">State Jurisdiction Detected</h4>
-                  <p className="text-xs mt-1 leading-relaxed opacity-95">
-                    <strong>{currentAuth?.name || draftRti?.authorityName}</strong> belongs to the State government. Under Section 7(2) rules, Central RTI portal filings for State departments will be rejected with <strong>NO REFUND</strong>.
+            <div className="rounded-2xl border-2 border-red-300 bg-red-50 text-red-950 p-5.5 shadow-sm animate-in fade-in">
+              <div className="flex items-start gap-3.5">
+                <AlertTriangle className="h-6 w-6 text-red-600 shrink-0 mt-0.5" />
+                <div className="space-y-2">
+                  <h4 className="font-black text-base text-red-900">State Jurisdiction Detected</h4>
+                  <p className="text-xs mt-1 leading-relaxed text-red-800 font-medium">
+                    <strong>{draftRti?.authorityName || currentAuth?.name}</strong> falls under State / Local jurisdiction. Under RTI Act guidelines, filing state authorities through the Central RTI Online portal will result in rejection with <strong>NO REFUND</strong>.
                   </p>
-                  <p className="text-xs mt-1.5 opacity-90">
-                    To file this request successfully, please submit directly via the official State portal:
+                  <p className="text-xs text-red-800 font-medium">
+                    To file this request officially, submit directly via the designated State RTI portal:
                   </p>
-                  <a 
-                    href={currentAuth?.website || 'https://rtionline.gov.in'} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 mt-3 bg-red-650 hover:bg-red-750 text-white font-bold text-xs px-4 py-2.5 rounded-xl shadow-md transition-colors"
-                  >
-                    Go to official {currentAuth?.name.split(' (')[0] || 'State'} RTI Portal ↗
-                  </a>
+                  <div className="pt-1">
+                    <a 
+                      href={currentAuth?.website || 'https://rtionline.gov.in'} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs px-4 py-2.5 rounded-xl shadow-sm transition-all"
+                    >
+                      Go to official {draftRti?.authorityName || 'State'} RTI Portal
+                      <ArrowRight className="h-3.5 w-3.5" />
+                    </a>
+                  </div>
                 </div>
               </div>
             </div>
@@ -227,7 +230,7 @@ export default function BuilderView({
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
                   placeholder="e.g. Rampur Village, Alwar District, Rajasthan"
-                  className="w-full rounded-xl border border-slate-350 px-4 py-2.5 text-xs text-slate-800 outline-none focus:border-primary-blue bg-slate-50"
+                  className="w-full rounded-xl border border-slate-350 px-4 py-2.5 text-xs text-slate-800 outline-none focus:border-primary-blue bg-slate-50 font-medium"
                 />
               </div>
 
@@ -239,7 +242,7 @@ export default function BuilderView({
                     type="date"
                     value={timeFrom}
                     onChange={(e) => setTimeFrom(e.target.value)}
-                    className="w-full rounded-xl border border-slate-350 px-4 py-2.5 text-xs text-slate-800 outline-none focus:border-primary-blue bg-slate-50"
+                    className="w-full rounded-xl border border-slate-350 px-4 py-2.5 text-xs text-slate-800 outline-none focus:border-primary-blue bg-slate-50 font-medium"
                   />
                 </div>
                 <div>
@@ -248,7 +251,7 @@ export default function BuilderView({
                     type="date"
                     value={timeTo}
                     onChange={(e) => setTimeTo(e.target.value)}
-                    className="w-full rounded-xl border border-slate-350 px-4 py-2.5 text-xs text-slate-800 outline-none focus:border-primary-blue bg-slate-50"
+                    className="w-full rounded-xl border border-slate-350 px-4 py-2.5 text-xs text-slate-800 outline-none focus:border-primary-blue bg-slate-50 font-medium"
                   />
                 </div>
               </div>
@@ -267,7 +270,7 @@ export default function BuilderView({
                         className={`rounded-full px-3 py-1.5 text-[11px] font-bold border transition-colors cursor-pointer ${
                           selected 
                             ? 'bg-primary-blue border-primary-blue text-white' 
-                            : 'bg-slate-50 border-slate-200 text-slate-650 hover:bg-slate-100'
+                            : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
                         }`}
                       >
                         {selected ? '✓ ' : '+ '} {chip}
@@ -279,23 +282,19 @@ export default function BuilderView({
             </div>
           </div>
 
-          <div className="flex justify-end gap-3">
+          <div className="flex flex-col sm:flex-row justify-end items-center gap-3">
             <button
               onClick={() => setActiveView('onboarding')}
-              className="rounded-xl border border-slate-200 px-5 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-50 cursor-pointer"
+              className="w-full sm:w-auto rounded-xl border border-slate-200 px-5 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-50 cursor-pointer"
             >
-              Back
+              ← Back to Overview
             </button>
             <button
               onClick={generateDraft}
-              disabled={isState}
-              className={`rounded-xl px-6 py-2.5 text-xs font-bold text-white shadow-sm cursor-pointer transition-all ${
-                isState 
-                  ? 'bg-slate-300 text-slate-500 cursor-not-allowed' 
-                  : 'bg-primary-navy hover:bg-primary-blue'
-              }`}
+              className="w-full sm:w-auto rounded-xl bg-primary-navy hover:bg-primary-blue px-6 py-2.5 text-xs font-bold text-white shadow-sm cursor-pointer transition-all flex items-center justify-center gap-1.5"
             >
-              {isState ? 'Filing Blocked' : 'Generate AI RTI Draft'}
+              {isState ? 'Draft Questions for State Portal' : 'Generate AI RTI Draft'}
+              <ArrowRight className="h-4 w-4" />
             </button>
           </div>
         </div>

@@ -382,7 +382,7 @@ Mob: 9876543210`;
                         </p>
                         <button 
                           onClick={openSecondAppealWizard} 
-                          className="inline-flex items-center gap-1 mt-2 bg-red-650 hover:bg-red-700 text-white font-bold text-[10px] px-3.5 py-1.5 rounded-lg shadow-sm cursor-pointer border-none"
+                          className="inline-flex items-center gap-1 mt-2 bg-red-600 hover:bg-red-700 text-white font-bold text-[10px] px-3.5 py-1.5 rounded-lg shadow-sm cursor-pointer border-none"
                         >
                           File Second Appeal to CIC ↗
                         </button>
@@ -933,7 +933,7 @@ Mob: 9876543210`;
         {showSecondAppealWizard && (
           <div className="rounded-2xl border border-slate-250 bg-white p-6 shadow-md dark:bg-slate-900 dark:border-slate-800 mt-6 animate-in slide-in-from-bottom duration-250">
             <div className="flex justify-between items-center border-b border-slate-100 pb-3 mb-4">
-              <h3 className="font-extrabold text-sm text-red-650 dark:text-red-300 flex items-center gap-1.5">
+              <h3 className="font-extrabold text-sm text-red-600 dark:text-red-400 flex items-center gap-1.5">
                 <Scale className="h-5 w-5" />
                 CIC Second Appeal Wizard (Section 19(3))
               </h3>
@@ -1009,7 +1009,7 @@ Mob: 9876543210`;
                 </button>
                 <button
                   type="submit"
-                  className="rounded-xl bg-red-650 hover:bg-red-755 text-white px-6 py-2.5 text-xs font-bold shadow cursor-pointer"
+                  className="rounded-xl bg-red-600 hover:bg-red-700 text-white px-6 py-2.5 text-xs font-bold shadow cursor-pointer transition-all"
                 >
                   Submit Second Appeal to CIC
                 </button>

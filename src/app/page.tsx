@@ -213,11 +213,14 @@ export default function Home() {
       />
 
       {/* Sticky Top Scrolling Marquee Warning */}
-      <div className="bg-[#FAF9F5] text-[#B94A48] border-b border-[#E5E2D9] text-[10.5px] py-1.5 marquee-container select-none font-bold shadow-2xs">
-        <div className="marquee-content">
-          <span>
-            The Central Information Commission (CIC) has integrated its Second Appeal Filing Portal with the Department of Personnel and Training (DoPT) RTI Online Portal. Now, while submitting a Second Appeal, appellants can input the First Appeal Registration Number, Email ID and Date of Filing the First Appeal, thereafter, the system will automatically retrieve related details of the RTI Application and First Appeal from the RTI Online Portal. This will ensure a smooth and more streamlined Second Appeal filing process.
-          </span>
+      <div className="bg-amber-50/90 text-amber-900 border-b border-amber-200 text-xs py-1.5 px-4 flex items-center gap-2.5 font-medium shadow-xs overflow-hidden">
+        <span className="bg-amber-700 text-white text-[10px] font-black uppercase px-2 py-0.5 rounded-md shrink-0 tracking-wider">
+          Notice
+        </span>
+        <div className="marquee-container flex-1 overflow-hidden">
+          <div className="marquee-content text-[11px] font-semibold text-slate-800">
+            CIC Second Appeal Integration: The Central Information Commission (CIC) portal is integrated with DoPT RTI Online for streamlined Second Appeal retrieval under Section 19(3).
+          </div>
         </div>
       </div>
 
