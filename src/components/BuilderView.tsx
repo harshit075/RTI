@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { 
   Sparkles, CheckCircle2, ChevronRight, CornerDownRight, Landmark, 
   AlertCircle, AlertTriangle, Edit2, ShieldCheck, QrCode, CreditCard, Lock, ArrowRight,
-  TrendingUp, CircleDot, Info, UploadCloud
+  TrendingUp, CircleDot, Info, UploadCloud, FileText, Check, ArrowLeft, Download
 } from 'lucide-react';
 import { mockAuthorities, Authority } from '../data/mockData';
 
@@ -24,13 +24,13 @@ export default function BuilderView({
   addNotification
 }: BuilderViewProps) {
   // Wizard steps: 'form' | 'editor' | 'review' | 'payment' | 'processing' | 'success'
-  const [step, setStep] = useState<'form' | 'editor' | 'review' | 'payment' | 'processing' | 'success'>('form');
+  const [step, setStep] = useState<'form' | 'editor' | 'review' | 'payment' | 'processing' | 'success'>('editor');
 
-  const currentAuth = mockAuthorities.find(a => a.id === (draftRti?.authorityId || 'morth'));
+  const currentAuth = mockAuthorities.find(a => a.id === (draftRti?.authorityId || 'morth')) || mockAuthorities[0];
   const isState = currentAuth?.level === 'State' || draftRti?.isStateDept;
   
   // Form fields
-  const [location, setLocation] = useState(draftRti?.location || '');
+  const [location, setLocation] = useState(draftRti?.location || 'Budgam, Jammu and Kashmir');
   const [timeFrom, setTimeFrom] = useState('2022-01-01');
   const [timeTo, setTimeTo] = useState('2025-12-31');
   const [selectedDocs, setSelectedDocs] = useState<string[]>(['Expenditure', 'Work order', 'Inspection report']);
@@ -39,20 +39,33 @@ export default function BuilderView({
   const [subject, setSubject] = useState(
     draftRti?.topic === 'passport' 
       ? 'Status and delays in passport issuance' 
-      : `Expenditure and sanction records for road project in ${draftRti?.location || 'Rampur village'}`
+      : `Expenditure and sanction records for road project in ${draftRti?.location || location || 'Budgam, Jammu and Kashmir'}`
   );
-  const [questions, setQuestions] = useState<string[]>([]);
+
+  const initialGenerated = draftRti?.topic === 'passport' ? [
+    'Provide the date on which police verification was requested and the date it was received by CPV office.',
+    'Provide copies of all internal notes, verification reviews, and officer remarks regarding passport file DL2068472910.',
+    'State the official reasons and policy rules under which the passport has not been dispatched yet.',
+    'Provide the current status and expected dispatch date of the passport.'
+  ] : [
+    `Provide copies of the administrative and technical sanctions issued for the road project in ${draftRti?.location || location || 'Budgam, Jammu and Kashmir'} during 2022-2025.`,
+    'Provide the total funds sanctioned, released, and actually spent on this specific project during the mentioned time period.',
+    'Provide a copy of the contract agreement, tender awards, and work order issued to the contractor.',
+    'Provide copies of all inspection reports, safety compliance logs, and completion certificates issued by the project auditors.',
+    'Provide details of quality materials test reports conducted during road construction.'
+  ];
+
+  const [questions, setQuestions] = useState<string[]>(initialGenerated);
   
   // Applicant details
-  const [name, setName] = useState('Harshit Sharma');
-  const [email, setEmail] = useState('harshit.sharma@example.com');
-  const [phone, setPhone] = useState('9876543210');
+  const [name, setName] = useState('Aarav Sharma');
+  const [email, setEmail] = useState('aarav.sharma@example.com');
+  const [phone, setPhone] = useState('+91 90000 00000');
   const [bplStatus, setBplStatus] = useState<boolean>(false);
   const [bplCardNo, setBplCardNo] = useState('');
   
   // Payment simulation state
   const [paymentMethod, setPaymentMethod] = useState<'upi' | 'card' | 'netbanking'>('upi');
-  const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [generatedRegNo, setGeneratedRegNo] = useState('');
 
   const docChips = [
@@ -70,7 +83,6 @@ export default function BuilderView({
   };
 
   const generateDraft = () => {
-    // Generate mock questions based on topic and selections (Section 9)
     let generated: string[] = [];
     if (draftRti?.topic === 'passport') {
       generated = [
@@ -81,8 +93,8 @@ export default function BuilderView({
       ];
     } else {
       generated = [
-        `Provide copies of the administrative and technical sanctions issued for the road project in ${location || 'Rampur village'} during ${timeFrom.substring(0,4)}-${timeTo.substring(0,4)}.`,
-        `Provide the total funds sanctioned, released, and actually spent on this specific project during the mentioned time period.`,
+        `Provide copies of the administrative and technical sanctions issued for the road project in ${location || 'Budgam, Jammu and Kashmir'} during ${timeFrom.substring(0,4)}-${timeTo.substring(0,4)}.`,
+        'Provide the total funds sanctioned, released, and actually spent on this specific project during the mentioned time period.',
         'Provide a copy of the contract agreement, tender awards, and work order issued to the contractor.',
         'Provide copies of all inspection reports, safety compliance logs, and completion certificates issued by the project auditors.',
         'Provide details of quality materials test reports conducted during road construction.'
@@ -104,7 +116,6 @@ export default function BuilderView({
 
   const proceedToPayment = () => {
     if (bplStatus && bplCardNo.trim()) {
-      // Waiver applies - skip payment directly to submission processing
       simulateSubmission();
     } else {
       setStep('payment');
@@ -114,25 +125,24 @@ export default function BuilderView({
   const simulateSubmission = () => {
     setStep('processing');
     
-    // Create random registration number
     const rand = Math.floor(10000 + Math.random() * 90000);
     const regNo = draftRti?.topic === 'passport' 
       ? `MEXTA/R/2026/${rand}` 
-      : `MORLY/R/2026/${rand}`;
+      : `RTI-2026-${rand}`;
     setGeneratedRegNo(regNo);
 
     setTimeout(() => {
-      // Write to mock DB (add to the top of list)
       const newApp = {
         id: `rti-${Date.now()}`,
-        title: draftRti?.topic === 'passport' ? 'Passport Issuance Delay' : 'Road Construction Inquiry',
+        title: draftRti?.topic === 'passport' ? 'Passport Issuance Delay Inquiry' : subject,
         authorityId: draftRti?.authorityId || 'morth',
+        authorityName: draftRti?.authorityName || currentAuth.name,
         subject: subject,
         questions: questions,
         submittedDate: new Date().toISOString().substring(0, 10),
         expectedDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().substring(0, 10),
         status: 'Submitted' as const,
-        paymentStatus: bplStatus ? 'Success' as const : 'Success' as const,
+        paymentStatus: 'Success' as const,
         registrationNumber: regNo,
         answeredCount: 0,
         totalQuestions: questions.length
@@ -142,123 +152,84 @@ export default function BuilderView({
       addNotification(`RTI registered successfully. Reg No: ${regNo}`, 'update');
       
       setStep('success');
-    }, 2500);
+    }, 1800);
   };
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6">
       
-      {/* Visual Progress Stepper (Section 42) */}
+      {/* Visual Progress Stepper */}
       <div className="mb-8">
-        <div className="flex justify-between items-center text-[10.5px] sm:text-xs font-bold text-slate-400 gap-1">
-          <span className={step === 'form' ? 'text-primary-blue' : 'text-slate-500'}>
-            1.<span className="hidden sm:inline"> AI parameters</span>
+        <div className="flex justify-between items-center text-[10.5px] sm:text-xs font-bold text-slate-400 gap-1 border-b border-[#D9E0E6] pb-3">
+          <span className={step === 'form' ? 'text-[#123B5D] font-extrabold' : 'text-slate-500'}>
+            1. AI Parameters
           </span>
-          <ChevronRight className="h-3 w-3 shrink-0" />
-          <span className={step === 'editor' ? 'text-primary-blue' : 'text-slate-500'}>
-            2.<span className="hidden sm:inline"> Draft builder</span>
+          <ChevronRight className="h-3 w-3 shrink-0 text-slate-300" />
+          <span className={step === 'editor' ? 'text-[#123B5D] font-extrabold' : 'text-slate-500'}>
+            2. Draft Builder
           </span>
-          <ChevronRight className="h-3 w-3 shrink-0" />
-          <span className={step === 'review' ? 'text-primary-blue' : 'text-slate-500'}>
-            3.<span className="hidden sm:inline"> Quality Check</span>
+          <ChevronRight className="h-3 w-3 shrink-0 text-slate-300" />
+          <span className={step === 'review' ? 'text-[#123B5D] font-extrabold' : 'text-slate-500'}>
+            3. Quality Check
           </span>
-          <ChevronRight className="h-3 w-3 shrink-0" />
-          <span className={step === 'payment' ? 'text-primary-blue' : 'text-slate-500'}>
-            4.<span className="hidden sm:inline"> Pay ₹10</span>
+          <ChevronRight className="h-3 w-3 shrink-0 text-slate-300" />
+          <span className={step === 'payment' || step === 'processing' ? 'text-[#123B5D] font-extrabold' : 'text-slate-500'}>
+            4. Pay ₹10
           </span>
-          <ChevronRight className="h-3 w-3 shrink-0" />
-          <span className={step === 'success' ? 'text-emerald-600' : 'text-slate-500'}>
-            5.<span className="hidden sm:inline"> Filed</span>
+          <ChevronRight className="h-3 w-3 shrink-0 text-slate-300" />
+          <span className={step === 'success' ? 'text-emerald-700 font-extrabold' : 'text-slate-500'}>
+            5. Filed
           </span>
-        </div>
-        <div className="mt-3 h-1.5 w-full rounded-full bg-slate-200 overflow-hidden">
-          <div 
-            className="h-full bg-primary-blue transition-all duration-500" 
-            style={{
-              width: 
-                step === 'form' ? '20%' :
-                step === 'editor' ? '40%' :
-                step === 'review' ? '60%' :
-                step === 'payment' ? '80%' : '100%'
-            }}
-          />
         </div>
       </div>
 
-      {/* STEP 1: Builder Form (Section 9) */}
+      {/* STEP 1: FORM PARAMETERS */}
       {step === 'form' && (
         <div className="space-y-6">
-          {isState && (
-            <div className="rounded-2xl border-2 border-red-300 bg-red-50 text-red-950 p-5.5 shadow-sm animate-in fade-in">
-              <div className="flex items-start gap-3.5">
-                <AlertTriangle className="h-6 w-6 text-red-600 shrink-0 mt-0.5" />
-                <div className="space-y-2">
-                  <h4 className="font-black text-base text-red-900">State Jurisdiction Detected</h4>
-                  <p className="text-xs mt-1 leading-relaxed text-red-800 font-medium">
-                    <strong>{draftRti?.authorityName || currentAuth?.name}</strong> falls under State / Local jurisdiction. Under RTI Act guidelines, filing state authorities through the Central RTI Online portal will result in rejection with <strong>NO REFUND</strong>.
-                  </p>
-                  <p className="text-xs text-red-800 font-medium">
-                    To file this request officially, submit directly via the designated State RTI portal:
-                  </p>
-                  <div className="pt-1">
-                    <a 
-                      href={currentAuth?.website || 'https://rtionline.gov.in'} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs px-4 py-2.5 rounded-xl shadow-sm transition-all"
-                    >
-                      Go to official {draftRti?.authorityName || 'State'} RTI Portal
-                      <ArrowRight className="h-3.5 w-3.5" />
-                    </a>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:bg-slate-900 dark:border-slate-800">
-            <h3 className="font-bold text-sm text-slate-800 mb-4 dark:text-slate-200">
-              AI Request Planner
+          <div className="rounded-2xl border border-[#D9E0E6] bg-white p-6 shadow-3xs space-y-4">
+            <h3 className="font-extrabold text-sm text-[#17212B]">
+              AI Request Parameters & Scope
             </h3>
 
-            <div className="space-y-4">
-              {/* Location */}
+            <div className="space-y-4 text-xs">
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Place / Location Jurisdiction</label>
+                <label className="block text-[10px] font-black text-[#52606D] uppercase mb-1">
+                  Location / Geographic Jurisdiction
+                </label>
                 <input
                   type="text"
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
-                  placeholder="e.g. Rampur Village, Alwar District, Rajasthan"
-                  className="w-full rounded-xl border border-slate-350 px-4 py-2.5 text-xs text-slate-800 outline-none focus:border-primary-blue bg-slate-50 font-medium"
+                  placeholder="e.g. Budgam, Jammu and Kashmir"
+                  className="w-full rounded-xl border border-[#D9E0E6] px-4 py-2.5 text-xs text-slate-800 outline-none focus:border-[#123B5D] bg-[#F7F8FA] font-medium shadow-3xs"
                 />
               </div>
 
-              {/* Time period */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase mb-1">From Date</label>
+                  <label className="block text-[10px] font-black text-[#52606D] uppercase mb-1">From Date</label>
                   <input
                     type="date"
                     value={timeFrom}
                     onChange={(e) => setTimeFrom(e.target.value)}
-                    className="w-full rounded-xl border border-slate-350 px-4 py-2.5 text-xs text-slate-800 outline-none focus:border-primary-blue bg-slate-50 font-medium"
+                    className="w-full rounded-xl border border-[#D9E0E6] px-4 py-2.5 text-xs text-slate-800 outline-none focus:border-[#123B5D] bg-[#F7F8FA] font-medium shadow-3xs"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase mb-1">To Date</label>
+                  <label className="block text-[10px] font-black text-[#52606D] uppercase mb-1">To Date</label>
                   <input
                     type="date"
                     value={timeTo}
                     onChange={(e) => setTimeTo(e.target.value)}
-                    className="w-full rounded-xl border border-slate-350 px-4 py-2.5 text-xs text-slate-800 outline-none focus:border-primary-blue bg-slate-50 font-medium"
+                    className="w-full rounded-xl border border-[#D9E0E6] px-4 py-2.5 text-xs text-slate-800 outline-none focus:border-[#123B5D] bg-[#F7F8FA] font-medium shadow-3xs"
                   />
                 </div>
               </div>
 
-              {/* Documents selection */}
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Select files/records needed</label>
+                <label className="block text-[10px] font-black text-[#52606D] uppercase mb-2">
+                  Select Specific Records Required
+                </label>
                 <div className="flex flex-wrap gap-2">
                   {docChips.map(chip => {
                     const selected = selectedDocs.includes(chip);
@@ -269,8 +240,8 @@ export default function BuilderView({
                         onClick={() => handleDocToggle(chip)}
                         className={`rounded-full px-3 py-1.5 text-[11px] font-bold border transition-colors cursor-pointer ${
                           selected 
-                            ? 'bg-primary-blue border-primary-blue text-white' 
-                            : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
+                            ? 'bg-[#123B5D] border-[#123B5D] text-white' 
+                            : 'bg-white border-[#D9E0E6] text-slate-700 hover:bg-slate-50'
                         }`}
                       >
                         {selected ? '✓ ' : '+ '} {chip}
@@ -282,63 +253,65 @@ export default function BuilderView({
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row justify-end items-center gap-3">
+          <div className="flex justify-between items-center">
             <button
               onClick={() => setActiveView('onboarding')}
-              className="w-full sm:w-auto rounded-xl border border-slate-200 px-5 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-50 cursor-pointer"
+              className="rounded-xl border border-[#D9E0E6] bg-white px-5 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-50 cursor-pointer"
             >
-              ← Back to Overview
+              ← Back to Finder
             </button>
             <button
               onClick={generateDraft}
-              className="w-full sm:w-auto rounded-xl bg-primary-navy hover:bg-primary-blue px-6 py-2.5 text-xs font-bold text-white shadow-sm cursor-pointer transition-all flex items-center justify-center gap-1.5"
+              className="rounded-xl bg-[#123B5D] hover:bg-[#0A2540] text-white px-6 py-2.5 text-xs font-black shadow-3xs cursor-pointer transition-all flex items-center gap-1.5"
             >
-              {isState ? 'Draft Questions for State Portal' : 'Generate AI RTI Draft'}
+              <span>Generate AI RTI Draft</span>
               <ArrowRight className="h-4 w-4" />
             </button>
           </div>
         </div>
       )}
 
-      {/* STEP 2: Draft Editor (Section 9/11) */}
+      {/* STEP 2: DRAFT BUILDER (EDITOR) */}
       {step === 'editor' && (
         <div className="space-y-6">
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:bg-slate-900 dark:border-slate-800">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="font-bold text-sm text-slate-800 dark:text-slate-200">
+          <div className="rounded-2xl border border-[#D9E0E6] bg-white p-6 sm:p-8 shadow-3xs space-y-5">
+            <div className="flex justify-between items-center pb-3 border-b border-slate-100">
+              <h3 className="font-extrabold text-sm text-[#17212B]">
                 RTI Application Draft Details
               </h3>
-              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-secondary-saffron">
+              <span className="inline-flex items-center gap-1 text-[11px] font-extrabold text-[#B7791F] bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-full">
                 <Sparkles className="h-3.5 w-3.5" /> AI Drafted
               </span>
             </div>
 
-            <div className="space-y-4">
-              {/* Subject */}
+            <div className="space-y-4 text-xs">
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Subject of Application</label>
+                <label className="block text-[10px] font-black text-[#52606D] uppercase mb-1">
+                  Subject of Application
+                </label>
                 <input
                   type="text"
                   value={subject}
                   onChange={(e) => setSubject(e.target.value)}
-                  className="w-full rounded-xl border border-slate-350 px-4 py-2.5 text-xs font-bold text-slate-800 outline-none focus:border-primary-blue bg-slate-50"
+                  className="w-full rounded-xl border border-[#D9E0E6] px-4 py-2.5 text-xs font-bold text-slate-800 outline-none focus:border-[#123B5D] bg-[#F7F8FA] shadow-3xs"
                 />
               </div>
 
-              {/* Questions List */}
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Information Requested (Edit if required)</label>
+                <label className="block text-[10px] font-black text-[#52606D] uppercase mb-2">
+                  Information Requested (Edit If Required)
+                </label>
                 <div className="space-y-3">
                   {questions.map((q, idx) => (
-                    <div key={idx} className="flex gap-2">
-                      <span className="h-7 w-7 rounded-lg bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-500 shrink-0">
+                    <div key={idx} className="flex gap-2.5 items-start">
+                      <span className="h-6 w-6 rounded-lg bg-[#123B5D] text-white flex items-center justify-center text-[10px] font-bold shrink-0 mt-1">
                         {idx + 1}
                       </span>
                       <textarea
                         rows={2}
                         value={q}
                         onChange={(e) => handleQuestionChange(idx, e.target.value)}
-                        className="flex-1 rounded-xl border border-slate-300 px-3 py-1.5 text-xs text-slate-750 outline-none focus:border-primary-blue bg-slate-50/50"
+                        className="flex-1 rounded-xl border border-[#D9E0E6] p-3 text-xs text-slate-800 outline-none focus:border-[#123B5D] bg-[#F7F8FA] leading-relaxed shadow-3xs"
                       />
                     </div>
                   ))}
@@ -347,356 +320,240 @@ export default function BuilderView({
             </div>
           </div>
 
-          <div className="flex justify-between">
+          <div className="flex justify-between items-center">
             <button
               onClick={() => setStep('form')}
-              className="rounded-xl border border-slate-200 px-5 py-2.5 text-xs font-bold text-slate-650 hover:bg-slate-50 cursor-pointer"
+              className="rounded-xl border border-[#D9E0E6] bg-white px-5 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-50 cursor-pointer"
             >
               Edit parameters
             </button>
             <button
               onClick={submitToReview}
-              disabled={isState}
-              className={`rounded-xl px-6 py-2.5 text-xs font-bold text-white shadow cursor-pointer transition-all ${
-                isState 
-                  ? 'bg-slate-300 text-slate-500 cursor-not-allowed' 
-                  : 'bg-primary-navy hover:bg-primary-blue'
-              }`}
+              className="rounded-xl bg-[#123B5D] hover:bg-[#0A2540] text-white px-6 py-2.5 text-xs font-black shadow-3xs cursor-pointer transition-all flex items-center gap-1.5"
             >
-              {isState ? 'Filing Blocked' : 'Analyze Application Quality'}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* STEP 3: Quality Check & Applicant Details (Section 10/11) */}
-      {step === 'review' && (
-        <div className="space-y-6">
-          
-          {/* Quality check widget */}
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:bg-slate-900 dark:border-slate-800 animate-in fade-in duration-200">
-            <h3 className="font-bold text-sm text-slate-800 mb-4 dark:text-slate-200 flex items-center gap-1.5">
-              <TrendingUp className="h-5 w-5 text-success-green" />
-              APPLICATION CHECK
-            </h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
-              
-              {/* Score circle */}
-              <div className="text-center p-4 border-b md:border-b-0 md:border-r border-border-slate pb-6 md:pb-4">
-                <div className="inline-flex items-center justify-center h-24 w-24 rounded-full bg-emerald-50 text-success-green border-4 border-success-green">
-                  <div>
-                    <span className="text-2xl font-black">Strong</span>
-                    <span className="text-[10px] text-success-green block font-bold">RATING</span>
-                  </div>
-                </div>
-                <span className="text-xs font-bold text-slate-700 block mt-2">Your RTI is ready for review.</span>
-                <span className="text-[9.5px] text-slate-450 block mt-0.5">Well-formed according to Section 6(1) guidelines.</span>
-              </div>
-
-              {/* Checklist */}
-              <div className="md:col-span-2 space-y-2">
-                <div className="flex items-center gap-2 text-xs">
-                  <CheckCircle2 className="h-4.5 w-4.5 text-emerald-600 shrink-0" />
-                  <span className="font-semibold text-slate-700">Authority selection check: Strong Match</span>
-                </div>
-                <div className="flex items-center gap-2 text-xs">
-                  <CheckCircle2 className="h-4.5 w-4.5 text-emerald-600 shrink-0" />
-                  <span className="font-semibold text-slate-700">Time-period: Explicitly provided</span>
-                </div>
-                <div className="flex items-center gap-2 text-xs">
-                  <CheckCircle2 className="h-4.5 w-4.5 text-emerald-600 shrink-0" />
-                  <span className="font-semibold text-slate-700">Record-based format: Valid (no opinion requests)</span>
-                </div>
-                <div className="flex items-start gap-2 text-xs">
-                  <AlertCircle className="h-4.5 w-4.5 text-amber-500 shrink-0 mt-0.5" />
-                  <div>
-                    <span className="font-semibold text-slate-700">Scope suggestion: Could be narrowed</span>
-                    <p className="text-[10px] text-slate-400 mt-0.5 leading-snug">
-                      Your query spans 3 years. Specifying exact project sections or tenders makes responses faster.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-            </div>
-          </div>
-
-          {/* Applicant Details */}
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:bg-slate-900 dark:border-slate-800">
-            <h3 className="font-bold text-sm text-slate-800 mb-4 dark:text-slate-200">
-              Applicant Personal Details
-            </h3>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Full Name</label>
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full rounded-xl border border-slate-350 px-4 py-2 text-xs text-slate-800 outline-none focus:border-primary-blue bg-slate-50"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Email ID</label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full rounded-xl border border-slate-350 px-4 py-2 text-xs text-slate-800 outline-none focus:border-primary-blue bg-slate-50"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Mobile Phone Number</label>
-                <input
-                  type="tel"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  className="w-full rounded-xl border border-slate-350 px-4 py-2 text-xs text-slate-800 outline-none focus:border-primary-blue bg-slate-50"
-                />
-              </div>
-            </div>
-
-            {/* BPL Toggle */}
-            <div className="border-t border-slate-100 mt-6 pt-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h4 className="text-xs font-bold text-slate-850">Below Poverty Line (BPL) Fee Waiver?</h4>
-                  <p className="text-[10px] text-slate-400 mt-0.5">BPL citizens are exempt from paying the ₹10 application fee.</p>
-                </div>
-                <button
-                  onClick={() => setBplStatus(!bplStatus)}
-                  className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out outline-none ${
-                    bplStatus ? 'bg-emerald-500' : 'bg-slate-200'
-                  }`}
-                >
-                  <span
-                    className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                      bplStatus ? 'translate-x-5' : 'translate-x-0'
-                    }`}
-                  />
-                </button>
-              </div>
-
-              {bplStatus && (
-                <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-1">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1">BPL Card/Certificate Number</label>
-                    <input
-                      type="text"
-                      value={bplCardNo}
-                      onChange={(e) => setBplCardNo(e.target.value)}
-                      placeholder="e.g. BPL-RJ-829104"
-                      className="w-full rounded-xl border border-slate-350 px-4 py-2 text-xs text-slate-800 outline-none focus:border-primary-blue bg-slate-50"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Upload BPL Certificate Proof (PDF/JPG)</label>
-                    <div className="border-2 border-dashed border-slate-300 rounded-xl p-3 flex flex-col items-center justify-center bg-slate-50 hover:bg-slate-100 cursor-pointer text-slate-500">
-                      <UploadCloud className="h-5 w-5 mb-1 text-slate-400" />
-                      <span className="text-[9.5px] font-bold">Upload BPL_Proof.pdf</span>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="flex justify-between">
-            <button
-              onClick={() => setStep('editor')}
-              className="rounded-xl border border-slate-200 px-5 py-2.5 text-xs font-bold text-slate-650 hover:bg-slate-50 cursor-pointer"
-            >
-              Back to Draft
-            </button>
-            <button
-              onClick={proceedToPayment}
-              disabled={isState}
-              className={`rounded-xl px-6 py-2.5 text-xs font-bold text-white shadow flex items-center gap-1 cursor-pointer transition-all ${
-                isState 
-                  ? 'bg-slate-300 text-slate-500 cursor-not-allowed' 
-                  : 'bg-primary-navy hover:bg-primary-blue'
-              }`}
-            >
-              {isState ? 'Filing Blocked' : (bplStatus ? 'Submit Application (Free)' : 'Proceed to Payment (₹10)')}
+              <span>Analyze Application Quality</span>
               <ArrowRight className="h-4 w-4" />
             </button>
           </div>
         </div>
       )}
 
-      {/* STEP 4: Payment Experience (Section 12) */}
-      {step === 'payment' && (
+      {/* STEP 3: QUALITY CHECK & APPLICANT DETAILS */}
+      {step === 'review' && (
         <div className="space-y-6">
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:bg-slate-900 dark:border-slate-800">
-            <div className="text-center mb-6">
-              <h3 className="font-extrabold text-lg text-primary-navy dark:text-white">RTI Application Fee</h3>
-              <p className="text-xs text-slate-400 mt-1">Central Government Statutory Fee</p>
-              <div className="mt-4 text-3xl font-black text-slate-900 dark:text-white">₹ 10.00</div>
+          
+          {/* Quality Assessment Scorecard */}
+          <div className="rounded-2xl border border-emerald-300 bg-emerald-50/40 p-6 shadow-3xs space-y-4">
+            <div className="flex justify-between items-center">
+              <h3 className="font-extrabold text-sm text-emerald-900 flex items-center gap-1.5">
+                <TrendingUp className="h-5 w-5 text-emerald-600" />
+                Statutory Quality & Compliance Check
+              </h3>
+              <span className="text-xs font-black bg-emerald-700 text-white px-3 py-1 rounded-full">
+                Score: 95/100 (Strong)
+              </span>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 border-t border-slate-100 pt-6">
-              {/* Payment Methods tabs */}
-              <div className="flex flex-col gap-2">
-                <button
-                  onClick={() => setPaymentMethod('upi')}
-                  className={`flex items-center gap-2 rounded-xl p-3 text-xs font-bold border text-left transition-colors cursor-pointer ${
-                    paymentMethod === 'upi'
-                      ? 'border-primary-blue bg-blue-50 text-primary-blue'
-                      : 'border-slate-200 text-slate-600 hover:bg-slate-50'
-                  }`}
-                >
-                  <QrCode className="h-4 w-4" />
-                  UPI (QR Code / App)
-                </button>
-                <button
-                  onClick={() => setPaymentMethod('card')}
-                  className={`flex items-center gap-2 rounded-xl p-3 text-xs font-bold border text-left transition-colors cursor-pointer ${
-                    paymentMethod === 'card'
-                      ? 'border-primary-blue bg-blue-50 text-primary-blue'
-                      : 'border-slate-200 text-slate-600 hover:bg-slate-50'
-                  }`}
-                >
-                  <CreditCard className="h-4 w-4" />
-                  Credit / Debit Card
-                </button>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+              <div className="p-3 rounded-xl bg-white border border-emerald-200">
+                <span className="text-slate-500 font-bold block text-[10px] uppercase">Section 8 Exemption</span>
+                <span className="font-extrabold text-emerald-800">Clear (0 Violations)</span>
               </div>
-
-              {/* Payment Panel Display */}
-              <div className="md:col-span-2 border-l border-slate-150 pl-0 md:pl-6">
-                {paymentMethod === 'upi' && (
-                  <div className="flex flex-col items-center text-center space-y-4">
-                    <div className="bg-slate-100 p-4 border border-slate-200 rounded-xl">
-                      <QrCode className="h-32 w-32 text-slate-800" />
-                      <span className="text-[10px] font-bold text-slate-400 block mt-2">Scan QR using BHIM, GPay, PayTM</span>
-                    </div>
-
-                    <div className="flex flex-col gap-2 w-full">
-                      <span className="text-[10px] text-slate-400 font-bold uppercase">Or Choose UPI App:</span>
-                      <div className="flex justify-center gap-2">
-                        <button 
-                          onClick={simulateSubmission}
-                          className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50 cursor-pointer"
-                        >
-                          GPay
-                        </button>
-                        <button 
-                          onClick={simulateSubmission}
-                          className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50 cursor-pointer"
-                        >
-                          PhonePe
-                        </button>
-                        <button 
-                          onClick={simulateSubmission}
-                          className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50 cursor-pointer"
-                        >
-                          PayTM / BHIM
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {paymentMethod === 'card' && (
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Card Number</label>
-                      <input
-                        type="text"
-                        placeholder="XXXX XXXX XXXX XXXX"
-                        className="w-full rounded-xl border border-slate-350 px-4 py-2 text-xs text-slate-800 outline-none focus:border-primary-blue bg-slate-50"
-                      />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Expiry Date</label>
-                        <input
-                          type="text"
-                          placeholder="MM / YY"
-                          className="w-full rounded-xl border border-slate-350 px-4 py-2 text-xs text-slate-800 outline-none focus:border-primary-blue bg-slate-50"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1">CVV</label>
-                        <input
-                          type="password"
-                          placeholder="***"
-                          className="w-full rounded-xl border border-slate-350 px-4 py-2 text-xs text-slate-800 outline-none focus:border-primary-blue bg-slate-50"
-                        />
-                      </div>
-                    </div>
-
-                    <button
-                      onClick={simulateSubmission}
-                      className="w-full mt-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs py-3 shadow flex items-center justify-center gap-1.5 cursor-pointer"
-                    >
-                      <Lock className="h-4 w-4 text-emerald-100" />
-                      Pay ₹10.00 Securely
-                    </button>
-                  </div>
-                )}
+              <div className="p-3 rounded-xl bg-white border border-emerald-200">
+                <span className="text-slate-500 font-bold block text-[10px] uppercase">Section 2(f) Suitability</span>
+                <span className="font-extrabold text-emerald-800">100% Material Records</span>
               </div>
-
+              <div className="p-3 rounded-xl bg-white border border-emerald-200">
+                <span className="text-slate-500 font-bold block text-[10px] uppercase">Authority Match</span>
+                <span className="font-extrabold text-emerald-800">{currentAuth.name}</span>
+              </div>
             </div>
           </div>
 
-          <div className="flex justify-between text-xs text-slate-400 items-center">
-            <span>Secured by NIC Payment Gateway</span>
+          {/* Applicant Credentials */}
+          <div className="rounded-2xl border border-[#D9E0E6] bg-white p-6 shadow-3xs space-y-4">
+            <h3 className="font-extrabold text-sm text-[#17212B]">
+              Applicant Details (Section 6(1))
+            </h3>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+              <div>
+                <label className="block text-[10px] font-black text-[#52606D] uppercase mb-1">Applicant Name</label>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="w-full rounded-xl border border-[#D9E0E6] p-2.5 text-xs font-bold text-slate-800 bg-[#F7F8FA]"
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] font-black text-[#52606D] uppercase mb-1">Email ID</label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full rounded-xl border border-[#D9E0E6] p-2.5 text-xs font-bold text-slate-800 bg-[#F7F8FA]"
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] font-black text-[#52606D] uppercase mb-1">Mobile</label>
+                <input
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  className="w-full rounded-xl border border-[#D9E0E6] p-2.5 text-xs font-bold text-slate-800 bg-[#F7F8FA]"
+                />
+              </div>
+            </div>
+
+            {/* BPL fee waiver toggle */}
+            <div className="p-3.5 rounded-xl border border-slate-200 bg-[#F7F8FA] text-xs flex items-center justify-between">
+              <div>
+                <span className="font-bold text-slate-800">Below Poverty Line (BPL) Fee Waiver</span>
+                <p className="text-[11px] text-slate-500">Statutory ₹10 fee is completely waived under Section 7(5).</p>
+              </div>
+              <input
+                type="checkbox"
+                checked={bplStatus}
+                onChange={(e) => setBplStatus(e.target.checked)}
+                className="h-4 w-4 rounded border-slate-300 text-[#123B5D]"
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-between items-center">
+            <button
+              onClick={() => setStep('editor')}
+              className="rounded-xl border border-[#D9E0E6] bg-white px-5 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-50 cursor-pointer"
+            >
+              Back to Draft
+            </button>
+            <button
+              onClick={proceedToPayment}
+              className="rounded-xl bg-[#123B5D] hover:bg-[#0A2540] text-white px-6 py-2.5 text-xs font-black shadow-3xs cursor-pointer transition-all flex items-center gap-1.5"
+            >
+              <span>{bplStatus ? 'Submit Application (Fee Waived)' : 'Proceed to Payment (₹10)'}</span>
+              <ArrowRight className="h-4 w-4" />
+            </button>
+          </div>
+
+        </div>
+      )}
+
+      {/* STEP 4: PAYMENT EXPERIENCE */}
+      {step === 'payment' && (
+        <div className="space-y-6">
+          <div className="rounded-2xl border border-[#D9E0E6] bg-white p-6 sm:p-8 shadow-3xs space-y-6">
+            <div className="text-center pb-4 border-b border-slate-100">
+              <span className="text-[10px] font-black uppercase tracking-wider bg-blue-50 text-[#123B5D] px-2.5 py-0.5 rounded-md">
+                Bharatkosh Payment Gateway
+              </span>
+              <h3 className="font-black text-xl text-[#17212B] mt-2">Statutory RTI Application Fee</h3>
+              <div className="text-3xl font-black text-[#123B5D] mt-2">₹ 10.00</div>
+              <p className="text-xs text-slate-400 mt-1">Rule 3, RTI (Regulation of Fee and Cost) Rules, 2012</p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <button
+                type="button"
+                onClick={() => setPaymentMethod('upi')}
+                className={`p-4 rounded-xl border text-center transition-all cursor-pointer ${
+                  paymentMethod === 'upi' ? 'border-[#123B5D] bg-blue-50/50 text-[#123B5D] font-extrabold' : 'border-[#D9E0E6] hover:bg-slate-50'
+                }`}
+              >
+                <div className="text-xs">UPI / QR Code</div>
+              </button>
+              <button
+                type="button"
+                onClick={() => setPaymentMethod('card')}
+                className={`p-4 rounded-xl border text-center transition-all cursor-pointer ${
+                  paymentMethod === 'card' ? 'border-[#123B5D] bg-blue-50/50 text-[#123B5D] font-extrabold' : 'border-[#D9E0E6] hover:bg-slate-50'
+                }`}
+              >
+                <div className="text-xs">Debit / Credit Card</div>
+              </button>
+              <button
+                type="button"
+                onClick={() => setPaymentMethod('netbanking')}
+                className={`p-4 rounded-xl border text-center transition-all cursor-pointer ${
+                  paymentMethod === 'netbanking' ? 'border-[#123B5D] bg-blue-50/50 text-[#123B5D] font-extrabold' : 'border-[#D9E0E6] hover:bg-slate-50'
+                }`}
+              >
+                <div className="text-xs">Internet Banking</div>
+              </button>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-[#F7F8FA] border border-[#D9E0E6] text-center space-y-4">
+              <div className="h-36 w-36 mx-auto bg-white p-2 rounded-2xl border border-slate-200 flex items-center justify-center">
+                <QrCode className="h-28 w-28 text-slate-800" />
+              </div>
+              <p className="text-xs font-bold text-slate-700">Scan UPI QR to pay ₹10.00 instantly</p>
+              
+              <button
+                onClick={simulateSubmission}
+                className="w-full max-w-sm mx-auto rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white py-3 text-xs font-black shadow-3xs flex items-center justify-center gap-1.5 cursor-pointer transition-all"
+              >
+                <Lock className="h-4 w-4" /> Confirm ₹10 Payment & Submit RTI ➔
+              </button>
+            </div>
+          </div>
+
+          <div className="flex justify-between items-center text-xs text-slate-400">
+            <span>Secured by Bharatkosh / NIC Payment Gateway</span>
             <button
               onClick={() => setStep('review')}
-              className="rounded-xl border border-slate-200 px-4 py-2 text-slate-650 hover:bg-slate-50 font-bold cursor-pointer"
+              className="text-slate-600 font-bold hover:underline cursor-pointer"
             >
-              Cancel Payment
+              Cancel
             </button>
           </div>
         </div>
       )}
 
-      {/* STEP 5: Payment Processing & Submission (Section 12) */}
+      {/* STEP 5: PROCESSING ANIMATION */}
       {step === 'processing' && (
-        <div className="rounded-2xl border border-slate-200 bg-white p-12 text-center shadow-sm max-w-lg mx-auto dark:bg-slate-900 dark:border-slate-800">
-          <div className="h-14 w-14 rounded-full border-4 border-primary-blue border-t-transparent animate-spin mx-auto mb-6" />
-          <h3 className="font-extrabold text-base text-primary-navy mb-2 dark:text-white">PAYMENT RECEIVED</h3>
-          <p className="text-xs text-slate-400 leading-relaxed">
-            Transaction ID: TXN_83910482910<br />
-            We are confirming your payment with the public bank network.<br />
-            <span className="font-bold text-slate-700 dark:text-slate-300 mt-2 block">Do not refresh or pay again.</span>
+        <div className="rounded-3xl border border-[#D9E0E6] bg-white p-12 text-center shadow-3xs max-w-lg mx-auto space-y-4">
+          <div className="h-12 w-12 rounded-full border-4 border-[#123B5D] border-t-transparent animate-spin mx-auto" />
+          <h3 className="font-extrabold text-base text-[#17212B]">CONFIRMING STATUTORY SUBMISSION</h3>
+          <p className="text-xs text-[#52606D] leading-relaxed">
+            Verifying ₹10 fee transaction and assigning CPIO dispatch registration number.
           </p>
         </div>
       )}
 
-      {/* STEP 6: Submission Success (Section 12) */}
+      {/* STEP 6: SUBMISSION SUCCESS */}
       {step === 'success' && (
-        <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm max-w-xl mx-auto dark:bg-slate-900 dark:border-slate-800">
-          <div className="h-16 w-16 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-emerald-500 shadow">
-            <CheckCircle2 className="h-10 w-10" />
+        <div className="rounded-3xl border border-emerald-300 bg-white p-8 sm:p-10 text-center shadow-3xs max-w-xl mx-auto space-y-5 animate-in fade-in">
+          <div className="h-16 w-16 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center mx-auto border-2 border-emerald-500 shadow-3xs">
+            <CheckCircle2 className="h-9 w-9 text-emerald-600" />
           </div>
           
-          <h3 className="font-black text-xl text-primary-navy dark:text-white">✓ Payment Confirmed & RTI Registered</h3>
-          <p className="text-xs text-slate-500 mt-1">Your application is filed and officially dispatched to the CPIO officer.</p>
+          <h3 className="font-black text-xl text-[#17212B]">Application Submitted Successfully</h3>
+          <p className="text-xs text-[#52606D]">
+            Your RTI request has been registered and officially dispatched to the designated Public Authority.
+          </p>
 
-          <div className="bg-slate-50 border border-slate-150 rounded-xl p-4 my-6 text-xs text-left space-y-2 dark:bg-slate-850 dark:border-slate-800">
-            <div className="flex justify-between border-b border-slate-200/50 pb-2">
-              <span className="text-slate-450 font-bold">Registration Number</span>
-              <span className="font-extrabold text-slate-850 font-mono dark:text-slate-100">{generatedRegNo}</span>
+          <div className="bg-[#F7F8FA] border border-[#D9E0E6] rounded-2xl p-4 text-xs text-left space-y-2">
+            <div className="flex justify-between border-b border-slate-200/60 pb-2">
+              <span className="text-slate-500 font-bold">Registration Reference</span>
+              <span className="font-mono font-black text-[#123B5D]">{generatedRegNo}</span>
             </div>
-            <div className="flex justify-between border-b border-slate-200/50 pb-2">
-              <span className="text-slate-450 font-bold">Public Authority</span>
-              <span className="font-semibold text-slate-800 dark:text-slate-100">{draftRti?.authorityName}</span>
+            <div className="flex justify-between border-b border-slate-200/60 pb-2">
+              <span className="text-slate-500 font-bold">Public Authority</span>
+              <span className="font-semibold text-slate-800">{draftRti?.authorityName || currentAuth.name}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-slate-450 font-bold">Statutory Expected Response</span>
-              <span className="font-semibold text-slate-850 dark:text-slate-100">Within 30 Days (Expected: {new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().substring(0, 10)})</span>
+              <span className="text-slate-500 font-bold">Statutory 30-Day Deadline</span>
+              <span className="font-semibold text-slate-800">Within 30 Days ({new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().substring(0, 10)})</span>
             </div>
           </div>
 
-          <div className="flex justify-center gap-3">
+          <div className="flex justify-center pt-2">
             <button
               onClick={() => setActiveView('dashboard')}
-              className="rounded-xl bg-primary-navy hover:bg-primary-blue text-white px-6 py-3 text-xs font-bold shadow-md cursor-pointer"
+              className="rounded-xl bg-[#123B5D] hover:bg-[#0A2540] text-white px-7 py-3 text-xs font-black shadow-3xs cursor-pointer transition-all"
             >
-              Go to Dashboard to Track
+              Go to Dashboard to Track ➔
             </button>
           </div>
         </div>
