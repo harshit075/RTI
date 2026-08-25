@@ -446,11 +446,14 @@ export default function BuilderView({
           <div className="rounded-2xl border border-[#D9E0E6] bg-white p-6 sm:p-8 shadow-3xs space-y-6">
             <div className="text-center pb-4 border-b border-slate-100">
               <span className="text-[10px] font-black uppercase tracking-wider bg-blue-50 text-[#123B5D] px-2.5 py-0.5 rounded-md">
-                Bharatkosh Payment Gateway
+                Bharatkosh Payment Gateway Simulation
               </span>
               <h3 className="font-black text-xl text-[#17212B] mt-2">Statutory RTI Application Fee</h3>
               <div className="text-3xl font-black text-[#123B5D] mt-2">₹ 10.00</div>
-              <p className="text-xs text-slate-400 mt-1">Rule 3, RTI (Regulation of Fee and Cost) Rules, 2012</p>
+              <p className="text-xs text-slate-500 mt-1 font-medium">Rule 3, RTI (Regulation of Fee and Cost) Rules, 2012</p>
+              <div className="mt-2 text-[11px] text-amber-900 bg-amber-50 border border-amber-200 rounded-lg p-2 max-w-md mx-auto">
+                <strong>Demonstration Notice:</strong> All payment steps are simulated for practice and citizen education. No real banking charge is deducted.
+              </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -487,13 +490,13 @@ export default function BuilderView({
               <div className="h-36 w-36 mx-auto bg-white p-2 rounded-2xl border border-slate-200 flex items-center justify-center">
                 <QrCode className="h-28 w-28 text-slate-800" />
               </div>
-              <p className="text-xs font-bold text-slate-700">Scan UPI QR to pay ₹10.00 instantly</p>
+              <p className="text-xs font-bold text-slate-700">Simulate ₹10 Payment via UPI / QR</p>
               
               <button
                 onClick={simulateSubmission}
                 className="w-full max-w-sm mx-auto rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white py-3 text-xs font-black shadow-3xs flex items-center justify-center gap-1.5 cursor-pointer transition-all"
               >
-                <Lock className="h-4 w-4" /> Confirm ₹10 Payment & Submit RTI ➔
+                <Lock className="h-4 w-4" /> Confirm Simulated ₹10 Payment & Submit RTI ➔
               </button>
             </div>
           </div>
