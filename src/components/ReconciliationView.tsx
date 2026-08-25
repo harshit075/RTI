@@ -5,7 +5,7 @@ import {
   ArrowLeft, RefreshCw, CheckCircle2, AlertTriangle, 
   HelpCircle, CreditCard, Lock, Sparkles, Database, Search
 } from 'lucide-react';
-import { RTIApplication } from '../data/mockData';
+import { RTIApplication } from '../services/types';
 
 interface ReconciliationViewProps {
   setActiveView: (view: string) => void;

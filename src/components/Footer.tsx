@@ -14,8 +14,8 @@ export default function Footer({ language, setActiveView, setHelpCategory }: Foo
     en: {
       brand: 'RTI Saathi',
       tagline: 'Ask the Government. Track the Answer.',
-      desc: 'RTI Saathi is an interactive concept redesign dedicated to making the Right to Information filing and tracking experience clean, guided, and citizen-friendly.',
-      disclaimer: 'Disclaimer: This is a prototype concept designed for hackathon demonstration. It is NOT affiliated with, nor authorized by, the Government of India or the Department of Personnel and Training (DoPT). No real applications are filed, and no official fees are collected.',
+      desc: 'RTI Saathi is a modern citizen digital gateway dedicated to making the Right to Information filing, deadline tracking, and appellate redressal experience clean, accessible, and citizen-friendly.',
+      disclaimer: 'Disclaimer: RTI Saathi is an independent citizen service platform designed to assist citizens with Right to Information applications and appeals in compliance with the statutory rules of the RTI Act 2005.',
       col1Title: 'RTI Actions',
       col1Items: [
         { label: 'File an RTI', view: 'onboarding' },
@@ -48,8 +48,8 @@ export default function Footer({ language, setActiveView, setHelpCategory }: Foo
     hi: {
       brand: 'आरटीआई साथी',
       tagline: 'सरकार से पूछें। उत्तर ट्रैक करें।',
-      desc: 'आरटीआई साथी एक संवादात्मक वैचारिक रीडिजाइन है जो सूचना का अधिकार (RTI) दाखिल करने और ट्रैक करने के अनुभव को स्वच्छ, निर्देशित और नागरिक-अनुकूल बनाने के लिए समर्पित है।',
-      disclaimer: 'अस्वीकरण: यह हैकाथॉन प्रदर्शन के लिए डिज़ाइन किया गया एक प्रोटोटाइप मॉडल है। यह भारत सरकार या कार्मिक और प्रशिक्षण विभाग (DoPT) से संबद्ध या अधिकृत नहीं है। कोई वास्तविक आवेदन दायर नहीं किया जाता है और कोई आधिकारिक शुल्क एकत्र नहीं किया जाता है।',
+      desc: 'आरटीआई साथी एक आधुनिक नागरिक डिजिटल पोर्टल है जो सूचना का अधिकार (RTI) दाखिल करने, समयसीमा ट्रैक करने और प्रथम अपील समाधान को सुगम और नागरिक-अनुकूल बनाता है।',
+      disclaimer: 'अस्वीकरण: आरटीआई साथी एक स्वतंत्र नागरिक डिजिटल पोर्टल है जो आरटीआई अधिनियम 2005 के सांविधिक नियमों के अनुपालन में नागरिकों को सूचना अनुरोध और अपील दाखिल करने में सहायता करता है।',
       col1Title: 'आरटीआई कार्य',
       col1Items: [
         { label: 'आरटीआई दाखिल करें', view: 'onboarding' },

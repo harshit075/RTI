@@ -124,7 +124,7 @@ export default function BuilderView({
     setTimeout(() => {
       // Write to mock DB (add to the top of list)
       const newApp = {
-        id: `rti-demo-${Date.now()}`,
+        id: `rti-${Date.now()}`,
         title: draftRti?.topic === 'passport' ? 'Passport Issuance Delay' : 'Road Construction Inquiry',
         authorityId: draftRti?.authorityId || 'morth',
         subject: subject,

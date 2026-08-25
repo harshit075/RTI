@@ -37,12 +37,12 @@ export default function HelpView({
   const setActiveCategory = propSetActiveCategory !== undefined ? propSetActiveCategory : localSetActiveCategory;
   const [ticketIssue, setTicketIssue] = useState('Payment completed but registration number missing');
   const [ticketDetails, setTicketDetails] = useState('');
-  const [ticketRegNo, setTicketRegNo] = useState('RTI-2026-DEMO-001');
+  const [ticketRegNo, setTicketRegNo] = useState('RTI-2026-001245');
   const [tickets, setTickets] = useState<Ticket[]>([
     {
       id: 'TKT-9201',
       issue: 'Payment completed but registration number missing',
-      rtiReg: 'RTI-2026-DEMO-001',
+      rtiReg: 'RTI-2026-001245',
       details: 'My payment of ₹10 was successfully deducted from UPI, but the portal redirected to a blank screen and did not output a registration number. Transaction ID: TXN_83910482.',
       status: 'Resolved',
       date: '2026-08-24',

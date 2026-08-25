@@ -2,18 +2,19 @@
 
 import React, { useState } from 'react';
 import { 
-  Landmark, ShieldCheck, ArrowRight, Sparkles, CheckCircle2, 
+  Landmark, ShieldCheck, ArrowRight, CheckCircle2, 
   Lock, Mail, Phone, User, KeyRound, HelpCircle, FileText, 
-  Search, AlertCircle, Compass, ArrowLeft 
+  Search, ArrowLeft 
 } from 'lucide-react';
-import { defaultDemoUser } from '../data/mockData';
+import { User as UserModel } from '../services/types';
+import { authService } from '../services/authService';
 
 export type AuthMode = 'login' | 'signup' | 'forgot-password' | 'onboarding';
 
 interface AuthViewProps {
   initialMode?: AuthMode;
   setActiveView: (view: string) => void;
-  onLoginSuccess: (user: typeof defaultDemoUser, isDemo?: boolean) => void;
+  onLoginSuccess: (user: UserModel) => void;
   language?: 'en' | 'hi';
 }
 
@@ -25,9 +26,9 @@ export default function AuthView({
 }: AuthViewProps) {
   const [mode, setMode] = useState<AuthMode>(initialMode);
   
-  // Login fields
-  const [loginIdentifier, setLoginIdentifier] = useState('aarav.sharma.demo@example.com');
-  const [loginPassword, setLoginPassword] = useState('demo1234');
+  // Login fields (prefilled for development convenience)
+  const [loginIdentifier, setLoginIdentifier] = useState('aarav.sharma@example.com');
+  const [loginPassword, setLoginPassword] = useState('citizen1234');
   
   // Signup fields
   const [signupName, setSignupName] = useState('');
@@ -47,126 +48,63 @@ export default function AuthView({
   const [selectedLevel, setSelectedLevel] = useState<string>('Central Government');
 
   const [loading, setLoading] = useState(false);
-  const [toastMessage, setToastMessage] = useState<{ title: string; desc: string } | null>(null);
 
-  const showToast = (title: string, desc: string) => {
-    setToastMessage({ title, desc });
-    setTimeout(() => setToastMessage(null), 4000);
-  };
-
-  // Demo Login Fast-path (Under 2 seconds)
-  const handleDemoLogin = () => {
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      showToast(
-        'Demo account loaded',
-        'You\'re exploring a fictional citizen profile (Aarav Sharma) with realistic RTI activity.'
-      );
-      onLoginSuccess(defaultDemoUser, true);
-      setActiveView('dashboard');
-    }, 400);
-  };
-
-  // Normal Login
-  const handleNormalLogin = (e: React.FormEvent) => {
+  // Login handler
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!loginIdentifier || !loginPassword) {
-      showToast('Credentials required', 'Please enter your email/mobile and password.');
-      return;
-    }
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      const user = {
-        ...defaultDemoUser,
-        name: loginIdentifier.includes('@') ? loginIdentifier.split('@')[0] : 'Citizen User',
-        email: loginIdentifier.includes('@') ? loginIdentifier : 'citizen@example.com',
-        isDemo: true
-      };
-      showToast('Welcome back', 'Successfully logged in to RTI Saathi.');
-      onLoginSuccess(user, false);
-      setActiveView('dashboard');
-    }, 600);
+    const user = await authService.login(loginIdentifier, loginPassword);
+    setLoading(false);
+    onLoginSuccess(user);
+    setActiveView('dashboard');
   };
 
   // Signup Submit ➔ Onboarding
   const handleSignupSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!signupName || !signupEmail) {
-      showToast('Required fields', 'Please fill in your name and email address.');
-      return;
-    }
-    if (signupPassword && signupPassword !== signupConfirmPassword) {
-      showToast('Password mismatch', 'Password and Confirm Password do not match.');
-      return;
-    }
+    if (!signupName || !signupEmail) return;
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
-      showToast('Account created successfully', 'Let\'s set up your RTI workspace.');
       setMode('onboarding');
       setOnboardingStep(1);
-    }, 600);
+    }, 400);
   };
 
   // Forgot password submit
   const handleForgotSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!forgotEmail) {
-      showToast('Email required', 'Please enter your registered email address.');
-      return;
-    }
+    if (!forgotEmail) return;
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
       setRecoverySent(true);
-      showToast('Reset link dispatched', 'A password recovery link has been sent to ' + forgotEmail);
-    }, 600);
+    }, 400);
   };
 
   // Finish Onboarding
-  const handleFinishOnboarding = () => {
-    const newUser = {
-      ...defaultDemoUser,
-      name: signupName || 'New Citizen',
-      email: signupEmail || 'citizen@example.com',
-      mobile: signupMobile || '+91 98765 43210',
-      isDemo: true
-    };
-    onLoginSuccess(newUser, true);
+  const handleFinishOnboarding = async () => {
+    const newUser = await authService.signup({
+      name: signupName || 'Aarav Sharma',
+      email: signupEmail || 'aarav.sharma@example.com',
+      mobile: signupMobile || '+91 90000 00000'
+    });
+    onLoginSuccess(newUser);
     setActiveView('dashboard');
   };
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] bg-slate-50 flex flex-col justify-center py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-[calc(100vh-4rem)] bg-[#F7F8FA] flex flex-col justify-center py-8 px-4 sm:px-6 lg:px-8">
       
-      {/* Floating Toast Notification */}
-      {toastMessage && (
-        <div className="fixed top-20 right-4 sm:right-8 z-50 max-w-sm rounded-2xl border border-emerald-300 bg-white p-4 shadow-xl animate-in slide-in-from-top duration-300">
-          <div className="flex items-start gap-3">
-            <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0 mt-0.5" />
-            <div>
-              <h4 className="text-xs font-black text-slate-900">{toastMessage.title}</h4>
-              <p className="text-[11px] text-slate-600 mt-0.5 leading-relaxed">{toastMessage.desc}</p>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Main Split Container */}
-      <div className="mx-auto w-full max-w-5xl rounded-3xl border border-slate-200 bg-white shadow-xl overflow-hidden grid grid-cols-1 lg:grid-cols-12">
+      <div className="mx-auto w-full max-w-5xl rounded-3xl border border-[#D9E0E6] bg-white shadow-3xs overflow-hidden grid grid-cols-1 lg:grid-cols-12">
         
-        {/* Left Column: Brand, Vision & 4-Step Lifecycle Journey (5 cols) */}
-        <div className="lg:col-span-5 bg-gradient-to-br from-[#0A2540] via-[#123B5D] to-[#0A2540] text-white p-8 sm:p-10 flex flex-col justify-between relative overflow-hidden">
-          
-          {/* Subtle Background Graphic */}
-          <div className="absolute -right-16 -bottom-16 w-64 h-64 rounded-full bg-white/5 blur-2xl pointer-events-none" />
-
+        {/* Left Column: Brand & Citizen Journey (5 cols) */}
+        <div className="lg:col-span-5 bg-[#123B5D] text-white p-8 sm:p-10 flex flex-col justify-between">
           <div>
             {/* Logo Badge */}
             <div className="flex items-center gap-3 mb-6">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white p-1 shadow-sm">
+              <div className="flex h-10 w-9 items-center justify-center rounded-lg bg-white p-0.5 shadow-3xs">
                 <img 
                   src="https://upload.wikimedia.org/wikipedia/commons/5/55/Emblem_of_India.svg" 
                   alt="Emblem of India" 
@@ -174,262 +112,196 @@ export default function AuthView({
                 />
               </div>
               <div>
-                <h1 className="text-lg font-black tracking-tight text-white flex items-center gap-1.5">
+                <h1 className="text-lg font-black tracking-tight text-white">
                   RTI Saathi
-                  <span className="text-[10px] font-extrabold uppercase bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-full border border-amber-400/30">
-                    Concept
-                  </span>
                 </h1>
                 <p className="text-[11px] text-slate-300 font-medium">Citizen Information Gateway</p>
               </div>
             </div>
 
-            {/* Headline */}
-            <h2 className="text-xl sm:text-2xl font-black text-white leading-tight tracking-tight mt-4">
+            <h2 className="text-xl sm:text-2xl font-black text-white leading-tight mt-4">
               Get the information you have a right to know.
             </h2>
-            <p className="text-xs text-slate-300 mt-2.5 leading-relaxed font-normal">
-              RTI Saathi assists citizens through every stage of the Right to Information lifecycle — from finding public authorities to AI question drafting and First Appeals.
+            <p className="text-xs text-slate-300 mt-2 leading-relaxed">
+              File, track, and manage your Right to Information requests through one clear, guided journey.
             </p>
 
-            {/* 4-Step Visual Journey */}
-            <div className="mt-8 space-y-3.5 border-t border-white/10 pt-6">
-              <span className="text-[10px] font-black uppercase tracking-wider text-amber-400 block mb-3">
-                Complete RTI Citizen Journey
+            {/* 4-Step Journey */}
+            <div className="mt-8 space-y-3 border-t border-white/10 pt-6">
+              <span className="text-[10px] font-black uppercase tracking-wider text-amber-400 block mb-2">
+                The RTI Citizen Journey
               </span>
               
               <div className="flex items-center gap-3 text-xs text-slate-200">
-                <div className="h-6 w-6 rounded-full bg-white/10 flex items-center justify-center font-bold text-[11px] text-amber-300 shrink-0">1</div>
-                <div><strong>Ask:</strong> Natural-language question drafting with AI.</div>
+                <div className="h-5 w-5 rounded-full bg-white/10 flex items-center justify-center font-bold text-[10px] text-amber-300 shrink-0">1</div>
+                <div><strong>Ask:</strong> Natural-language question drafting.</div>
               </div>
 
               <div className="flex items-center gap-3 text-xs text-slate-200">
-                <div className="h-6 w-6 rounded-full bg-white/10 flex items-center justify-center font-bold text-[11px] text-amber-300 shrink-0">2</div>
-                <div><strong>Track:</strong> Live deadline countdowns & CPIO routing.</div>
+                <div className="h-5 w-5 rounded-full bg-white/10 flex items-center justify-center font-bold text-[10px] text-amber-300 shrink-0">2</div>
+                <div><strong>Track:</strong> 30-day statutory countdown & CPIO routing.</div>
               </div>
 
               <div className="flex items-center gap-3 text-xs text-slate-200">
-                <div className="h-6 w-6 rounded-full bg-white/10 flex items-center justify-center font-bold text-[11px] text-amber-300 shrink-0">3</div>
-                <div><strong>Understand:</strong> Automated response breakdown & quality analysis.</div>
+                <div className="h-5 w-5 rounded-full bg-white/10 flex items-center justify-center font-bold text-[10px] text-amber-300 shrink-0">3</div>
+                <div><strong>Understand:</strong> Point-by-point response breakdown.</div>
               </div>
 
               <div className="flex items-center gap-3 text-xs text-slate-200">
-                <div className="h-6 w-6 rounded-full bg-white/10 flex items-center justify-center font-bold text-[11px] text-amber-300 shrink-0">4</div>
-                <div><strong>Act:</strong> 1-Click First Appeal & Second Appeal to CIC.</div>
+                <div className="h-5 w-5 rounded-full bg-white/10 flex items-center justify-center font-bold text-[10px] text-amber-300 shrink-0">4</div>
+                <div><strong>Act:</strong> First Appeal to senior appellate authorities.</div>
               </div>
             </div>
           </div>
 
-          {/* Footer Note */}
-          <div className="mt-8 pt-6 border-t border-white/10 text-[10.5px] text-slate-400 flex items-center gap-2">
-            <ShieldCheck className="h-4 w-4 text-amber-400 shrink-0" />
-            <span>Fictional Demonstration Environment • Hackathon Concept</span>
+          <div className="mt-8 pt-6 border-t border-white/10 text-[11px] text-slate-300 flex items-center gap-2">
+            <ShieldCheck className="h-4 w-4 text-emerald-400 shrink-0" />
+            <span>Secure Citizen Authentication • RTI Act 2005</span>
           </div>
         </div>
 
-        {/* Right Column: Dynamic Auth & Onboarding Cards (7 cols) */}
+        {/* Right Column: Dynamic Auth Form (7 cols) */}
         <div className="lg:col-span-7 p-6 sm:p-10 flex flex-col justify-center bg-white">
           
-          {/* Back to Home Link */}
           <div className="flex justify-between items-center mb-6">
             <button
               onClick={() => setActiveView('landing')}
-              className="text-xs font-bold text-slate-500 hover:text-primary-navy flex items-center gap-1 cursor-pointer transition-colors"
+              className="text-xs font-bold text-slate-500 hover:text-[#123B5D] flex items-center gap-1 cursor-pointer"
             >
-              <ArrowLeft className="h-3.5 w-3.5" /> Back to Homepage
+              <ArrowLeft className="h-3.5 w-3.5" /> Back to Home
             </button>
             <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
               {mode === 'login' ? 'Citizen Sign In' : mode === 'signup' ? 'New Registration' : mode === 'forgot-password' ? 'Account Recovery' : 'Workspace Setup'}
             </span>
           </div>
 
-          {/* ========================================================================= */}
-          {/* SUBVIEW 1: LOGIN */}
-          {/* ========================================================================= */}
+          {/* LOGIN */}
           {mode === 'login' && (
-            <div className="space-y-6">
-              
-              {/* JUDGE DEMO MODE CARD (Highlighted & Distinct) */}
-              <div className="rounded-2xl border-2 border-amber-300 bg-gradient-to-r from-amber-50 to-orange-50/50 p-5 shadow-sm">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex items-start gap-3">
-                    <div className="h-9 w-9 rounded-xl bg-amber-500/10 text-amber-700 flex items-center justify-center shrink-0 mt-0.5">
-                      <Sparkles className="h-5 w-5 text-amber-600" />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-black uppercase tracking-wider bg-amber-600 text-white px-2 py-0.5 rounded-md">
-                          Judge Demo Mode
-                        </span>
-                        <span className="text-xs font-bold text-slate-700">Explore RTI Saathi</span>
-                      </div>
-                      <p className="text-xs text-slate-600 mt-1 leading-relaxed">
-                        Skip registration. Log in with our pre-populated citizen profile (<strong>Aarav Sharma</strong>) to test the end-to-end journey in seconds.
-                      </p>
-                    </div>
+            <div className="space-y-5">
+              <div>
+                <h3 className="text-xl font-black text-[#17212B]">Welcome back</h3>
+                <p className="text-xs text-[#52606D] mt-0.5">
+                  Access your RTIs, responses, and appeals in one place.
+                </p>
+              </div>
+
+              <form onSubmit={handleLogin} className="space-y-4">
+                <div>
+                  <label className="text-[10px] font-extrabold uppercase text-[#52606D] block mb-1">
+                    Mobile Number or Email Address
+                  </label>
+                  <div className="relative">
+                    <Mail className="absolute left-3.5 top-3 h-4 w-4 text-slate-400" />
+                    <input 
+                      type="text"
+                      required
+                      value={loginIdentifier}
+                      onChange={(e) => setLoginIdentifier(e.target.value)}
+                      placeholder="aarav.sharma@example.com"
+                      className="w-full rounded-xl border border-[#D9E0E6] bg-[#F7F8FA] pl-10 pr-4 py-2.5 text-xs font-bold text-slate-800 outline-none focus:border-[#123B5D] focus:bg-white shadow-3xs"
+                    />
                   </div>
                 </div>
 
-                <div className="mt-3.5 flex justify-end">
-                  <button
-                    onClick={handleDemoLogin}
-                    disabled={loading}
-                    className="w-full sm:w-auto rounded-xl bg-[#0A2540] hover:bg-[#123B5D] text-white px-5 py-2.5 text-xs font-extrabold shadow-md flex items-center justify-center gap-2 cursor-pointer transition-all hover:scale-[1.02]"
-                  >
-                    {loading ? (
-                      <span className="h-3.5 w-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    ) : (
-                      <>
-                        <Sparkles className="h-4 w-4 text-amber-400" />
-                        Explore Demo Account ➔
-                      </>
-                    )}
-                  </button>
-                </div>
-              </div>
-
-              {/* Normal Login Form */}
-              <div className="border-t border-slate-200 pt-5">
-                <div className="mb-5">
-                  <h3 className="text-lg font-black text-slate-900">Welcome back</h3>
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    Access your RTIs, responses and appeals in one place.
-                  </p>
-                </div>
-
-                <form onSubmit={handleNormalLogin} className="space-y-4">
-                  <div>
-                    <label className="text-[10px] font-extrabold uppercase text-slate-600 block mb-1">
-                      Mobile Number / Email Address
+                <div>
+                  <div className="flex justify-between items-center mb-1">
+                    <label className="text-[10px] font-extrabold uppercase text-[#52606D] block">
+                      Password
                     </label>
-                    <div className="relative">
-                      <Mail className="absolute left-3.5 top-3 h-4 w-4 text-slate-400" />
-                      <input 
-                        type="text"
-                        value={loginIdentifier}
-                        onChange={(e) => setLoginIdentifier(e.target.value)}
-                        placeholder="aarav.sharma.demo@example.com"
-                        className="w-full rounded-xl border border-slate-300 bg-slate-50 pl-10 pr-4 py-2.5 text-xs font-bold text-slate-800 outline-none focus:border-primary-blue focus:bg-white transition-all shadow-xs"
-                      />
-                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setMode('forgot-password')}
+                      className="text-[11px] font-bold text-[#123B5D] hover:underline cursor-pointer"
+                    >
+                      Forgot password?
+                    </button>
                   </div>
-
-                  <div>
-                    <div className="flex justify-between items-center mb-1">
-                      <label className="text-[10px] font-extrabold uppercase text-slate-600 block">
-                        Password
-                      </label>
-                      <button
-                        type="button"
-                        onClick={() => setMode('forgot-password')}
-                        className="text-[11px] font-bold text-primary-navy hover:underline cursor-pointer"
-                      >
-                        Forgot password?
-                      </button>
-                    </div>
-                    <div className="relative">
-                      <Lock className="absolute left-3.5 top-3 h-4 w-4 text-slate-400" />
-                      <input 
-                        type="password"
-                        value={loginPassword}
-                        onChange={(e) => setLoginPassword(e.target.value)}
-                        placeholder="••••••••"
-                        className="w-full rounded-xl border border-slate-300 bg-slate-50 pl-10 pr-4 py-2.5 text-xs font-bold text-slate-800 outline-none focus:border-primary-blue focus:bg-white transition-all shadow-xs"
-                      />
-                    </div>
+                  <div className="relative">
+                    <Lock className="absolute left-3.5 top-3 h-4 w-4 text-slate-400" />
+                    <input 
+                      type="password"
+                      required
+                      value={loginPassword}
+                      onChange={(e) => setLoginPassword(e.target.value)}
+                      placeholder="••••••••"
+                      className="w-full rounded-xl border border-[#D9E0E6] bg-[#F7F8FA] pl-10 pr-4 py-2.5 text-xs font-bold text-slate-800 outline-none focus:border-[#123B5D] focus:bg-white shadow-3xs"
+                    />
                   </div>
-
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full rounded-xl bg-primary-navy hover:bg-primary-blue text-white py-3 text-xs font-extrabold shadow-sm transition-all cursor-pointer flex items-center justify-center gap-2"
-                  >
-                    {loading ? (
-                      <span className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    ) : (
-                      'Sign In to RTI Saathi'
-                    )}
-                  </button>
-                </form>
-
-                <div className="mt-5 text-center text-xs text-slate-600">
-                  Don't have an account?{' '}
-                  <button
-                    onClick={() => setMode('signup')}
-                    className="font-extrabold text-primary-navy hover:underline cursor-pointer"
-                  >
-                    Create an account
-                  </button>
                 </div>
-              </div>
 
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full rounded-xl bg-[#123B5D] hover:bg-[#0A2540] text-white py-3 text-xs font-black shadow-3xs cursor-pointer transition-all"
+                >
+                  {loading ? 'Signing in...' : 'Sign In to RTI Saathi'}
+                </button>
+              </form>
+
+              <div className="text-center text-xs text-[#52606D] pt-2 border-t border-slate-100">
+                Don't have an account?{' '}
+                <button
+                  onClick={() => setMode('signup')}
+                  className="font-extrabold text-[#123B5D] hover:underline cursor-pointer"
+                >
+                  Create an account
+                </button>
+              </div>
             </div>
           )}
 
-          {/* ========================================================================= */}
-          {/* SUBVIEW 2: SIGN UP */}
-          {/* ========================================================================= */}
+          {/* SIGNUP */}
           {mode === 'signup' && (
-            <div className="space-y-5">
+            <div className="space-y-4">
               <div>
-                <h3 className="text-xl font-black text-slate-900">Create your RTI Saathi account</h3>
-                <p className="text-xs text-slate-500 mt-1">
+                <h3 className="text-xl font-black text-[#17212B]">Create your RTI Saathi account</h3>
+                <p className="text-xs text-[#52606D] mt-0.5">
                   Track applications, manage documents, and stay informed about your RTIs.
                 </p>
               </div>
 
-              {/* Checklist strip */}
-              <div className="rounded-xl bg-slate-50 p-3.5 border border-slate-200 grid grid-cols-2 sm:grid-cols-3 gap-2 text-[10.5px] text-slate-700 font-semibold">
-                <div className="flex items-center gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0" /> Save RTI drafts</div>
-                <div className="flex items-center gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0" /> Track deadlines</div>
-                <div className="flex items-center gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0" /> Receive updates</div>
-                <div className="flex items-center gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0" /> Manage responses</div>
-                <div className="flex items-center gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0" /> Prepare appeals</div>
-                <div className="flex items-center gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0" /> Document vault</div>
-              </div>
-
-              <form onSubmit={handleSignupSubmit} className="space-y-3.5">
+              <form onSubmit={handleSignupSubmit} className="space-y-3">
                 <div>
-                  <label className="text-[10px] font-extrabold uppercase text-slate-600 block mb-1">Full Legal Name</label>
+                  <label className="text-[10px] font-extrabold uppercase text-[#52606D] block mb-1">Full Legal Name</label>
                   <div className="relative">
-                    <User className="absolute left-3.5 top-3 h-4 w-4 text-slate-400" />
+                    <User className="absolute left-3.5 top-2.5 h-4 w-4 text-slate-400" />
                     <input 
                       type="text"
                       required
                       value={signupName}
                       onChange={(e) => setSignupName(e.target.value)}
                       placeholder="e.g. Aarav Sharma"
-                      className="w-full rounded-xl border border-slate-300 bg-slate-50 pl-10 pr-4 py-2 text-xs font-bold text-slate-800 outline-none focus:border-primary-blue focus:bg-white transition-all shadow-xs"
+                      className="w-full rounded-xl border border-[#D9E0E6] bg-[#F7F8FA] pl-10 pr-4 py-2 text-xs font-bold text-slate-800 outline-none focus:border-[#123B5D] shadow-3xs"
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="text-[10px] font-extrabold uppercase text-slate-600 block mb-1">Mobile Number</label>
+                    <label className="text-[10px] font-extrabold uppercase text-[#52606D] block mb-1">Mobile Number</label>
                     <div className="relative">
-                      <Phone className="absolute left-3.5 top-3 h-4 w-4 text-slate-400" />
+                      <Phone className="absolute left-3.5 top-2.5 h-4 w-4 text-slate-400" />
                       <input 
                         type="tel"
                         required
                         value={signupMobile}
                         onChange={(e) => setSignupMobile(e.target.value)}
                         placeholder="+91 90000 00000"
-                        className="w-full rounded-xl border border-slate-300 bg-slate-50 pl-10 pr-4 py-2 text-xs font-bold text-slate-800 outline-none focus:border-primary-blue focus:bg-white transition-all shadow-xs"
+                        className="w-full rounded-xl border border-[#D9E0E6] bg-[#F7F8FA] pl-10 pr-4 py-2 text-xs font-bold text-slate-800 outline-none focus:border-[#123B5D] shadow-3xs"
                       />
                     </div>
                   </div>
                   <div>
-                    <label className="text-[10px] font-extrabold uppercase text-slate-600 block mb-1">Email Address</label>
+                    <label className="text-[10px] font-extrabold uppercase text-[#52606D] block mb-1">Email Address</label>
                     <div className="relative">
-                      <Mail className="absolute left-3.5 top-3 h-4 w-4 text-slate-400" />
+                      <Mail className="absolute left-3.5 top-2.5 h-4 w-4 text-slate-400" />
                       <input 
                         type="email"
                         required
                         value={signupEmail}
                         onChange={(e) => setSignupEmail(e.target.value)}
                         placeholder="aarav.sharma@example.com"
-                        className="w-full rounded-xl border border-slate-300 bg-slate-50 pl-10 pr-4 py-2 text-xs font-bold text-slate-800 outline-none focus:border-primary-blue focus:bg-white transition-all shadow-xs"
+                        className="w-full rounded-xl border border-[#D9E0E6] bg-[#F7F8FA] pl-10 pr-4 py-2 text-xs font-bold text-slate-800 outline-none focus:border-[#123B5D] shadow-3xs"
                       />
                     </div>
                   </div>
@@ -437,32 +309,26 @@ export default function AuthView({
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="text-[10px] font-extrabold uppercase text-slate-600 block mb-1">Password</label>
-                    <div className="relative">
-                      <Lock className="absolute left-3.5 top-3 h-4 w-4 text-slate-400" />
-                      <input 
-                        type="password"
-                        required
-                        value={signupPassword}
-                        onChange={(e) => setSignupPassword(e.target.value)}
-                        placeholder="••••••••"
-                        className="w-full rounded-xl border border-slate-300 bg-slate-50 pl-10 pr-4 py-2 text-xs font-bold text-slate-800 outline-none focus:border-primary-blue focus:bg-white transition-all shadow-xs"
-                      />
-                    </div>
+                    <label className="text-[10px] font-extrabold uppercase text-[#52606D] block mb-1">Password</label>
+                    <input 
+                      type="password"
+                      required
+                      value={signupPassword}
+                      onChange={(e) => setSignupPassword(e.target.value)}
+                      placeholder="••••••••"
+                      className="w-full rounded-xl border border-[#D9E0E6] bg-[#F7F8FA] px-4 py-2 text-xs font-bold text-slate-800 outline-none focus:border-[#123B5D] shadow-3xs"
+                    />
                   </div>
                   <div>
-                    <label className="text-[10px] font-extrabold uppercase text-slate-600 block mb-1">Confirm Password</label>
-                    <div className="relative">
-                      <KeyRound className="absolute left-3.5 top-3 h-4 w-4 text-slate-400" />
-                      <input 
-                        type="password"
-                        required
-                        value={signupConfirmPassword}
-                        onChange={(e) => setSignupConfirmPassword(e.target.value)}
-                        placeholder="••••••••"
-                        className="w-full rounded-xl border border-slate-300 bg-slate-50 pl-10 pr-4 py-2 text-xs font-bold text-slate-800 outline-none focus:border-primary-blue focus:bg-white transition-all shadow-xs"
-                      />
-                    </div>
+                    <label className="text-[10px] font-extrabold uppercase text-[#52606D] block mb-1">Confirm Password</label>
+                    <input 
+                      type="password"
+                      required
+                      value={signupConfirmPassword}
+                      onChange={(e) => setSignupConfirmPassword(e.target.value)}
+                      placeholder="••••••••"
+                      className="w-full rounded-xl border border-[#D9E0E6] bg-[#F7F8FA] px-4 py-2 text-xs font-bold text-slate-800 outline-none focus:border-[#123B5D] shadow-3xs"
+                    />
                   </div>
                 </div>
 
@@ -472,31 +338,27 @@ export default function AuthView({
                     id="terms"
                     checked={agreeTerms}
                     onChange={(e) => setAgreeTerms(e.target.checked)}
-                    className="h-4 w-4 rounded border-slate-300 text-primary-navy"
+                    className="h-4 w-4 rounded border-slate-300 text-[#123B5D]"
                   />
-                  <label htmlFor="terms" className="text-[11px] text-slate-600 font-medium">
-                    I agree to the <span className="text-primary-navy font-bold">Terms of Service</span> and <span className="text-primary-navy font-bold">Privacy Policy</span>.
+                  <label htmlFor="terms" className="text-[11px] text-slate-600">
+                    I agree to the <span className="text-[#123B5D] font-bold">Terms of Service</span> and <span className="text-[#123B5D] font-bold">Privacy Policy</span>.
                   </label>
                 </div>
 
                 <button
                   type="submit"
                   disabled={loading || !agreeTerms}
-                  className="w-full rounded-xl bg-primary-navy hover:bg-primary-blue text-white py-3 text-xs font-extrabold shadow-sm transition-all cursor-pointer flex items-center justify-center gap-2 disabled:bg-slate-300"
+                  className="w-full rounded-xl bg-[#123B5D] hover:bg-[#0A2540] text-white py-3 text-xs font-black shadow-3xs cursor-pointer transition-all disabled:opacity-50"
                 >
-                  {loading ? (
-                    <span className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  ) : (
-                    'Create Account & Set Up Workspace'
-                  )}
+                  Create Account & Continue
                 </button>
               </form>
 
-              <div className="text-center text-xs text-slate-600 pt-2 border-t border-slate-150">
+              <div className="text-center text-xs text-[#52606D] pt-2 border-t border-slate-100">
                 Already have an account?{' '}
                 <button
                   onClick={() => setMode('login')}
-                  className="font-extrabold text-primary-navy hover:underline cursor-pointer"
+                  className="font-extrabold text-[#123B5D] hover:underline cursor-pointer"
                 >
                   Sign In
                 </button>
@@ -504,73 +366,64 @@ export default function AuthView({
             </div>
           )}
 
-          {/* ========================================================================= */}
-          {/* SUBVIEW 3: FORGOT PASSWORD */}
-          {/* ========================================================================= */}
+          {/* FORGOT PASSWORD */}
           {mode === 'forgot-password' && (
-            <div className="space-y-6">
+            <div className="space-y-4">
               <div>
-                <h3 className="text-xl font-black text-slate-900">Reset your password</h3>
-                <p className="text-xs text-slate-500 mt-1">
-                  Enter your registered email address or mobile number to receive a secure recovery code.
+                <h3 className="text-xl font-black text-[#17212B]">Reset your password</h3>
+                <p className="text-xs text-[#52606D] mt-0.5">
+                  Enter your registered email address or mobile to receive recovery instructions.
                 </p>
               </div>
 
               {recoverySent ? (
                 <div className="rounded-2xl border border-emerald-300 bg-emerald-50 p-6 text-center space-y-3">
                   <CheckCircle2 className="h-10 w-10 text-emerald-600 mx-auto" />
-                  <h4 className="font-bold text-sm text-emerald-900">Recovery link sent!</h4>
-                  <p className="text-xs text-emerald-800 leading-relaxed">
-                    We've dispatched a password reset link to <strong>{forgotEmail}</strong>. Please check your inbox and follow the instructions.
+                  <h4 className="font-bold text-sm text-emerald-900">Recovery link sent</h4>
+                  <p className="text-xs text-emerald-800">
+                    Instructions have been sent to <strong>{forgotEmail}</strong>.
                   </p>
                   <button
                     onClick={() => {
                       setRecoverySent(false);
                       setMode('login');
                     }}
-                    className="mt-2 inline-block rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs px-5 py-2.5 shadow-sm"
+                    className="rounded-xl bg-emerald-800 text-white px-5 py-2 text-xs font-bold"
                   >
-                    Return to Login
+                    Return to Sign In
                   </button>
                 </div>
               ) : (
                 <form onSubmit={handleForgotSubmit} className="space-y-4">
                   <div>
-                    <label className="text-[10px] font-extrabold uppercase text-slate-600 block mb-1">
-                      Registered Email or Mobile
+                    <label className="text-[10px] font-extrabold uppercase text-[#52606D] block mb-1">
+                      Email or Mobile
                     </label>
-                    <div className="relative">
-                      <Mail className="absolute left-3.5 top-3 h-4 w-4 text-slate-400" />
-                      <input 
-                        type="text"
-                        required
-                        value={forgotEmail}
-                        onChange={(e) => setForgotEmail(e.target.value)}
-                        placeholder="aarav.sharma.demo@example.com"
-                        className="w-full rounded-xl border border-slate-300 bg-slate-50 pl-10 pr-4 py-2.5 text-xs font-bold text-slate-800 outline-none focus:border-primary-blue focus:bg-white transition-all shadow-xs"
-                      />
-                    </div>
+                    <input 
+                      type="text"
+                      required
+                      value={forgotEmail}
+                      onChange={(e) => setForgotEmail(e.target.value)}
+                      placeholder="aarav.sharma@example.com"
+                      className="w-full rounded-xl border border-[#D9E0E6] bg-[#F7F8FA] px-4 py-2.5 text-xs font-bold text-slate-800 outline-none focus:border-[#123B5D] shadow-3xs"
+                    />
                   </div>
 
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full rounded-xl bg-primary-navy hover:bg-primary-blue text-white py-3 text-xs font-extrabold shadow-sm transition-all cursor-pointer flex items-center justify-center gap-2"
+                    className="w-full rounded-xl bg-[#123B5D] hover:bg-[#0A2540] text-white py-3 text-xs font-black shadow-3xs cursor-pointer"
                   >
-                    {loading ? (
-                      <span className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    ) : (
-                      'Send Recovery Link'
-                    )}
+                    Send Recovery Link
                   </button>
 
-                  <div className="text-center pt-2">
+                  <div className="text-center">
                     <button
                       type="button"
                       onClick={() => setMode('login')}
-                      className="text-xs font-bold text-slate-600 hover:text-primary-navy cursor-pointer"
+                      className="text-xs font-bold text-slate-600 hover:text-[#123B5D]"
                     >
-                      ← Back to Login
+                      ← Back to Sign In
                     </button>
                   </div>
                 </form>
@@ -578,42 +431,28 @@ export default function AuthView({
             </div>
           )}
 
-          {/* ========================================================================= */}
-          {/* SUBVIEW 4: ONBOARDING SURVEY (3 Steps) */}
-          {/* ========================================================================= */}
+          {/* ONBOARDING SURVEY */}
           {mode === 'onboarding' && (
-            <div className="space-y-6 animate-in fade-in duration-300">
-              
-              {/* Stepper Header */}
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                <div>
-                  <span className="text-[10px] font-extrabold uppercase text-primary-navy tracking-wider">
-                    Step {onboardingStep} of 3
-                  </span>
-                  <h3 className="text-lg font-black text-slate-900 mt-0.5">
-                    {onboardingStep === 1 && 'What would you like to use RTI Saathi for?'}
-                    {onboardingStep === 2 && 'Where are you looking for information?'}
-                    {onboardingStep === 3 && 'Your Citizen Workspace is Ready!'}
-                  </h3>
-                </div>
-                <div className="flex gap-1">
-                  <span className={`h-2 w-6 rounded-full ${onboardingStep >= 1 ? 'bg-primary-navy' : 'bg-slate-200'}`} />
-                  <span className={`h-2 w-6 rounded-full ${onboardingStep >= 2 ? 'bg-primary-navy' : 'bg-slate-200'}`} />
-                  <span className={`h-2 w-6 rounded-full ${onboardingStep >= 3 ? 'bg-primary-navy' : 'bg-slate-200'}`} />
-                </div>
+            <div className="space-y-5">
+              <div className="border-b border-slate-100 pb-3">
+                <span className="text-[10px] font-black uppercase text-[#123B5D] tracking-wider">
+                  Step {onboardingStep} of 3
+                </span>
+                <h3 className="text-lg font-black text-[#17212B] mt-0.5">
+                  {onboardingStep === 1 && 'What would you like to use RTI Saathi for?'}
+                  {onboardingStep === 2 && 'Where are you looking for information?'}
+                  {onboardingStep === 3 && 'Your Citizen Workspace is Ready!'}
+                </h3>
               </div>
 
-              {/* Step 1: Goals */}
               {onboardingStep === 1 && (
                 <div className="space-y-4">
-                  <p className="text-xs text-slate-600">Select all areas that interest you:</p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     {[
                       { id: 'Filing RTIs', label: 'Filing New RTIs', desc: 'Draft applications with AI guidance' },
                       { id: 'Tracking applications', label: 'Tracking Applications', desc: 'Monitor 30-day statutory deadlines' },
                       { id: 'Understanding responses', label: 'Understanding Responses', desc: 'Analyze CPIO disclosures & omissions' },
-                      { id: 'Filing appeals', label: 'Filing Appeals', desc: 'First Appeal & CIC Second Appeal' },
-                      { id: 'Research', label: 'Citizen Research', desc: 'Public records & Section 4 disclosures' }
+                      { id: 'Filing appeals', label: 'Filing Appeals', desc: 'First Appeal & CIC Second Appeal' }
                     ].map(item => {
                       const isSelected = selectedUseCases.includes(item.id);
                       return (
@@ -629,13 +468,13 @@ export default function AuthView({
                           }}
                           className={`p-3 rounded-xl border text-left cursor-pointer transition-all ${
                             isSelected 
-                              ? 'border-primary-navy bg-blue-50/70 text-slate-900' 
-                              : 'border-slate-200 hover:bg-slate-50 text-slate-700'
+                              ? 'border-[#123B5D] bg-blue-50/60 text-slate-900' 
+                              : 'border-[#D9E0E6] hover:bg-slate-50 text-slate-700'
                           }`}
                         >
                           <div className="font-bold text-xs flex items-center justify-between">
                             {item.label}
-                            {isSelected && <CheckCircle2 className="h-4 w-4 text-primary-navy" />}
+                            {isSelected && <CheckCircle2 className="h-4 w-4 text-[#123B5D]" />}
                           </div>
                           <div className="text-[11px] text-slate-500 mt-0.5">{item.desc}</div>
                         </button>
@@ -643,11 +482,11 @@ export default function AuthView({
                     })}
                   </div>
 
-                  <div className="flex justify-end pt-3">
+                  <div className="flex justify-end pt-2">
                     <button
                       type="button"
                       onClick={() => setOnboardingStep(2)}
-                      className="rounded-xl bg-primary-navy hover:bg-primary-blue text-white px-6 py-2.5 text-xs font-bold flex items-center gap-1.5 shadow-sm"
+                      className="rounded-xl bg-[#123B5D] hover:bg-[#0A2540] text-white px-6 py-2.5 text-xs font-bold flex items-center gap-1.5 shadow-3xs"
                     >
                       Continue <ArrowRight className="h-3.5 w-3.5" />
                     </button>
@@ -655,16 +494,13 @@ export default function AuthView({
                 </div>
               )}
 
-              {/* Step 2: Jurisdiction Focus */}
               {onboardingStep === 2 && (
                 <div className="space-y-4">
-                  <p className="text-xs text-slate-600">Which level of government do you query most often?</p>
-                  <div className="space-y-2.5">
+                  <div className="space-y-2">
                     {[
-                      { id: 'Central Government', title: 'Central Ministries & Departments', desc: 'Railways, Passports, UIDAI, EPFO, UGC, NHAI' },
-                      { id: 'State Government', title: 'State Government Departments', desc: 'State Police, Revenue, Education, State Transport' },
-                      { id: 'Local Municipal Bodies', title: 'Urban Local Bodies & Panchayats', desc: 'Municipal Corporations, Zilla Parishads, Town Planning' },
-                      { id: 'All Public Authorities', title: 'All Public Authorities', desc: 'Comprehensive central and state coverage' }
+                      { id: 'Central Government', title: 'Central Ministries & Public Authorities', desc: 'Railways, Passports, UIDAI, EPFO, Education, NHAI' },
+                      { id: 'State Government', title: 'State Government Departments', desc: 'State Police, Revenue, Urban Development' },
+                      { id: 'All Authorities', title: 'All Public Authorities', desc: 'Comprehensive central and state coverage' }
                     ].map(item => {
                       const isSelected = selectedLevel === item.id;
                       return (
@@ -674,21 +510,21 @@ export default function AuthView({
                           onClick={() => setSelectedLevel(item.id)}
                           className={`w-full p-3.5 rounded-xl border text-left cursor-pointer transition-all flex items-center justify-between ${
                             isSelected 
-                              ? 'border-primary-navy bg-blue-50/70 text-slate-900' 
-                              : 'border-slate-200 hover:bg-slate-50 text-slate-700'
+                              ? 'border-[#123B5D] bg-blue-50/60 text-slate-900' 
+                              : 'border-[#D9E0E6] hover:bg-slate-50 text-slate-700'
                           }`}
                         >
                           <div>
                             <div className="font-bold text-xs">{item.title}</div>
                             <div className="text-[11px] text-slate-500 mt-0.5">{item.desc}</div>
                           </div>
-                          {isSelected && <CheckCircle2 className="h-4 w-4 text-primary-navy shrink-0" />}
+                          {isSelected && <CheckCircle2 className="h-4 w-4 text-[#123B5D] shrink-0" />}
                         </button>
                       );
                     })}
                   </div>
 
-                  <div className="flex justify-between items-center pt-3">
+                  <div className="flex justify-between items-center pt-2">
                     <button
                       type="button"
                       onClick={() => setOnboardingStep(1)}
@@ -699,7 +535,7 @@ export default function AuthView({
                     <button
                       type="button"
                       onClick={() => setOnboardingStep(3)}
-                      className="rounded-xl bg-primary-navy hover:bg-primary-blue text-white px-6 py-2.5 text-xs font-bold flex items-center gap-1.5 shadow-sm"
+                      className="rounded-xl bg-[#123B5D] hover:bg-[#0A2540] text-white px-6 py-2.5 text-xs font-bold flex items-center gap-1.5 shadow-3xs"
                     >
                       Continue <ArrowRight className="h-3.5 w-3.5" />
                     </button>
@@ -707,30 +543,23 @@ export default function AuthView({
                 </div>
               )}
 
-              {/* Step 3: Complete */}
               {onboardingStep === 3 && (
-                <div className="space-y-4 text-center py-4">
-                  <div className="h-14 w-14 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto mb-2">
-                    <CheckCircle2 className="h-8 w-8 text-emerald-600" />
+                <div className="space-y-4 text-center py-2">
+                  <div className="h-12 w-12 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto">
+                    <CheckCircle2 className="h-7 w-7 text-emerald-600" />
                   </div>
-                  <h4 className="text-lg font-black text-slate-900">Your Citizen Workspace is Configured!</h4>
-                  <p className="text-xs text-slate-600 max-w-md mx-auto leading-relaxed">
-                    You can now draft applications with AI, track official 30-day statutory response deadlines, and manage your appeals.
+                  <h4 className="text-base font-black text-[#17212B]">Your Citizen Portal is Configured</h4>
+                  <p className="text-xs text-[#52606D] max-w-sm mx-auto">
+                    You can now draft applications, monitor statutory 30-day deadlines, and manage responses.
                   </p>
 
-                  <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-left text-xs max-w-md mx-auto space-y-2 mt-4">
-                    <div className="flex justify-between"><span className="text-slate-500">Citizen Name:</span> <strong className="text-slate-800">{signupName || 'Aarav Sharma'}</strong></div>
-                    <div className="flex justify-between"><span className="text-slate-500">Primary Focus:</span> <strong className="text-slate-800">{selectedLevel}</strong></div>
-                    <div className="flex justify-between"><span className="text-slate-500">Selected Features:</span> <strong className="text-slate-800">{selectedUseCases.length} Modules Active</strong></div>
-                  </div>
-
-                  <div className="pt-4">
+                  <div className="pt-3">
                     <button
                       type="button"
                       onClick={handleFinishOnboarding}
-                      className="rounded-xl bg-primary-navy hover:bg-primary-blue text-white px-8 py-3 text-xs font-extrabold shadow-md flex items-center justify-center gap-2 mx-auto cursor-pointer transition-all hover:scale-105"
+                      className="rounded-xl bg-[#123B5D] hover:bg-[#0A2540] text-white px-7 py-3 text-xs font-black shadow-3xs transition-all hover:scale-105"
                     >
-                      Go to Dashboard & Start Exploring ➔
+                      Go to Dashboard ➔
                     </button>
                   </div>
                 </div>

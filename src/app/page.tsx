@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import NoticeBar from '../components/NoticeBar';
 import LandingView from '../components/LandingView';
 import OnboardingView from '../components/OnboardingView';
 import BuilderView from '../components/BuilderView';
@@ -14,228 +15,101 @@ import ProfileView from '../components/ProfileView';
 import ContextualHelp from '../components/ContextualHelp';
 import ReconciliationView from '../components/ReconciliationView';
 import AuthView from '../components/AuthView';
-import ProductTourModal from '../components/ProductTourModal';
 
-import { initialRTIs, RTIApplication, defaultDemoUser, DemoUser, mockNotifications, MockNotification } from '../data/mockData';
+import { 
+  User, RTIApplication, NotificationItem 
+} from '../services/types';
+import { authService } from '../services/authService';
+import { rtiService } from '../services/rtiService';
+import { notificationService } from '../services/notificationService';
 
 export default function Home() {
-  // Navigation Routing States
+  // Navigation Routing State
   const [activeView, setActiveView] = useState<string>('landing');
   const [selectedRtiId, setSelectedRtiId] = useState<string>('rti-road-jaipur-1245');
 
-  // Authenticated Demo User State
-  const [currentUser, setCurrentUser] = useState<DemoUser>(defaultDemoUser);
-
-  // Product Tour Modal State
-  const [isTourOpen, setIsTourOpen] = useState<boolean>(false);
+  // Authenticated Citizen State
+  const [currentUser, setCurrentUser] = useState<User | undefined>(undefined);
 
   // Accessibility & Localization States
   const [language, setLanguage] = useState<'en' | 'hi'>('en');
   const [lowBandwidth, setLowBandwidth] = useState<boolean>(false);
   const [textSize, setTextSize] = useState<'normal' | 'large'>('normal');
+  const [highContrast, setHighContrast] = useState<boolean>(false);
+  const [reducedMotion, setReducedMotion] = useState<boolean>(false);
   const [helpCategory, setHelpCategory] = useState<'All' | 'Basics' | 'Fees' | 'Process' | 'Appeals' | 'Exemptions'>('All');
 
-  // RTI Applications Mock DB
-  const [rtis, setRtis] = useState<RTIApplication[]>(initialRTIs);
-  
-  // Builder Temp Draft state
+  // RTI Applications DB State
+  const [rtis, setRtis] = useState<RTIApplication[]>([]);
   const [draftRti, setDraftRti] = useState<any>(null);
 
-  // System Notifications list
-  const [notifications, setNotifications] = useState<MockNotification[]>(mockNotifications);
+  // System Notifications
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
 
-  // Fetch all RTIs with graceful fallback
-  const fetchRtis = async () => {
-    try {
-      const res = await fetch('/api/rtis');
-      if (res.ok) {
-        const data = await res.json();
-        if (Array.isArray(data) && data.length > 0) {
-          setRtis(data);
-        }
-      }
-    } catch {
-      setRtis(prev => (prev && prev.length > 0 ? prev : initialRTIs));
-    }
-  };
-
-  // Load from database & localStorage on mount
+  // Initialize data on mount
   useEffect(() => {
-    fetchRtis();
-    try {
-      const savedUser = localStorage.getItem('rti_demo_user');
-      if (savedUser) {
-        setCurrentUser(JSON.parse(savedUser));
+    authService.getCurrentUser().then(user => {
+      setCurrentUser(user);
+      if (user.preferences) {
+        setLanguage(user.preferences.language || 'en');
+        setLowBandwidth(user.preferences.lowBandwidth || false);
+        setTextSize(user.preferences.textSize || 'normal');
       }
-    } catch (e) {
-      console.warn('LocalStorage error:', e);
-    }
-    // Ensure document never has .dark class
+    });
+
+    rtiService.getRTIs().then(setRtis);
+    notificationService.getNotifications().then(setNotifications);
+
+    // Remove any dark class
     document.documentElement.classList.remove('dark');
   }, []);
 
-  const addNotification = (title: string, type: 'alert' | 'update' | 'deadline' | 'info') => {
-    const newNotif: MockNotification = {
-      id: `notif-${Date.now()}`,
-      title,
-      time: 'Just now',
-      type,
-      read: false
-    };
-    setNotifications([newNotif, ...notifications]);
+  const refreshApplications = async () => {
+    const list = await rtiService.getRTIs();
+    setRtis(list);
   };
 
-  const markNotificationsRead = () => {
-    const updated = notifications.map(n => ({ ...n, read: true }));
+  const markNotificationsRead = async () => {
+    await notificationService.markAllAsRead();
+    const updated = await notificationService.getNotifications();
     setNotifications(updated);
   };
 
-  const handleLoginSuccess = (user: DemoUser, isDemo: boolean = true) => {
+  const handleLoginSuccess = (user: User) => {
     setCurrentUser(user);
-    try {
-      localStorage.setItem('rti_demo_user', JSON.stringify(user));
-    } catch (e) {}
     setActiveView('dashboard');
   };
 
-  const handleLogout = () => {
-    setCurrentUser(defaultDemoUser);
-    try {
-      localStorage.removeItem('rti_demo_user');
-    } catch (e) {}
+  const handleLogout = async () => {
+    await authService.logout();
+    setCurrentUser(undefined);
     setActiveView('auth');
   };
 
-  // Scenario Quick Switcher Handler
-  const handleSelectScenario = (scenario: string) => {
-    if (scenario === 'onboarding') {
-      setActiveView('onboarding');
-    } else if (scenario === 'authorities') {
-      setActiveView('authorities');
-    } else if (scenario.startsWith('rti-')) {
-      setSelectedRtiId(scenario);
-      setActiveView('detail');
-    } else {
-      setActiveView(scenario);
-    }
+  const handleResetData = async () => {
+    await rtiService.resetToSeedData();
+    await refreshApplications();
+    const user = await authService.getCurrentUser();
+    setCurrentUser(user);
+    alert('Application seed data reset successfully.');
   };
 
-  // Reset Demo Workspace Handler
-  const handleResetDemo = () => {
-    setRtis(initialRTIs);
-    setNotifications(mockNotifications);
-    setCurrentUser(defaultDemoUser);
-    try {
-      localStorage.removeItem('rti_demo_user');
-    } catch (e) {}
-    addNotification('Demo environment reset to initial fictional data.', 'info');
-    alert('Demo workspace reset! All RTIs, notifications, and application statuses have been restored to initial demo state.');
+  const addNewRti = async (newApp: any) => {
+    const created = await rtiService.createRTI(newApp);
+    await refreshApplications();
+    await notificationService.addNotification(
+      `Application registered successfully: ${created.registrationNumber}`,
+      'update',
+      created.id
+    );
+    const updatedNotifs = await notificationService.getNotifications();
+    setNotifications(updatedNotifs);
   };
 
-  const addNewRti = async (newApp: RTIApplication) => {
-    try {
-      const res = await fetch('/api/rtis', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newApp)
-      });
-      if (res.ok) {
-        await fetchRtis();
-      }
-    } catch (err) {
-      console.error('Failed to add new RTI:', err);
-    }
-  };
-
-  // Hackathon demo mock response triggers
-  const triggerMockResponse = async () => {
-    const demoRti = rtis.find(r => r.registrationNumber?.includes('DEMO') && r.status === 'Submitted');
-    if (!demoRti) return;
-
-    try {
-      const res = await fetch(`/api/rtis/${demoRti.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          status: 'Response Received',
-          responseDate: '2026-08-25',
-          responseSummary: 'The CPIO supplied the road project work orders and tender allocation figures. The escalator safety audits and inspector completion logs are omitted due to finalization delays.',
-          answeredCount: 4,
-          totalQuestions: 5
-        })
-      });
-      if (res.ok) {
-        await fetchRtis();
-        addNotification('CPIO response letter received for Road Construction Inquiry', 'update');
-        alert('Simulated Response Received! The RTI status has changed to "Response Received" on your dashboard. Open it to analyze the response.');
-      }
-    } catch (err) {
-      console.error('Failed to trigger mock response:', err);
-    }
-  };
-
-  // First Appeal submission handler
-  const fileFirstAppeal = async (id: string, reason: string, appealText: string) => {
-    try {
-      const res = await fetch(`/api/rtis/${id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          status: 'First Appeal Filed',
-          appealReason: reason,
-          appealDate: '2026-08-25'
-        })
-      });
-      if (res.ok) {
-        await fetchRtis();
-      }
-    } catch (err) {
-      console.error('Failed to file first appeal:', err);
-    }
-    
-    // Update local state directly for immediate reactivity
-    setRtis(prev => prev.map(r => r.id === id ? {
-      ...r,
-      status: 'First Appeal Filed',
-      appealReason: reason,
-      appealDate: '2026-08-25'
-    } : r));
-    addNotification(`First Appeal filed successfully (Case Ref: FAA-DEMO-2026-00421)`, 'update');
-  };
-
-  // Second Appeal submission handler
-  const fileSecondAppeal = async (id: string, reason: string, appealText: string) => {
-    const rand = Math.floor(10000 + Math.random() * 90000);
-    const secRegNo = `CIC/MEXTA/A/2026/${rand}`;
-    try {
-      const res = await fetch(`/api/rtis/${id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          status: 'Second Appeal Filed',
-          secondAppealReason: reason,
-          secondAppealDate: new Date().toISOString().substring(0, 10),
-          secondAppealText: appealText,
-          secondAppealRegNo: secRegNo
-        })
-      });
-      if (res.ok) {
-        await fetchRtis();
-      }
-    } catch (err) {
-      console.error('Failed to file second appeal:', err);
-    }
-
-    setRtis(prev => prev.map(r => r.id === id ? {
-      ...r,
-      status: 'Second Appeal Filed',
-      secondAppealReason: reason,
-      secondAppealDate: new Date().toISOString().substring(0, 10),
-      secondAppealText: appealText,
-      secondAppealRegNo: secRegNo
-    } : r));
-    addNotification(`Second Appeal filed with CIC successfully. Ref: ${secRegNo}`, 'update');
-    alert(`Second Appeal successfully registered with Central Information Commission (CIC) under reference: ${secRegNo}.`);
+  const addNotification = async (title: string, type: 'alert' | 'update' | 'deadline' | 'info') => {
+    await notificationService.addNotification(title, type);
+    const updated = await notificationService.getNotifications();
+    setNotifications(updated);
   };
 
   return (
@@ -247,33 +121,29 @@ export default function Home() {
         setActiveView={setActiveView}
         language={language}
         setLanguage={setLanguage}
-        lowBandwidth={lowBandwidth}
-        setLowBandwidth={setLowBandwidth}
         textSize={textSize}
         setTextSize={setTextSize}
+        lowBandwidth={lowBandwidth}
+        setLowBandwidth={setLowBandwidth}
+        highContrast={highContrast}
+        setHighContrast={setHighContrast}
+        reducedMotion={reducedMotion}
+        setReducedMotion={setReducedMotion}
         notifications={notifications}
         markNotificationsRead={markNotificationsRead}
         currentUser={currentUser}
-        onOpenTour={() => setIsTourOpen(true)}
-        onSelectScenario={handleSelectScenario}
-        onResetDemo={handleResetDemo}
         onLogout={handleLogout}
       />
 
-      {/* Sticky Top Scrolling Notice Bar */}
-      <div className="bg-amber-50/90 text-amber-900 border-b border-amber-200 text-xs py-1.5 px-4 flex items-center gap-2.5 font-medium shadow-xs overflow-hidden">
-        <span className="bg-amber-700 text-white text-[10px] font-black uppercase px-2 py-0.5 rounded-md shrink-0 tracking-wider">
-          Notice
-        </span>
-        <div className="marquee-container flex-1 overflow-hidden">
-          <div className="marquee-content text-[11px] font-semibold text-slate-800">
-            CIC Second Appeal Integration: The Central Information Commission (CIC) portal is integrated with DoPT RTI Online for streamlined Second Appeal retrieval under Section 19(3).
-          </div>
-        </div>
-      </div>
+      {/* Dismissible Official Notice Bar */}
+      <NoticeBar 
+        id="cic-appeal-integration-2026"
+        language={language}
+        onLinkClick={() => setActiveView('help')}
+      />
 
       {/* Main Content Router */}
-      <main className="flex-1 flex flex-col bg-slate-50">
+      <main className="flex-1 flex flex-col bg-[#F7F8FA]">
         {activeView === 'landing' && (
           <LandingView 
             setActiveView={setActiveView} 
@@ -314,10 +184,8 @@ export default function Home() {
             setActiveView={setActiveView}
             setSelectedRtiId={setSelectedRtiId}
             language={language}
-            triggerMockResponse={triggerMockResponse}
-            notifications={notifications}
             currentUser={currentUser}
-            onOpenTour={() => setIsTourOpen(true)}
+            onRefresh={refreshApplications}
           />
         )}
 
@@ -327,8 +195,7 @@ export default function Home() {
             rtis={rtis}
             setActiveView={setActiveView}
             language={language}
-            fileFirstAppeal={fileFirstAppeal}
-            fileSecondAppeal={fileSecondAppeal}
+            onApplicationUpdated={refreshApplications}
           />
         )}
 
@@ -351,7 +218,7 @@ export default function Home() {
             setActiveView={setActiveView}
             language={language}
             rtis={rtis}
-            fetchRtis={fetchRtis}
+            fetchRtis={refreshApplications}
           />
         )}
 
@@ -364,24 +231,17 @@ export default function Home() {
             setTextSize={setTextSize}
             setLanguage={setLanguage}
             currentUser={currentUser}
-            onResetDemo={handleResetDemo}
+            onResetData={handleResetData}
             setActiveView={setActiveView}
           />
         )}
       </main>
 
-      {/* Static Footer */}
+      {/* Footer */}
       <Footer 
         language={language} 
         setActiveView={setActiveView} 
         setHelpCategory={setHelpCategory}
-      />
-
-      {/* Interactive 6-Step Product Tour Modal */}
-      <ProductTourModal 
-        isOpen={isTourOpen}
-        onClose={() => setIsTourOpen(false)}
-        onNavigateToScenario={handleSelectScenario}
       />
 
       {/* Floating Contextual Help Assistant */}

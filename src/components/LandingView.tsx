@@ -2,10 +2,13 @@
 
 import React, { useState } from 'react';
 import { 
-  FileText, Search, ShieldCheck, CreditCard, Clock, BellRing, 
-  HelpCircle, Sparkles, BookOpen, Scale, ArrowRight, CornerDownRight, RefreshCw, AlertTriangle
+  FileText, Search, ShieldCheck, Clock, CheckCircle2, 
+  ArrowRight, Sparkles, BookOpen, Scale, HelpCircle, 
+  Landmark, ChevronRight, CornerDownRight, FileQuestion 
 } from 'lucide-react';
-import { FAQ, mockDisclosures, mockFAQs } from '../data/mockData';
+import { authorityService } from '../services/authorityService';
+import { AuthoritySuggestionResult, Authority } from '../services/types';
+import { seedSearchResults } from '../services/seedData';
 
 interface LandingViewProps {
   setActiveView: (view: string) => void;
@@ -13,502 +16,418 @@ interface LandingViewProps {
 }
 
 export default function LandingView({ setActiveView, language }: LandingViewProps) {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<FAQ[]>([]);
-  const [disclosureResults, setDisclosureResults] = useState<any[]>([]);
-  const [faqs, setFaqs] = useState<FAQ[]>(mockFAQs);
+  // Authority Finder interactive query state
+  const [authorityQuery, setAuthorityQuery] = useState('');
+  const [authorityResult, setAuthorityResult] = useState<AuthoritySuggestionResult | null>(null);
+  const [isSearchingAuth, setIsSearchingAuth] = useState(false);
 
-  React.useEffect(() => {
-    fetch('/api/faqs')
-      .then(res => (res.ok ? res.json() : mockFAQs))
-      .then(data => setFaqs(Array.isArray(data) && data.length > 0 ? data : mockFAQs))
-      .catch(() => setFaqs(mockFAQs));
-  }, []);
+  // Search Information state
+  const [infoQuery, setInfoQuery] = useState('');
+  const [searchResults, setSearchResults] = useState(seedSearchResults);
+
+  const handleFindAuthority = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!authorityQuery.trim()) return;
+    setIsSearchingAuth(true);
+    const res = await authorityService.searchAuthorities(authorityQuery);
+    setAuthorityResult(res);
+    setIsSearchingAuth(false);
+  };
+
+  const handleInfoSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!infoQuery.trim()) {
+      setSearchResults(seedSearchResults);
+      return;
+    }
+    const q = infoQuery.toLowerCase();
+    const filtered = seedSearchResults.filter(item => 
+      item.title.toLowerCase().includes(q) || 
+      item.snippet.toLowerCase().includes(q) ||
+      item.category.toLowerCase().includes(q)
+    );
+    setSearchResults(filtered);
+  };
 
   const t = {
     en: {
       heroTitle: 'Get the information you have a right to know.',
-      heroSub: 'File, track, and manage your Right to Information requests in one clear, guided journey.',
-      ctaStart: 'Start an RTI Application',
-      ctaTrack: 'Track My RTI',
-      ctaNotSure: 'I am not sure where to start',
-      searchLabel: 'Has this information already been published?',
-      searchPlaceholder: 'Search FAQs, authorities, or published documents (e.g. passport delay, railway tenders)...',
-      searchBtn: 'Search',
-      trustOfficial: 'Demo Concept Portal',
-      trustPayment: 'Free demo, no real fee',
-      trustTrack: 'Live Status Timeline',
-      trustAlerts: 'Sms / Email Updates',
-      trustSupport: 'Accessibility & Support',
-      howItWorksTitle: 'How RTI Saathi Works',
-      howItWorksSub: 'Filing an RTI doesn\'t require a legal degree. We guide you step-by-step.',
-      step1: 'Submit Request to CPIO',
-      step1Desc: 'Formulate and submit your inquiry to the Central Public Information Officer (CPIO) of the matching authority.',
-      step2: 'CPIO Decision (30 Days)',
-      step2Desc: 'CPIO must supply the requested records or reject under Section 8 exemptions within 30 days.',
-      step3: 'FAA First Appeal',
-      step3Desc: 'If CPIO rejects, responds late, or omits questions, file a First Appeal to the senior FAA officer within 30 days.',
-      step4: 'FAA Order (30-45 Days)',
-      step4Desc: 'The First Appellate Authority decides your appeal and issues a final department order.',
-      step5: 'Second Appeal to CIC',
-      step5Desc: 'If FAA appeal is unsatisfactory, legally appeal to the Central Information Commission (CIC) at cic.gov.in.',
-      faqTitle: 'Frequently Asked Questions',
-      viewAllFaqs: 'View Help Centre FAQs',
-      quickSearch: 'Search Disclosures',
-      quickSearchSub: 'Browse public files',
-      quickAppeal: 'File First Appeal',
-      quickAppealSub: 'Address incomplete replies',
-      quickAuth: 'Find Department',
-      quickAuthSub: 'Search government CPIOs',
-      quickSearchTitle: 'More things you can do',
-      quickReconcile: 'Reconcile Payment',
-      quickReconcileSub: 'Money deducted, request pending?'
+      heroSub: 'File, track and manage your Right to Information requests through one clear, guided journey.',
+      startRti: 'Start an RTI →',
+      trackRti: 'Track an RTI',
+      notSureLink: 'Not sure where to begin? Find the right authority →',
+      quickStartTitle: 'What would you like to do?',
+      quickStartFile: 'File an RTI',
+      quickStartFileDesc: 'Draft and submit a new request with guided assistance',
+      quickStartTrack: 'Track an Application',
+      quickStartTrackDesc: 'Check 30-day deadlines, CPIO status, and updates',
+      quickStartAuth: 'Find an Authority',
+      quickStartAuthDesc: 'Locate central ministries and local government bodies',
+      quickStartLearn: 'Understand RTI',
+      quickStartLearnDesc: 'Read filing rules, fee exemptions, and appeal guides',
+      howTitle: 'How RTI Saathi helps',
+      howSub: 'Navigating public records made simple and legally precise.',
+      authFinderTitle: 'Not sure where to send your request?',
+      authFinderSub: 'Describe what you need in plain language. We will match the designated Public Information Officer (CPIO).',
+      authFinderPlaceholder: 'e.g. I want information about road construction expenditure in my area...',
+      findBtn: 'Find the right authority',
+      searchTitle: 'Search RTI information',
+      searchSub: 'Explore statutory rules, published records, proactive disclosures, and FAQs.',
+      searchPlaceholder: 'Search by keyword (e.g. 30 days limit, Section 8, tender expenditure)...',
+      scopeNotice: 'Covers Central Government ministries and departments. State requests are directed to the designated state portal.'
     },
     hi: {
       heroTitle: 'वह जानकारी प्राप्त करें जिसे जानने का आपको अधिकार है।',
       heroSub: 'सूचना का अधिकार (RTI) के तहत आवेदन दर्ज करें, ट्रैक करें और अपने अनुरोधों को एक स्पष्ट व निर्देशित यात्रा में प्रबंधित करें।',
-      ctaStart: 'आरटीआई आवेदन शुरू करें',
-      ctaTrack: 'मेरा आरटीआई ट्रैक करें',
-      ctaNotSure: 'मुझे समझ नहीं आ रहा कहाँ से शुरू करूँ',
-      searchLabel: 'क्या यह जानकारी पहले से ही प्रकाशित की जा चुकी है?',
-      searchPlaceholder: 'आरटीआई नियम, विभाग या पहले से पूछे गए सवालों को खोजें...',
-      searchBtn: 'खोजें',
-      trustOfficial: 'डेमो वैचारिक मॉडल',
-      trustPayment: 'निःशुल्क डेमो, कोई वास्तविक शुल्क नहीं',
-      trustTrack: 'लाइव स्टेटस टाइमलाइन',
-      trustAlerts: 'एसएमएस / ईमेल अपडेट',
-      trustSupport: 'अभिगम्यता और सहायता',
-      howItWorksTitle: 'आरटीआई साथी कैसे काम करता है',
-      howItWorksSub: 'आरटीआई दाखिल करने के लिए किसी कानूनी डिग्री की आवश्यकता नहीं है। हम कदम-दर-कदम मार्गदर्शन करते हैं।',
-      step1: 'सीपीआईओ को अनुरोध भेजें',
-      step1Desc: 'सीपीआईओ को अपना प्रश्न प्रारूपित करके प्रस्तुत करें।',
-      step2: 'सीपीआईओ निर्णय (30 दिन)',
-      step2Desc: 'सीपीआईओ को 30 दिनों के भीतर आवश्यक रिकॉर्ड प्रदान करना चाहिए या धारा 8 के तहत अस्वीकार करना चाहिए।',
-      step3: 'FAA प्रथम अपील',
-      step3Desc: 'यदि सीपीआईओ अस्वीकार करता है या देरी करता है, तो 30 दिनों के भीतर वरिष्ठ FAA अधिकारी को प्रथम अपील दायर करें।',
-      step4: 'FAA आदेश (30-45 दिन)',
-      step4Desc: 'प्रथम अपील अधिकारी आपकी अपील पर सुनवाई करके अंतिम आदेश जारी करता है।',
-      step5: 'CIC को द्वितीय अपील',
-      step5Desc: 'यदि प्रथम अपील भी असंतोषजनक हो, तो cic.gov.in पर केंद्रीय सूचना आयोग (CIC) में अपील करें।',
-      faqTitle: 'अक्सर पूछे जाने वाले प्रश्न (FAQ)',
-      viewAllFaqs: 'सहायता केंद्र पर सभी प्रश्न देखें',
-      quickActionsTitle: 'आज आप क्या करना चाहते हैं?',
-      quickFile: 'नया आरटीआई दाखिल करें',
-      quickFileSub: 'प्रारूप तैयार करें और भेजें',
-      quickTrack: 'आरटीआई ट्रैक करें',
-      quickTrackSub: 'स्थिति और तिथियों की जांच करें',
-      quickAppeal: 'प्रथम अपील दायर करें',
-      quickAppealSub: 'अधूरे जवाबों का समाधान करें',
-      quickAuth: 'विभाग खोजें',
-      quickAuthSub: 'सरकारी अधिकारियों को खोजें',
-      quickSearch: 'प्रकाशित दस्तावेज़',
-      quickSearchSub: 'सार्वजनिक फाइलों को ब्राउज़ करें',
-      quickSearchTitle: 'अन्य उपलब्ध विकल्प',
-      quickReconcile: 'भुगतान मिलान (Reconciliation)',
-      quickReconcileSub: 'असफल भुगतानों को सिंक्रोनाइज़ करें'
+      startRti: 'आरटीआई शुरू करें →',
+      trackRti: 'आरटीआई ट्रैक करें',
+      notSureLink: 'शुरुआत कहाँ से करें? सही विभाग खोजें →',
+      quickStartTitle: 'आज आप क्या करना चाहते हैं?',
+      quickStartFile: 'आरटीआई दाखिल करें',
+      quickStartFileDesc: 'सरल मार्गदर्शन के साथ नया आवेदन तैयार करें',
+      quickStartTrack: 'आवेदन ट्रैक करें',
+      quickStartTrackDesc: '30-दिवसीय समयसीमा और स्थिति देखें',
+      quickStartAuth: 'विभाग खोजें',
+      quickStartAuthDesc: 'केंद्रीय मंत्रालयों और स्थानीय निकायों को खोजें',
+      quickStartLearn: 'आरटीआई समझें',
+      quickStartLearnDesc: 'नियम, शुल्क छूट और अपील दिशानिर्देश पढ़ें',
+      howTitle: 'आरटीआई साथी कैसे सहायता करता है',
+      howSub: 'सरकारी सूचना प्राप्त करने की प्रक्रिया को सरल और स्पष्ट बनाएं।',
+      authFinderTitle: 'समझ नहीं आ रहा आवेदन कहाँ भेजें?',
+      authFinderSub: 'सरल भाषा में लिखें कि आपको क्या जानकारी चाहिए। हम सही लोक सूचना अधिकारी (CPIO) का सुझाव देंगे।',
+      authFinderPlaceholder: 'उदा. मुझे अपने क्षेत्र में सड़क निर्माण के खर्च की जानकारी चाहिए...',
+      findBtn: 'सही विभाग खोजें',
+      searchTitle: 'आरटीआई जानकारी खोजें',
+      searchSub: 'कानूनी नियम, प्रकाशित दस्तावेज और अक्सर पूछे जाने वाले प्रश्नों में खोजें।',
+      searchPlaceholder: 'सर्च करें (उदा. 30 दिन की सीमा, धारा 8, टेंडर खर्च)...',
+      scopeNotice: 'केंद्र सरकार के मंत्रालयों को कवर करता है। राज्य के आवेदनों को उनके आधिकारिक पोर्टल पर भेजा जाता है।'
     }
   }[language];
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!searchQuery.trim()) {
-      setSearchResults([]);
-      setDisclosureResults([]);
-      return;
-    }
-    const query = searchQuery.toLowerCase();
-    
-    // Search disclosures
-    const discResults = mockDisclosures.filter(disc => 
-      disc.keywords.some(kw => query.includes(kw)) ||
-      disc.title.toLowerCase().includes(query) ||
-      disc.ministry.toLowerCase().includes(query) ||
-      disc.snippet.toLowerCase().includes(query)
-    );
-    setDisclosureResults(discResults);
-
-    // Search FAQs
-    const results = faqs.filter(faq => 
-      faq.question.toLowerCase().includes(query) || 
-      faq.answer.toLowerCase().includes(query) || 
-      faq.category.toLowerCase().includes(query)
-    );
-    setSearchResults(results);
-  };
-
   return (
-    <div className="flex-1 bg-slate-50 dark:bg-slate-950">
+    <div className="flex-1 bg-[#F7F8FA]">
       
-      {/* Hero Section */}
-      <section className="relative overflow-hidden py-16 lg:py-24 bg-gradient-to-b from-primary-navy/5 via-transparent to-transparent">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center relative z-10">
-          
-          <div className="inline-flex items-center gap-1.5 rounded-full bg-secondary-saffron/10 px-3.5 py-1.5 text-xs font-bold text-secondary-saffron mb-6 border border-secondary-saffron/20 animate-pulse-slow">
-            <Sparkles className="h-3.5 w-3.5" />
-            <span>AI-Guided Citizen Services Dashboard</span>
-          </div>
-
-          <h2 className="mx-auto max-w-4xl text-3xl font-extrabold tracking-tight text-primary-navy sm:text-5xl md:text-6xl leading-[1.1] dark:text-white">
-            {t.heroTitle}
-          </h2>
-          
-          <p className="mx-auto mt-6 max-w-2xl text-base sm:text-lg text-slate-605 leading-relaxed dark:text-slate-400">
-            {t.heroSub}
-          </p>
-
-          <p className="mx-auto mt-3 max-w-xl text-xs sm:text-sm text-slate-500 font-semibold leading-relaxed dark:text-slate-400">
-            {language === 'en' 
-              ? 'Covers Central Government departments. State requests are routed to the official state portal.' 
-              : 'केवल केंद्र सरकार के विभागों को कवर करता है। राज्य के आवेदनों को उनके आधिकारिक राज्य पोर्टल पर भेजा जाता है।'}
-          </p>
-
-          <div className="mt-8 flex flex-col items-center gap-4">
-            {/* One dominant primary button */}
-            <button
-              onClick={() => setActiveView('onboarding')}
-              className="w-full sm:w-80 inline-flex items-center justify-center rounded-xl bg-primary-navy px-8 py-4.5 text-sm font-extrabold text-white shadow-md hover:bg-primary-blue hover:-translate-y-0.5 transition-all focus-ring cursor-pointer dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100"
-            >
-              {language === 'en' ? 'Start an RTI ➔' : 'आरटीआई शुरू करें ➔'}
-            </button>
-
-            {/* Secondary actions for Judges & Returning Citizens */}
-            <div className="flex flex-wrap justify-center gap-3">
-              <button
-                onClick={() => setActiveView('auth')}
-                className="inline-flex items-center gap-1.5 rounded-xl bg-amber-50 border border-amber-300 px-5 py-2.5 text-xs font-extrabold text-amber-900 hover:bg-amber-100 transition-all focus-ring cursor-pointer shadow-3xs"
-              >
-                <Sparkles className="h-3.5 w-3.5 text-amber-600" />
-                <span>{language === 'en' ? 'Judge Demo Mode / Sign In' : 'डेमो मोड / साइन इन'}</span>
-              </button>
-
-              <button
-                onClick={() => setActiveView('dashboard')}
-                className="inline-flex items-center justify-center rounded-xl bg-white border border-slate-200 px-5 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-all focus-ring cursor-pointer shadow-3xs dark:bg-slate-900 dark:border-slate-800 dark:text-slate-350"
-              >
-                {t.ctaTrack}
-              </button>
-
-              <button
-                onClick={() => setActiveView('onboarding')}
-                className="inline-flex items-center gap-1.5 rounded-xl border border-blue-200 bg-blue-50/50 hover:bg-blue-100/40 px-5 py-2.5 text-xs font-bold text-primary-blue hover:text-primary-navy transition-all focus-ring cursor-pointer shadow-3xs dark:bg-blue-950/20 dark:border-blue-900/30"
-              >
-                <HelpCircle className="h-3.5 w-3.5" />
-                <span>{language === 'en' ? 'Not sure? Start here' : 'पता नहीं कहाँ से शुरू करें? यहाँ क्लिक करें'}</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Trust Strip */}
-      <section className="bg-white border-y border-slate-200 py-6 dark:bg-slate-900 dark:border-slate-800">
+      {/* ========================================================================= */}
+      {/* 1. HERO SECTION (Balanced 2-Column Citizen Service Layout) */}
+      {/* ========================================================================= */}
+      <section className="border-b border-[#D9E0E6] bg-white py-12 lg:py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-center">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
             
-            <div className="flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl bg-emerald-50/40 border border-emerald-100/50 dark:bg-emerald-950/10 dark:border-emerald-900/20">
-              <ShieldCheck className="h-5 w-5 text-emerald-600" />
-              <span className="text-[11px] font-bold text-emerald-800 dark:text-emerald-350">{t.trustOfficial}</span>
-            </div>
-
-            <div className="flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl bg-emerald-50/40 border border-emerald-100/50 dark:bg-emerald-950/10 dark:border-emerald-900/20">
-              <CreditCard className="h-5 w-5 text-emerald-600" />
-              <span className="text-[11px] font-bold text-emerald-800 dark:text-emerald-350">{t.trustPayment}</span>
-            </div>
-
-            <div className="flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl bg-emerald-50/40 border border-emerald-100/50 dark:bg-emerald-950/10 dark:border-emerald-900/20">
-              <Clock className="h-5 w-5 text-emerald-600" />
-              <span className="text-[11px] font-bold text-emerald-800 dark:text-emerald-350">{t.trustTrack}</span>
-            </div>
-
-            <div className="flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl bg-emerald-50/40 border border-emerald-100/50 dark:bg-emerald-950/10 dark:border-emerald-900/20">
-              <BellRing className="h-5 w-5 text-emerald-600" />
-              <span className="text-[11px] font-bold text-emerald-800 dark:text-emerald-350">{t.trustAlerts}</span>
-            </div>
-
-            <div className="flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl bg-emerald-50/40 border border-emerald-100/50 dark:bg-emerald-950/10 dark:border-emerald-900/20 col-span-2 md:col-span-1">
-              <HelpCircle className="h-5 w-5 text-emerald-600" />
-              <span className="text-[11px] font-bold text-emerald-800 dark:text-emerald-350">{t.trustSupport}</span>
-            </div>
-
-          </div>
-        </div>
-      </section>
-
-      {/* 5-Step Process "How RTI Works" (Promoted Higher) */}
-      <section className="py-16 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-3xl mx-auto mb-12">
-          <h3 className="text-2xl font-bold text-primary-navy dark:text-white">{t.howItWorksTitle}</h3>
-          <p className="text-sm text-slate-500 mt-2">{t.howItWorksSub}</p>
-        </div>
-
-        <div className="relative">
-          {/* Connector Line (Desktop) */}
-          <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-slate-200 -translate-y-1/2 z-0 hidden lg:block" />
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-8 relative z-10">
-            
-            {/* Step 1 */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm dark:bg-slate-900 dark:border-slate-800 flex flex-col justify-between h-full">
-              <div>
-                <div className="flex justify-between items-center mb-4">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-navy text-white text-sm font-bold shadow">
-                    01
-                  </div>
-                  <span className="text-[9px] font-bold bg-blue-50 text-primary-blue px-2 py-0.5 rounded dark:bg-blue-950/40 dark:text-blue-300">
-                    Sec 6(1)
-                  </span>
-                </div>
-                <h4 className="font-bold text-slate-900 text-sm dark:text-white">{t.step1}</h4>
-                <p className="text-xs text-slate-500 mt-2 leading-relaxed dark:text-slate-400">{t.step1Desc}</p>
+            {/* Left Column: Heading & CTAs (7 cols) */}
+            <div className="lg:col-span-7 space-y-6">
+              
+              <div className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1 text-xs font-extrabold text-[#123B5D] border border-blue-200/60">
+                <ShieldCheck className="h-3.5 w-3.5 text-[#123B5D]" />
+                <span>RTI Act 2005 Citizen Portal</span>
               </div>
-              <div className="text-[10px] font-bold text-slate-400 mt-4 pt-2 border-t border-slate-100 dark:border-slate-800">
-                Action: Draft & File
-              </div>
-            </div>
 
-            {/* Step 2 */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm dark:bg-slate-900 dark:border-slate-800 flex flex-col justify-between h-full">
-              <div>
-                <div className="flex justify-between items-center mb-4">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-navy text-white text-sm font-bold shadow">
-                    02
-                  </div>
-                  <span className="text-[9px] font-bold bg-amber-50 text-amber-600 px-2 py-0.5 rounded dark:bg-amber-950/40 dark:text-amber-300">
-                    Sec 7(1)
-                  </span>
-                </div>
-                <h4 className="font-bold text-slate-900 text-sm dark:text-white">{t.step2}</h4>
-                <p className="text-xs text-slate-500 mt-2 leading-relaxed dark:text-slate-400">{t.step2Desc}</p>
-              </div>
-              <div className="text-[10px] font-bold text-amber-600 mt-4 pt-2 border-t border-slate-100 dark:border-slate-800">
-                Limit: 30 Days
-              </div>
-            </div>
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-[#17212B] leading-[1.15]">
+                {t.heroTitle}
+              </h1>
 
-            {/* Step 3 */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm dark:bg-slate-900 dark:border-slate-800 flex flex-col justify-between h-full">
-              <div>
-                <div className="flex justify-between items-center mb-4">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-navy text-white text-sm font-bold shadow">
-                    03
-                  </div>
-                  <span className="text-[9px] font-bold bg-purple-50 text-purple-700 px-2 py-0.5 rounded dark:bg-purple-950/40 dark:text-purple-300">
-                    Sec 19(1)
-                  </span>
-                </div>
-                <h4 className="font-bold text-slate-900 text-sm dark:text-white">{t.step3}</h4>
-                <p className="text-xs text-slate-500 mt-2 leading-relaxed dark:text-slate-400">{t.step3Desc}</p>
-              </div>
-              <div className="text-[10px] font-bold text-purple-700 mt-4 pt-2 border-t border-slate-100 dark:border-slate-800">
-                Limit: 30 Days
-              </div>
-            </div>
+              <p className="text-base sm:text-lg text-[#52606D] font-normal leading-relaxed max-w-2xl">
+                {t.heroSub}
+              </p>
 
-            {/* Step 4 */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm dark:bg-slate-900 dark:border-slate-800 flex flex-col justify-between h-full">
-              <div>
-                <div className="flex justify-between items-center mb-4">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-navy text-white text-sm font-bold shadow">
-                    04
-                  </div>
-                  <span className="text-[9px] font-bold bg-purple-50 text-purple-700 px-2 py-0.5 rounded dark:bg-purple-950/40 dark:text-purple-300">
-                    Sec 19(6)
-                  </span>
-                </div>
-                <h4 className="font-bold text-slate-900 text-sm dark:text-white">{t.step4}</h4>
-                <p className="text-xs text-slate-500 mt-2 leading-relaxed dark:text-slate-400">{t.step4Desc}</p>
-              </div>
-              <div className="text-[10px] font-bold text-purple-700 mt-4 pt-2 border-t border-slate-100 dark:border-slate-800">
-                Limit: 30-45 Days
-              </div>
-            </div>
-
-            {/* Step 5 */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm dark:bg-slate-900 dark:border-slate-800 flex flex-col justify-between h-full">
-              <div>
-                <div className="flex justify-between items-center mb-4">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-secondary-saffron text-white text-sm font-bold shadow animate-pulse">
-                    05
-                  </div>
-                  <span className="text-[9px] font-bold bg-red-50 text-red-705 px-2 py-0.5 rounded dark:bg-red-950/40 dark:text-red-300">
-                    Sec 19(3)
-                  </span>
-                </div>
-                <h4 className="font-bold text-slate-900 text-sm dark:text-white">{t.step5}</h4>
-                <p className="text-xs text-slate-500 mt-2 leading-relaxed dark:text-slate-400">{t.step5Desc}</p>
-              </div>
-              <div className="text-[10px] font-bold text-red-700 mt-4 pt-2 border-t border-slate-100 dark:border-slate-800">
-                External Appeal
-              </div>
-            </div>
-
-          </div>
-        </div>
-      </section>
-
-      {/* More things you can do (2 secondary actions) */}
-      <section className="py-12 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 border-t border-slate-250/60 dark:border-slate-850">
-        <h3 className="text-xs font-extrabold text-slate-400 uppercase tracking-widest mb-6 text-center sm:text-left">
-          {t.quickSearchTitle}
-        </h3>
-        
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-3xl">
-          {/* Action 1: Search disclosures */}
-          <div 
-            onClick={() => {
-              const el = document.getElementById('search-info-bar');
-              if (el) el.scrollIntoView({ behavior: 'smooth' });
-            }}
-            className="group rounded-2xl bg-white border border-slate-200 p-6 hover:shadow-md hover:border-slate-350 transition-all cursor-pointer dark:bg-slate-900 dark:border-slate-850"
-          >
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-purple-50 text-purple-500 group-hover:bg-purple-500 group-hover:text-white transition-colors mb-4 dark:bg-purple-950/20">
-              <BookOpen className="h-6 w-6" />
-            </div>
-            <h4 className="font-bold text-slate-900 text-base dark:text-white">{t.quickSearch}</h4>
-            <p className="text-xs text-slate-500 mt-2 leading-relaxed dark:text-slate-400">{t.quickSearchSub}</p>
-          </div>
-
-          {/* Action 2: File an appeal */}
-          <div 
-            onClick={() => setActiveView('dashboard')}
-            className="group rounded-2xl bg-white border border-slate-200 p-6 hover:shadow-md hover:border-slate-350 transition-all cursor-pointer dark:bg-slate-900 dark:border-slate-850"
-          >
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-red-50 text-red-500 group-hover:bg-red-500 group-hover:text-white transition-colors mb-4 dark:bg-red-950/20">
-              <Scale className="h-6 w-6" />
-            </div>
-            <h4 className="font-bold text-slate-900 text-base dark:text-white">{t.quickAppeal}</h4>
-            <p className="text-xs text-slate-500 mt-2 leading-relaxed dark:text-slate-400">{t.quickAppealSub}</p>
-          </div>
-        </div>
-      </section>
-
-      {/* Information Search Bar Section */}
-      <section id="search-info-bar" className="py-12 bg-white border-y border-slate-200 dark:bg-slate-900 dark:border-slate-800">
-        <div className="mx-auto max-w-4xl px-4 sm:px-6">
-          <div className="text-center mb-6">
-            <h3 className="text-xl font-bold text-primary-navy dark:text-white">{t.searchLabel}</h3>
-            <p className="text-xs text-slate-500 mt-1">Section 4 of the RTI Act mandates proactive government disclosures. Search them here before filing.</p>
-          </div>
-
-          <form onSubmit={handleSearch} className="flex gap-2 p-1.5 border border-slate-350 rounded-2xl bg-slate-50 focus-within:border-primary-blue shadow-sm dark:bg-slate-900 dark:border-slate-850">
-            <div className="flex items-center pl-3 text-slate-400">
-              <Search className="h-5 w-5" />
-            </div>
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={t.searchPlaceholder}
-              className="flex-1 bg-transparent px-3 py-2 text-sm font-medium text-slate-800 outline-none placeholder:text-slate-400 dark:text-white"
-            />
-            <button
-              type="submit"
-              className="rounded-xl bg-primary-navy px-5 py-2 text-xs font-bold text-white hover:bg-primary-blue transition-colors cursor-pointer"
-            >
-              {t.searchBtn}
-            </button>
-          </form>
-
-          {/* Search Results Display */}
-          {disclosureResults.length > 0 && (
-            <div className="mt-6 rounded-2xl border border-blue-200 bg-blue-50/20 p-5 space-y-4 animate-in fade-in duration-200">
-              <div className="flex items-start gap-2.5">
-                <Sparkles className="h-5 w-5 text-primary-blue shrink-0 mt-0.5" />
-                <div>
-                  <h4 className="font-extrabold text-sm text-primary-navy">We found something that may answer your question:</h4>
-                  <p className="text-xs text-slate-500 leading-snug mt-0.5">The government has proactively published details related to this topic. Check this before filing to save time.</p>
-                </div>
-              </div>
-              <div className="space-y-3">
-                {disclosureResults.map((disc, idx) => (
-                  <div key={idx} className="bg-white rounded-xl p-4 border border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-3xs">
-                    <div className="space-y-1">
-                      <span className="text-[9px] font-extrabold uppercase tracking-wider text-primary-blue bg-blue-50 px-2 py-0.5 rounded">
-                        {disc.category}
-                      </span>
-                      <h5 className="font-bold text-slate-800 text-sm">{disc.title}</h5>
-                      <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">{disc.snippet}</p>
-                      <span className="text-[10px] text-slate-400 font-bold block">{disc.ministry} • {disc.source}</span>
-                    </div>
-                    <a
-                      href={disc.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="bg-primary-navy hover:bg-primary-blue text-white font-bold text-xs px-4.5 py-2.5 rounded-xl shrink-0 shadow-sm cursor-pointer whitespace-nowrap text-center w-full sm:w-auto"
-                    >
-                      View Information
-                    </a>
-                  </div>
-                ))}
-              </div>
-              <div className="border-t border-slate-250 pt-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 text-xs text-slate-500 leading-snug">
-                <span>Still need more information? You can proceed with drafting a new custom query.</span>
+              {/* Primary & Secondary CTAs */}
+              <div className="pt-2 flex flex-col sm:flex-row items-start sm:items-center gap-3">
                 <button
                   onClick={() => setActiveView('onboarding')}
-                  className="rounded-xl border border-primary-blue text-primary-blue hover:bg-primary-blue hover:text-white px-4.5 py-2.5 font-bold transition-all cursor-pointer whitespace-nowrap"
+                  className="w-full sm:w-auto inline-flex items-center justify-center rounded-xl bg-[#123B5D] hover:bg-[#0A2540] text-white px-7 py-3.5 text-sm font-black shadow-3xs cursor-pointer transition-all hover:scale-[1.01]"
                 >
-                  Continue with RTI
+                  {t.startRti}
+                </button>
+
+                <button
+                  onClick={() => setActiveView('dashboard')}
+                  className="w-full sm:w-auto inline-flex items-center justify-center rounded-xl bg-white border border-[#D9E0E6] hover:bg-slate-50 text-[#17212B] px-6 py-3.5 text-sm font-bold shadow-3xs cursor-pointer transition-colors"
+                >
+                  {t.trackRti}
                 </button>
               </div>
-            </div>
-          )}
 
-          {searchResults.length > 0 && (
-            <div className="mt-6 rounded-xl border border-slate-200 bg-slate-50 p-4 divide-y divide-slate-200 dark:bg-slate-900 dark:border-slate-800">
-              {searchResults.map(faq => (
-                <div key={faq.id} className="py-3 first:pt-0 last:pb-0">
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-[10px] uppercase font-bold text-secondary-saffron tracking-wider bg-blue-50 px-2 py-0.5 rounded">
-                      {faq.category}
-                    </span>
-                    <span className="text-[10px] font-bold text-slate-400 font-mono">{faq.citation}</span>
-                  </div>
-                  <h4 className="text-sm font-bold text-slate-800 mt-1 dark:text-white">{faq.question}</h4>
-                  <p className="text-xs text-slate-650 mt-1 leading-relaxed dark:text-slate-455">{faq.answer}</p>
+              {/* Supporting link */}
+              <div className="pt-1">
+                <button
+                  onClick={() => setActiveView('authorities')}
+                  className="text-xs font-bold text-[#123B5D] hover:underline inline-flex items-center gap-1 cursor-pointer"
+                >
+                  {t.notSureLink}
+                </button>
+              </div>
+
+              <p className="text-xs text-slate-500 font-medium">
+                {t.scopeNotice}
+              </p>
+            </div>
+
+            {/* Right Column: Functional Quick Start Panel (5 cols) */}
+            <div className="lg:col-span-5">
+              <div className="rounded-2xl border border-[#D9E0E6] bg-[#F7F8FA] p-6 shadow-3xs space-y-4">
+                <div className="border-b border-[#D9E0E6] pb-3">
+                  <h2 className="text-sm font-black text-[#17212B] uppercase tracking-wider">
+                    {t.quickStartTitle}
+                  </h2>
                 </div>
-              ))}
+
+                <div className="space-y-2.5">
+                  <button
+                    onClick={() => setActiveView('onboarding')}
+                    className="w-full p-3.5 rounded-xl bg-white hover:bg-blue-50/50 border border-[#D9E0E6] text-left transition-all flex items-center justify-between cursor-pointer group shadow-3xs"
+                  >
+                    <div className="space-y-0.5">
+                      <div className="font-extrabold text-xs text-[#123B5D] flex items-center gap-1.5">
+                        <FileText className="h-4 w-4" />
+                        <span>{t.quickStartFile}</span>
+                      </div>
+                      <div className="text-[11px] text-[#52606D]">{t.quickStartFileDesc}</div>
+                    </div>
+                    <ChevronRight className="h-4 w-4 text-slate-400 group-hover:text-[#123B5D] transition-colors shrink-0" />
+                  </button>
+
+                  <button
+                    onClick={() => setActiveView('dashboard')}
+                    className="w-full p-3.5 rounded-xl bg-white hover:bg-blue-50/50 border border-[#D9E0E6] text-left transition-all flex items-center justify-between cursor-pointer group shadow-3xs"
+                  >
+                    <div className="space-y-0.5">
+                      <div className="font-extrabold text-xs text-[#123B5D] flex items-center gap-1.5">
+                        <Clock className="h-4 w-4" />
+                        <span>{t.quickStartTrack}</span>
+                      </div>
+                      <div className="text-[11px] text-[#52606D]">{t.quickStartTrackDesc}</div>
+                    </div>
+                    <ChevronRight className="h-4 w-4 text-slate-400 group-hover:text-[#123B5D] transition-colors shrink-0" />
+                  </button>
+
+                  <button
+                    onClick={() => setActiveView('authorities')}
+                    className="w-full p-3.5 rounded-xl bg-white hover:bg-blue-50/50 border border-[#D9E0E6] text-left transition-all flex items-center justify-between cursor-pointer group shadow-3xs"
+                  >
+                    <div className="space-y-0.5">
+                      <div className="font-extrabold text-xs text-[#123B5D] flex items-center gap-1.5">
+                        <Landmark className="h-4 w-4" />
+                        <span>{t.quickStartAuth}</span>
+                      </div>
+                      <div className="text-[11px] text-[#52606D]">{t.quickStartAuthDesc}</div>
+                    </div>
+                    <ChevronRight className="h-4 w-4 text-slate-400 group-hover:text-[#123B5D] transition-colors shrink-0" />
+                  </button>
+
+                  <button
+                    onClick={() => setActiveView('help')}
+                    className="w-full p-3.5 rounded-xl bg-white hover:bg-blue-50/50 border border-[#D9E0E6] text-left transition-all flex items-center justify-between cursor-pointer group shadow-3xs"
+                  >
+                    <div className="space-y-0.5">
+                      <div className="font-extrabold text-xs text-[#123B5D] flex items-center gap-1.5">
+                        <BookOpen className="h-4 w-4" />
+                        <span>{t.quickStartLearn}</span>
+                      </div>
+                      <div className="text-[11px] text-[#52606D]">{t.quickStartLearnDesc}</div>
+                    </div>
+                    <ChevronRight className="h-4 w-4 text-slate-400 group-hover:text-[#123B5D] transition-colors shrink-0" />
+                  </button>
+                </div>
+              </div>
             </div>
-          )}
-          {searchQuery && searchResults.length === 0 && disclosureResults.length === 0 && (
-            <div className="mt-4 text-center text-xs text-slate-500 py-4 bg-slate-50 rounded-xl border border-dashed border-slate-200 dark:bg-slate-900 dark:border-slate-800">
-              We couldn't find a matching official result. Try searching with other terms or check out the{' '}
-              <button onClick={() => setActiveView('help')} className="text-primary-blue font-bold hover:underline cursor-pointer">
-                Help Centre FAQ
-              </button>
-              .
-            </div>
-          )}
+
+          </div>
         </div>
       </section>
 
-      {/* Basic FAQ Previews */}
-      <section className="py-12 bg-slate-100/50 border-t border-slate-200 dark:bg-slate-900/30 dark:border-slate-800">
-        <div className="mx-auto max-w-4xl px-4 sm:px-6">
-          <h3 className="text-xl font-bold text-primary-navy text-center mb-8 dark:text-white">{t.faqTitle}</h3>
+      {/* ========================================================================= */}
+      {/* 2. HOW RTI SAATHI HELPS (4 Concise Steps) */}
+      {/* ========================================================================= */}
+      <section className="py-14 bg-[#F7F8FA] border-b border-[#D9E0E6]">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           
-          <div className="space-y-4">
-            {faqs.slice(0, 4).map(faq => (
-              <div key={faq.id} className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:bg-slate-900 dark:border-slate-800">
-                <div className="flex justify-between items-start gap-2">
-                  <h4 className="font-bold text-slate-800 text-sm flex items-start gap-1.5 dark:text-slate-200">
-                    <CornerDownRight className="h-4 w-4 text-secondary-saffron mt-0.5 shrink-0" />
-                    {faq.question}
-                  </h4>
-                  <span className="text-[10px] text-slate-400 font-bold shrink-0">{faq.citation}</span>
-                </div>
-                <p className="text-xs text-slate-500 mt-2 leading-relaxed pl-5 dark:text-slate-400">{faq.answer}</p>
+          <div className="max-w-2xl mb-10">
+            <h2 className="text-2xl font-black text-[#17212B] tracking-tight">
+              {t.howTitle}
+            </h2>
+            <p className="text-xs sm:text-sm text-[#52606D] mt-1 font-medium">
+              {t.howSub}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[
+              {
+                step: '01',
+                title: 'Find the right authority',
+                desc: 'Describe what you need. We match the correct Central Ministry or Public Information Officer (CPIO).'
+              },
+              {
+                step: '02',
+                title: 'Build your request',
+                desc: 'Formulate precise, disclosable questions under Section 6(1) with automated Section 8 exemption screening.'
+              },
+              {
+                step: '03',
+                title: 'Track your application',
+                desc: 'Monitor the 30-day statutory countdown from registration and payment confirmation to CPIO dispatch.'
+              },
+              {
+                step: '04',
+                title: 'Understand the response',
+                desc: 'Review point-by-point disclosures, verify missing records, and file a First Appeal if information is withheld.'
+              }
+            ].map((s, idx) => (
+              <div key={idx} className="space-y-2 border-l-2 border-[#123B5D] pl-4">
+                <span className="text-xs font-black text-[#123B5D] tracking-widest">{s.step}</span>
+                <h3 className="font-extrabold text-sm text-[#17212B]">{s.title}</h3>
+                <p className="text-xs text-[#52606D] leading-relaxed font-normal">{s.desc}</p>
               </div>
             ))}
           </div>
 
-          <div className="mt-8 text-center">
-            <button
-              onClick={() => setActiveView('help')}
-              className="inline-flex items-center justify-center rounded-lg border border-primary-navy px-4 py-2.5 text-xs font-bold text-primary-navy hover:bg-primary-navy hover:text-white transition-all focus-ring cursor-pointer"
-            >
-              {t.viewAllFaqs}
-            </button>
+        </div>
+      </section>
+
+      {/* ========================================================================= */}
+      {/* 3. INTELLIGENT AUTHORITY FINDER SECTION */}
+      {/* ========================================================================= */}
+      <section className="py-14 bg-white border-b border-[#D9E0E6]">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          
+          <div className="max-w-3xl space-y-2 mb-8">
+            <h2 className="text-2xl font-black text-[#17212B] tracking-tight">
+              {t.authFinderTitle}
+            </h2>
+            <p className="text-xs sm:text-sm text-[#52606D] font-normal leading-relaxed">
+              {t.authFinderSub}
+            </p>
           </div>
+
+          <form onSubmit={handleFindAuthority} className="max-w-3xl space-y-3">
+            <div className="flex flex-col sm:flex-row gap-2">
+              <div className="relative flex-1">
+                <Search className="absolute left-3.5 top-3.5 h-4 w-4 text-slate-400" />
+                <input
+                  type="text"
+                  value={authorityQuery}
+                  onChange={(e) => setAuthorityQuery(e.target.value)}
+                  placeholder={t.authFinderPlaceholder}
+                  className="w-full rounded-xl border border-[#D9E0E6] bg-slate-50 pl-10 pr-4 py-3 text-xs font-medium text-slate-800 outline-none focus:border-[#123B5D] focus:bg-white transition-all shadow-3xs"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={isSearchingAuth || !authorityQuery.trim()}
+                className="rounded-xl bg-[#123B5D] hover:bg-[#0A2540] text-white px-6 py-3 text-xs font-extrabold shadow-3xs cursor-pointer transition-all disabled:opacity-50 shrink-0"
+              >
+                {isSearchingAuth ? 'Searching...' : t.findBtn}
+              </button>
+            </div>
+
+            {/* Suggestion Result Output */}
+            {authorityResult && authorityResult.suggestedAuthority && (
+              <div className="mt-4 rounded-2xl border border-blue-200 bg-blue-50/60 p-5 space-y-3 animate-in fade-in">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-black uppercase tracking-wider bg-[#123B5D] text-white px-2 py-0.5 rounded-md">
+                    Suggested Public Authority ({authorityResult.confidence}% Match)
+                  </span>
+                  <span className="text-[11px] font-bold text-slate-500">
+                    Jurisdiction: {authorityResult.jurisdictionLevel}
+                  </span>
+                </div>
+
+                <div className="space-y-1">
+                  <h4 className="font-extrabold text-sm text-[#123B5D]">
+                    {authorityResult.suggestedAuthority.name}
+                  </h4>
+                  <p className="text-xs text-slate-700 font-medium">
+                    {authorityResult.reason}
+                  </p>
+                </div>
+
+                <div className="pt-2 flex items-center justify-between border-t border-blue-200/80">
+                  <span className="text-[11px] text-slate-600">
+                    CPIO: <strong>{authorityResult.suggestedAuthority.cpioName}</strong> ({authorityResult.suggestedAuthority.department})
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setActiveView('onboarding')}
+                    className="text-xs font-black text-[#123B5D] hover:underline inline-flex items-center gap-1 cursor-pointer"
+                  >
+                    Draft Request for this Authority ➔
+                  </button>
+                </div>
+              </div>
+            )}
+          </form>
+
+        </div>
+      </section>
+
+      {/* ========================================================================= */}
+      {/* 4. SEARCH RTI INFORMATION (Official vs Guidance vs Statutory) */}
+      {/* ========================================================================= */}
+      <section className="py-14 bg-[#F7F8FA]">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-6">
+          
+          <div className="max-w-3xl space-y-2">
+            <h2 className="text-2xl font-black text-[#17212B] tracking-tight">
+              {t.searchTitle}
+            </h2>
+            <p className="text-xs sm:text-sm text-[#52606D] font-normal leading-relaxed">
+              {t.searchSub}
+            </p>
+          </div>
+
+          <form onSubmit={handleInfoSearch} className="max-w-2xl">
+            <div className="relative">
+              <Search className="absolute left-3.5 top-3.5 h-4 w-4 text-slate-400" />
+              <input
+                type="text"
+                value={infoQuery}
+                onChange={(e) => setInfoQuery(e.target.value)}
+                placeholder={t.searchPlaceholder}
+                className="w-full rounded-xl border border-[#D9E0E6] bg-white pl-10 pr-4 py-3 text-xs font-medium text-slate-800 outline-none focus:border-[#123B5D] shadow-3xs"
+              />
+            </div>
+          </form>
+
+          {/* Search Result Items */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+            {searchResults.map((item) => (
+              <div 
+                key={item.id}
+                className="rounded-2xl border border-[#D9E0E6] bg-white p-5 shadow-3xs space-y-2 hover:border-slate-300 transition-colors"
+              >
+                <div className="flex items-center justify-between">
+                  <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-md ${
+                    item.sourceType === 'Official Source' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' :
+                    item.sourceType === 'Statutory Rule' ? 'bg-purple-50 text-purple-800 border border-purple-200' :
+                    'bg-blue-50 text-blue-800 border border-blue-200'
+                  }`}>
+                    {item.sourceType}
+                  </span>
+                  <span className="text-[11px] text-slate-400 font-semibold">{item.category}</span>
+                </div>
+
+                <h3 className="font-extrabold text-xs sm:text-sm text-[#17212B]">
+                  {item.title}
+                </h3>
+
+                <p className="text-xs text-[#52606D] leading-relaxed">
+                  {item.snippet}
+                </p>
+
+                <div className="pt-2 text-[11px] text-slate-400 font-medium border-t border-slate-100 flex justify-between items-center">
+                  <span>Source: {item.sourceName}</span>
+                  <button 
+                    onClick={() => setActiveView('help')}
+                    className="text-[#123B5D] font-bold hover:underline cursor-pointer"
+                  >
+                    Read Guide ➔
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
         </div>
       </section>
 
