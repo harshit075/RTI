@@ -40,13 +40,13 @@ export default function DashboardView({
       case 'Processing':
         return 'bg-blue-50 text-blue-700 border-blue-200';
       case 'Response Pending':
-        return 'bg-amber-50 text-amber-700 border-amber-200';
+        return 'bg-amber-50 text-amber-800 border-amber-250 font-extrabold';
       case 'Response Received':
-        return 'bg-emerald-50 text-emerald-700 border-emerald-250';
+        return 'bg-emerald-50 text-emerald-800 border-emerald-300 font-extrabold';
       case 'First Appeal Filed':
         return 'bg-purple-50 text-purple-700 border-purple-200';
       case 'FAA Decision Received':
-        return 'bg-slate-100 text-slate-700 border-slate-300';
+        return 'bg-slate-100 text-slate-700 border-slate-350';
       default:
         return 'bg-slate-50 text-slate-500 border-slate-200';
     }
@@ -57,17 +57,17 @@ export default function DashboardView({
       en: {
         'Submitted': '✓ Submitted',
         'Processing': '→ Processing',
-        'Response Pending': '⌛ Response Pending',
-        'Response Received': '✓ Response Received',
-        'First Appeal Filed': '⚠ First Appeal Filed',
+        'Response Pending': '🟠 Response Pending',
+        'Response Received': '🟢 Response Received',
+        'First Appeal Filed': '🔴 First Appeal Filed',
         'FAA Decision Received': '✓ Appeal Final Decision'
       },
       hi: {
         'Submitted': '✓ जमा किया गया',
         'Processing': '→ प्रोसेसिंग में',
-        'Response Pending': '⌛ उत्तर लंबित',
-        'Response Received': '✓ उत्तर प्राप्त हुआ',
-        'First Appeal Filed': '⚠ प्रथम अपील दायर',
+        'Response Pending': '🟠 उत्तर लंबित',
+        'Response Received': '🟢 उत्तर प्राप्त हुआ',
+        'First Appeal Filed': '🔴 प्रथम अपील दायर',
         'FAA Decision Received': '✓ अपील अंतिम निर्णय'
       }
     }[language];
@@ -205,11 +205,23 @@ export default function DashboardView({
                   className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm hover:shadow-md transition-shadow dark:bg-slate-900 dark:border-slate-800 flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
                 >
                   <div className="space-y-2 flex-1">
-                    <div className="flex items-center flex-wrap gap-2">
-                      <span className={`text-[10px] font-bold border px-2 py-0.5 rounded-full ${getStatusStyle(rti.status)}`}>
-                        {getStatusText(rti.status)}
+                    <div className="flex items-center flex-wrap gap-2 animate-in fade-in duration-200">
+                      {rti.status === 'Response Pending' || rti.status === 'Submitted' ? (
+                        <span className="text-[10.5px] font-extrabold bg-amber-50 text-amber-850 border border-amber-200 px-3 py-1 rounded-full flex items-center gap-1.5 shadow-2xs">
+                          <span className="relative flex h-2 w-2">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+                          </span>
+                          <span>Response pending - {daysLeft > 0 ? `${daysLeft} days remaining` : 'Deadline Expired'}</span>
+                        </span>
+                      ) : (
+                        <span className={`text-[10.5px] font-extrabold border px-3 py-1 rounded-full ${getStatusStyle(rti.status)} shadow-2xs`}>
+                          {getStatusText(rti.status)}
+                        </span>
+                      )}
+                      <span className="text-[10px] text-slate-500 font-mono font-bold bg-slate-100 px-2 py-1 rounded-lg border border-slate-200">
+                        Reg No: {rti.registrationNumber || 'Pending'}
                       </span>
-                      <span className="text-[10px] text-slate-400 font-mono font-bold">{rti.registrationNumber || 'Pending'}</span>
                     </div>
 
                     <div>

@@ -53,61 +53,79 @@ export default function OnboardingView({ setActiveView, setDraftRti, language }:
     setTimeout(() => {
       const lowerText = rawText.toLowerCase();
       
-      // 1. Check Suitability (Good RTI vs Needs Improvement)
+      // 1. Check Indic Input (Hinglish or Devanagari characters)
+      const hasIndicChars = /[\u0900-\u097F]/.test(rawText);
+      const indicKeywords = ['mujhe', 'kharcha', 'gaon', 'road', 'pichle', 'saal', 'chahiye', 'paisa', 'kam', 'kab', 'kaise'];
+      const hasIndicKeywords = indicKeywords.some(kw => lowerText.includes(kw));
+      const isIndicInput = hasIndicChars || hasIndicKeywords;
+      
+      let indicTranslation = '';
+      if (isIndicInput) {
+        if (lowerText.includes('road') || lowerText.includes('kharcha') || lowerText.includes('sarak') || lowerText.includes('sadak')) {
+          indicTranslation = 'Provide administrative sanctions, expenditure logs, and contractor details for road construction in Rampur village during the last 3 years.';
+        } else {
+          indicTranslation = 'Provide standard operating procedures, police verification timelines, and officer remarks regarding the delayed passport issue.';
+        }
+      }
+
+      // 2. Check Suitability (Good RTI vs Needs Improvement)
       let isGood = true;
       let suitabilityFeedback = 'Your request is well-structured and focuses on accessing records, which is appropriate for RTI.';
       
-      if (lowerText.includes('why did you') || lowerText.includes('why is') || lowerText.includes('how can you') || lowerText.includes('why are you ignoring')) {
+      if (lowerText.includes('why did you') || lowerText.includes('why is') || lowerText.includes('how can you') || lowerText.includes('why are you ignoring') || lowerText.includes('kyun') || lowerText.includes('kyu')) {
         isGood = false;
-        suitabilityFeedback = 'Needs Improvement: RTI is primarily for accessing records, file notes, orders, and documents that already exist. Try requesting the recorded reasons, file movements, or correspondence regarding your issue, rather than asking general "Why" questions or demanding explanations.';
+        suitabilityFeedback = 'Needs Modification: RTI is primarily for accessing records, files, orders, and documents that already exist. Try requesting the recorded reasons, file movements, or correspondence regarding your issue, rather than asking general "Why" questions or demanding explanations.';
       }
 
-      // 2. Extract entities
+      // 3. Extract entities
       let timePeriod = 'Not specified';
       if (lowerText.match(/(2022|2023|2024|2025|2026)/g)) {
         const years = lowerText.match(/(2022|2023|2024|2025|2026)/g);
         timePeriod = years ? [...new Set(years)].join(' to ') : 'Not specified';
-      } else if (lowerText.includes('3 years') || lowerText.includes('three years')) {
+      } else if (lowerText.includes('3 years') || lowerText.includes('three years') || lowerText.includes('3 saal') || lowerText.includes('teen saal')) {
         timePeriod = 'Last 3 years';
       }
 
       let location = 'Central jurisdiction / Not specific';
-      if (lowerText.includes('rampur') || lowerText.includes('alwar') || lowerText.includes('village')) {
+      if (lowerText.includes('rampur') || lowerText.includes('alwar') || lowerText.includes('village') || lowerText.includes('gaon')) {
         location = 'Rampur Village, Alwar District';
       } else if (lowerText.includes('jaipur')) {
         location = 'Jaipur Junction Railway Station';
       }
 
-      // 3. Central vs State routing check
+      // 4. Central vs State routing check
       let isStateDept = false;
       let routingWarning = null;
-      if (lowerText.includes('panchayat') || lowerText.includes('municipal') || lowerText.includes('state road') || lowerText.includes('rajasthan')) {
-        // If it specifically mentions road in village Rampur, it might be state government (Gram Panchayat / PWD)
-        if (selectedTopic === 'road') {
-          isStateDept = true;
-          routingWarning = 'This request concerns a local village road, which falls under the State Government of Rajasthan. The Central RTI Online portal cannot process state-level applications. We recommend submitting this to the Rajasthan state RTI department.';
-        }
+      if (lowerText.includes('school') && (lowerText.includes('rajasthan') || lowerText.includes('state') || lowerText.includes('local'))) {
+        isStateDept = true;
+        routingWarning = 'This request concerns a local village school in Rajasthan, which falls under the State Government of Rajasthan. The Central RTI Online portal cannot process state-level applications. We recommend submitting this to the Rajasthan state RTI department.';
+      } else if (lowerText.includes('panchayat') || lowerText.includes('municipal') || lowerText.includes('state road') || lowerText.includes('rajasthan')) {
+        isStateDept = true;
+        routingWarning = 'This request concerns state/local government records, which fall under the State Government jurisdiction. The Central RTI Online portal cannot process state-level applications. We recommend submitting this to the state RTI department.';
       }
 
-      // 4. Find suitable authority
+      // 5. Find suitable authority
       let suggestedAuth: Authority = mockAuthorities[0]; // default
-      if (selectedTopic === 'passport') {
+      let matchWhy = 'This public authority regulates and manages records matching your inquiry categories.';
+      
+      if (lowerText.includes('passport')) {
         suggestedAuth = mockAuthorities.find(a => a.id === 'passport')!;
-      } else if (selectedTopic === 'aadhaar') {
+        matchWhy = 'Your request concerns delays in passport processing and status checks, which are handled by the CPV Division.';
+      } else if (lowerText.includes('aadhaar') || lowerText.includes('uidai') || lowerText.includes('biometric')) {
         suggestedAuth = mockAuthorities.find(a => a.id === 'uidai')!;
-      } else if (selectedTopic === 'railway') {
+        matchWhy = 'Your request concerns Aadhaar correction requests and status updates, managed by UIDAI.';
+      } else if (lowerText.includes('railway') || lowerText.includes('train') || lowerText.includes('station')) {
         suggestedAuth = mockAuthorities.find(a => a.id === 'railways')!;
-      } else if (selectedTopic === 'epf') {
+        matchWhy = 'Your request concerns railway station tender awards and project files, managed by the Railway Board.';
+      } else if (lowerText.includes('epf') || lowerText.includes('provident') || lowerText.includes('pf')) {
         suggestedAuth = mockAuthorities.find(a => a.id === 'epfo')!;
-      } else if (selectedTopic === 'road') {
+        matchWhy = 'Your request concerns transfer of EPF balance and claim processing, managed by the EPFO.';
+      } else if (lowerText.includes('road') || lowerText.includes('highway') || lowerText.includes('construction') || lowerText.includes('contractor') || lowerText.includes('road')) {
         suggestedAuth = mockAuthorities.find(a => a.id === 'morth')!;
-      } else if (selectedTopic === 'education') {
+        matchWhy = 'Your request concerns road construction and highway project expenditures, managed by the NHAI / MoRTH.';
+      } else if (lowerText.includes('education') || lowerText.includes('college') || lowerText.includes('school') || lowerText.includes('ugc') || lowerText.includes('university')) {
         suggestedAuth = mockAuthorities.find(a => a.id === 'ugc')!;
-      } else {
-        // default match based on words
-        if (lowerText.includes('rail')) suggestedAuth = mockAuthorities.find(a => a.id === 'railways')!;
-        else if (lowerText.includes('passport')) suggestedAuth = mockAuthorities.find(a => a.id === 'passport')!;
-        else if (lowerText.includes('road') || lowerText.includes('highway')) suggestedAuth = mockAuthorities.find(a => a.id === 'morth')!;
+        matchWhy = 'Your request concerns university grants, college recognition, or higher education project files, managed by UGC.';
       }
 
       setAnalysisResult({
@@ -118,6 +136,9 @@ export default function OnboardingView({ setActiveView, setDraftRti, language }:
         isStateDept,
         routingWarning,
         suggestedAuth,
+        matchWhy,
+        isIndicInput,
+        indicTranslation,
         extractedTopic: selectedTopic || 'General Inquiry'
       });
       setAnalyzing(false);
@@ -134,7 +155,7 @@ export default function OnboardingView({ setActiveView, setDraftRti, language }:
       authorityName: analysisResult.suggestedAuth.name,
       location: analysisResult.location,
       timePeriod: analysisResult.timePeriod,
-      rawText: rawText,
+      rawText: analysisResult.isIndicInput ? analysisResult.indicTranslation : rawText,
       isStateDept: analysisResult.isStateDept
     });
     
@@ -231,11 +252,27 @@ export default function OnboardingView({ setActiveView, setDraftRti, language }:
       {analysisResult && (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
           
+          {/* Indic Assistant Translator */}
+          {analysisResult.isIndicInput && (
+            <div className="rounded-2xl border border-amber-250 bg-amber-50/20 text-amber-900 p-5 shadow-2xs">
+              <div className="flex items-start gap-3">
+                <span className="text-xl shrink-0">🇮🇳</span>
+                <div>
+                  <h4 className="font-bold text-sm text-amber-800">Indic Language Assistant (Hinglish/Hindi detected)</h4>
+                  <p className="text-xs mt-1 leading-relaxed opacity-95">We formalized your request for optimal legal clarity:</p>
+                  <p className="text-xs font-bold mt-2 bg-white/70 p-2.5 rounded-lg border border-amber-100 italic text-slate-800">
+                    "{analysisResult.indicTranslation}"
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Suitability Box (Section 8) */}
           <div className={`rounded-2xl border p-5 ${
             analysisResult.isGood 
               ? 'bg-emerald-50 border-emerald-200 text-emerald-800' 
-              : 'bg-amber-50 border-amber-200 text-amber-800'
+              : 'bg-amber-50 border-amber-200 text-amber-850'
           }`}>
             <div className="flex items-start gap-3">
               {analysisResult.isGood ? (
@@ -256,9 +293,9 @@ export default function OnboardingView({ setActiveView, setDraftRti, language }:
 
           {/* Central vs State routing warning (Section 23) */}
           {analysisResult.isStateDept && (
-            <div className="rounded-2xl border bg-blue-50 border-blue-200 text-blue-900 p-5">
+            <div className="rounded-2xl border bg-red-50 border-red-200 text-red-950 p-5">
               <div className="flex items-start gap-3">
-                <AlertTriangle className="h-5.5 w-5.5 text-blue-600 shrink-0 mt-0.5 animate-bounce" />
+                <AlertTriangle className="h-5.5 w-5.5 text-red-650 shrink-0 mt-0.5 animate-bounce" />
                 <div>
                   <h4 className="font-bold text-sm">State Jurisdiction Detected</h4>
                   <p className="text-xs mt-1 leading-relaxed opacity-90">{analysisResult.routingWarning}</p>
@@ -266,9 +303,9 @@ export default function OnboardingView({ setActiveView, setDraftRti, language }:
                     href="https://sso.rajasthan.gov.in" 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="inline-block mt-3 bg-blue-600 hover:bg-blue-700 text-white font-bold text-[11px] px-3.5 py-1.5 rounded-lg shadow-sm"
+                    className="inline-block mt-3 bg-red-650 hover:bg-red-750 text-white font-bold text-[11px] px-3.5 py-1.5 rounded-lg shadow-sm"
                   >
-                    Open Rajasthan State RTI Route ↗
+                    Go to official Rajasthan RTI service ↗
                   </a>
                 </div>
               </div>
@@ -277,7 +314,12 @@ export default function OnboardingView({ setActiveView, setDraftRti, language }:
 
           {/* Suggested Department Box (Section 7) */}
           <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:bg-slate-900 dark:border-slate-800">
-            <h4 className="font-bold text-xs uppercase tracking-wider text-slate-400 mb-4">Suggested Public Authority</h4>
+            <div className="flex justify-between items-center mb-4">
+              <h4 className="font-bold text-xs uppercase tracking-wider text-slate-400">Suggested Public Authority</h4>
+              <span className="bg-emerald-100 text-success-green text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">
+                Match: High
+              </span>
+            </div>
             
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
               <div className="flex items-center gap-3">
@@ -293,15 +335,11 @@ export default function OnboardingView({ setActiveView, setDraftRti, language }:
                   </p>
                 </div>
               </div>
-
-              <span className="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">
-                Confidence: High
-              </span>
             </div>
 
-            <div className="border-t border-slate-150 my-4 pt-4 text-xs text-slate-600 dark:text-slate-400">
-              <span className="font-semibold text-slate-800 block mb-1 dark:text-slate-200">Why was this authority matched?</span>
-              Your request mentions <span className="font-bold text-slate-800 dark:text-slate-200">"{selectedTopic}"</span> parameters. Under the Government delegation allocation of rules, this department regulates and maintains official records for such queries.
+            <div className="border-t border-slate-150 my-4 pt-4 text-xs text-slate-650 dark:text-slate-400">
+              <span className="font-semibold text-slate-800 block mb-1 dark:text-slate-200">Why?</span>
+              {analysisResult.matchWhy}
             </div>
 
             <div className="bg-slate-50 border border-slate-150 rounded-xl p-3 flex flex-wrap gap-4 text-xs">
@@ -318,10 +356,13 @@ export default function OnboardingView({ setActiveView, setDraftRti, language }:
             {/* CTA to proceed */}
             <div className="mt-6 flex justify-end gap-3">
               <button
-                onClick={() => setAnalysisResult(null)}
-                className="rounded-xl border border-slate-200 px-4 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-50 cursor-pointer"
+                onClick={() => {
+                  setAnalysisResult(null);
+                  setSelectedTopic('other'); // lets user select other category manually
+                }}
+                className="rounded-xl border border-slate-200 px-4 py-2.5 text-xs font-bold text-slate-650 hover:bg-slate-50 cursor-pointer"
               >
-                Reset Matching
+                See other authorities
               </button>
               <button
                 onClick={proceedToBuilder}

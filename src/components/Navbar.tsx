@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { FileText, Bell, Globe, Sparkles, User, Sun, ShieldCheck } from 'lucide-react';
+import { FileText, Bell, Globe, Sparkles, User, Sun, Moon, ShieldCheck } from 'lucide-react';
 
 interface NavbarProps {
   activeView: string;
@@ -20,6 +20,8 @@ interface NavbarProps {
     read: boolean;
   }>;
   markNotificationsRead: () => void;
+  theme: 'light' | 'dark';
+  toggleTheme: (theme: 'light' | 'dark') => void;
 }
 
 export default function Navbar({
@@ -32,7 +34,9 @@ export default function Navbar({
   textSize,
   setTextSize,
   notifications,
-  markNotificationsRead
+  markNotificationsRead,
+  theme,
+  toggleTheme
 }: NavbarProps) {
   const [showNotifications, setShowNotifications] = useState(false);
   const unreadCount = notifications.filter(n => !n.read).length;
@@ -41,10 +45,10 @@ export default function Navbar({
     en: {
       brand: 'RTI Saathi',
       tagline: 'Ask the Government. Track the Answer.',
-      home: 'Home',
+      fileRti: 'File RTI',
       dashboard: 'My RTIs',
-      authorities: 'Explore Authorities',
-      help: 'Help Centre',
+      authorities: 'Find Authority',
+      help: 'Help',
       lowData: 'Low Data',
       textSize: 'Text Size',
       notificationsTitle: 'Notifications',
@@ -55,10 +59,10 @@ export default function Navbar({
     hi: {
       brand: 'आरटीआई साथी',
       tagline: 'सरकार से पूछें। उत्तर ट्रैक करें।',
-      home: 'मुख्य पृष्ठ',
+      fileRti: 'आरटीआई दाखिल करें',
       dashboard: 'मेरे आरटीआई',
       authorities: 'विभाग खोजें',
-      help: 'सहायता केंद्र',
+      help: 'सहायता',
       lowData: 'लो डेटा',
       textSize: 'टेक्स्ट साइज',
       notificationsTitle: 'सूचनाएं',
@@ -96,17 +100,16 @@ export default function Navbar({
           </div>
         </div>
 
-        {/* Desktop Nav Items */}
         <nav className="hidden md:flex items-center gap-1.5">
           <button
-            onClick={() => setActiveView('landing')}
+            onClick={() => setActiveView('onboarding')}
             className={`rounded-md px-3.5 py-2 text-sm font-semibold transition-colors focus-ring ${
-              activeView === 'landing' 
+              activeView === 'onboarding' || activeView === 'builder'
                 ? 'bg-slate-100 text-primary-navy' 
                 : 'text-slate-600 hover:bg-slate-50 hover:text-primary-navy'
             }`}
           >
-            {t.home}
+            {t.fileRti}
           </button>
           <button
             onClick={() => setActiveView('dashboard')}
@@ -164,6 +167,20 @@ export default function Navbar({
             title={t.textSize}
           >
             A<span className="text-[10px] font-extrabold">+</span>
+          </button>
+
+          {/* Theme Toggle Button */}
+          <button
+            onClick={() => toggleTheme(theme === 'light' ? 'dark' : 'light')}
+            className="rounded-full border p-2 text-slate-600 border-slate-200 bg-slate-50 hover:bg-slate-100 transition-colors focus-ring"
+            title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
+            aria-label="Toggle Theme"
+          >
+            {theme === 'light' ? (
+              <Moon className="h-4 w-4 text-slate-650" />
+            ) : (
+              <Sun className="h-4 w-4 text-amber-500 animate-pulse" />
+            )}
           </button>
 
           {/* Low Bandwidth Toggle */}
@@ -256,10 +273,10 @@ export default function Navbar({
       {/* Mobile nav indicator bar */}
       <div className="md:hidden flex border-t border-slate-100 bg-slate-50 divide-x divide-slate-200">
         <button 
-          onClick={() => setActiveView('landing')} 
-          className={`flex-1 py-2 text-center text-xs font-semibold ${activeView === 'landing' ? 'text-primary-navy font-bold bg-white' : 'text-slate-500'}`}
+          onClick={() => setActiveView('onboarding')} 
+          className={`flex-1 py-2 text-center text-xs font-semibold ${activeView === 'onboarding' || activeView === 'builder' ? 'text-primary-navy font-bold bg-white' : 'text-slate-500'}`}
         >
-          {t.home}
+          {t.fileRti}
         </button>
         <button 
           onClick={() => setActiveView('dashboard')} 

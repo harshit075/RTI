@@ -327,24 +327,24 @@ export default function BuilderView({
         <div className="space-y-6">
           
           {/* Quality check widget */}
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:bg-slate-900 dark:border-slate-800">
+          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:bg-slate-900 dark:border-slate-800 animate-in fade-in duration-200">
             <h3 className="font-bold text-sm text-slate-800 mb-4 dark:text-slate-200 flex items-center gap-1.5">
-              <TrendingUp className="h-5 w-5 text-emerald-600" />
-              RTI Quality Score
+              <TrendingUp className="h-5 w-5 text-success-green" />
+              APPLICATION CHECK
             </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
               
               {/* Score circle */}
-              <div className="text-center p-4 border-r border-slate-100">
-                <div className="inline-flex items-center justify-center h-24 w-24 rounded-full bg-emerald-50 text-emerald-600 border-4 border-emerald-500">
+              <div className="text-center p-4 border-r border-border-slate">
+                <div className="inline-flex items-center justify-center h-24 w-24 rounded-full bg-emerald-50 text-success-green border-4 border-success-green">
                   <div>
-                    <span className="text-2xl font-black">92</span>
-                    <span className="text-[10px] text-emerald-500 block">/ 100</span>
+                    <span className="text-2xl font-black">Strong</span>
+                    <span className="text-[10px] text-success-green block font-bold">RATING</span>
                   </div>
                 </div>
-                <span className="text-xs font-bold text-slate-700 block mt-2">Excellent Quality</span>
-                <span className="text-[9.5px] text-slate-400 block mt-0.5">High probability of acceptance</span>
+                <span className="text-xs font-bold text-slate-700 block mt-2">Your RTI is ready for review.</span>
+                <span className="text-[9.5px] text-slate-450 block mt-0.5">Well-formed according to Section 6(1) guidelines.</span>
               </div>
 
               {/* Checklist */}

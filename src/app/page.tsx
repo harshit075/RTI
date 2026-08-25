@@ -11,6 +11,7 @@ import RtiDetailView from '../components/RtiDetailView';
 import AuthoritiesView from '../components/AuthoritiesView';
 import HelpView from '../components/HelpView';
 import ProfileView from '../components/ProfileView';
+import ContextualHelp from '../components/ContextualHelp';
 
 import { initialRTIs, RTIApplication } from '../data/mockData';
 
@@ -23,6 +24,7 @@ export default function Home() {
   const [language, setLanguage] = useState<'en' | 'hi'>('en');
   const [lowBandwidth, setLowBandwidth] = useState<boolean>(false);
   const [textSize, setTextSize] = useState<'normal' | 'large'>('normal');
+  const [theme, setTheme] = useState<'light' | 'dark'>('light');
 
   // RTI Applications Mock DB (prefilled with default data, persisted to LocalStorage)
   const [rtis, setRtis] = useState<RTIApplication[]>([]);
@@ -74,6 +76,28 @@ export default function Home() {
       setRtis(initialRTIs);
     }
   }, []);
+
+  // Load theme on mount
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+      setTheme('dark');
+      document.documentElement.classList.add('dark');
+    } else {
+      setTheme('light');
+      document.documentElement.classList.remove('dark');
+    }
+  }, []);
+
+  const toggleTheme = (newTheme: 'light' | 'dark') => {
+    setTheme(newTheme);
+    localStorage.setItem('theme', newTheme);
+    if (newTheme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  };
 
   // Sync to LocalStorage
   const syncRtis = (updatedList: RTIApplication[]) => {
@@ -160,6 +184,8 @@ export default function Home() {
         setTextSize={setTextSize}
         notifications={notifications}
         markNotificationsRead={markNotificationsRead}
+        theme={theme}
+        toggleTheme={toggleTheme}
       />
 
       {/* Main Content Router */}
@@ -230,6 +256,8 @@ export default function Home() {
             textSize={textSize}
             setTextSize={setTextSize}
             setLanguage={setLanguage}
+            theme={theme}
+            toggleTheme={toggleTheme}
           />
         )}
       </main>
@@ -239,6 +267,9 @@ export default function Home() {
         language={language} 
         setActiveView={setActiveView} 
       />
+
+      {/* Floating Contextual Help Assistant */}
+      <ContextualHelp activeView={activeView} language={language} />
     </div>
   );
 }

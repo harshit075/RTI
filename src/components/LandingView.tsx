@@ -15,6 +15,34 @@ interface LandingViewProps {
 export default function LandingView({ setActiveView, language }: LandingViewProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<FAQ[]>([]);
+  const [disclosureResults, setDisclosureResults] = useState<any[]>([]);
+
+  const mockPublicDisclosures = [
+    {
+      keywords: ['railway', 'jaipur', 'station', 'redevelopment', 'tender'],
+      title: 'Jaipur Junction Redevelopment Tender Awards & Phase 1 Execution Plan',
+      authority: 'Indian Railways / Ministry of Railways',
+      date: 'May 2026',
+      url: '#',
+      docType: 'Official Tender Document'
+    },
+    {
+      keywords: ['road', 'rampur', 'alwar', 'budget', 'construction', 'village'],
+      title: 'Rural Road Infrastructure Grants Allocation - Rampur Bypass Segment',
+      authority: 'Ministry of Road Transport and Highways (MoRTH)',
+      date: 'March 2025',
+      url: '#',
+      docType: 'Sanction Order & Expenditure Audit'
+    },
+    {
+      keywords: ['passport', 'delay', 'rules', 'verification', 'police'],
+      title: 'Standard Operating Procedure for Police Verification & Passport Processing Timelines',
+      authority: 'Consular, Passport & Visa (CPV) Division',
+      date: 'January 2026',
+      url: '#',
+      docType: 'Official Administrative Circular'
+    }
+  ];
 
   const t = {
     en: {
@@ -84,7 +112,7 @@ export default function LandingView({ setActiveView, language }: LandingViewProp
       step4: 'समीक्षा और भुगतान',
       step4Desc: 'तैयार प्रपत्र की जांच करें, यदि आवश्यक हो तो बीपीएल प्रमाण पत्र अपलोड करें, और ₹10 शुल्क का भुगतान करें।',
       step5: 'ट्रैक और अपील',
-      step5Desc: 'समयसीमा को ट्रैक करें। यदि विभाग आधा-अधूरा उत्तर देता है, तो केवल दो क्लिक में प्रथम अपील तैयार करें।',
+      step5Desc: 'समयसीमा को ट्रैक करें। यदि विभाग आधा-अधूर उत्तर देता है, तो केवल दो क्लिक में प्रथम अपील तैयार करें।',
       faqTitle: 'अक्सर पूछे जाने वाले प्रश्न (FAQ)',
       viewAllFaqs: 'सहायता केंद्र पर सभी प्रश्न देखें',
       quickActionsTitle: 'आज आप क्या करना चाहते हैं?',
@@ -107,9 +135,20 @@ export default function LandingView({ setActiveView, language }: LandingViewProp
     e.preventDefault();
     if (!searchQuery.trim()) {
       setSearchResults([]);
+      setDisclosureResults([]);
       return;
     }
     const query = searchQuery.toLowerCase();
+    
+    // Search disclosures
+    const discResults = mockPublicDisclosures.filter(disc => 
+      disc.keywords.some(kw => query.includes(kw)) ||
+      disc.title.toLowerCase().includes(query) ||
+      disc.authority.toLowerCase().includes(query)
+    );
+    setDisclosureResults(discResults);
+
+    // Search FAQs
     const results = mockFAQs.filter(faq => 
       faq.question.toLowerCase().includes(query) || 
       faq.answer.toLowerCase().includes(query) || 
@@ -310,6 +349,41 @@ export default function LandingView({ setActiveView, language }: LandingViewProp
           </form>
 
           {/* Search Results Display */}
+          {disclosureResults.length > 0 && (
+            <div className="mt-6 rounded-xl border border-success-green/20 bg-emerald-50/20 p-5 space-y-3 animate-in fade-in duration-200">
+              <div className="flex items-start gap-2.5">
+                <span className="text-xl shrink-0 mt-0.5 text-success-green">✓</span>
+                <div>
+                  <h4 className="font-bold text-sm text-success-green">Information Already Public!</h4>
+                  <p className="text-xs text-text-secondary leading-snug">The government has proactively published records that match your request. You do not need to file a new RTI.</p>
+                </div>
+              </div>
+              <div className="space-y-2 mt-3">
+                {disclosureResults.map((disc, idx) => (
+                  <div key={idx} className="bg-white rounded-xl p-4 border border-border-slate flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                    <div>
+                      <span className="text-[9px] font-bold uppercase tracking-wider text-success-green bg-emerald-50 px-2 py-0.5 rounded">
+                        {disc.docType}
+                      </span>
+                      <h5 className="font-bold text-slate-800 text-sm mt-1">{disc.title}</h5>
+                      <span className="text-[11px] text-slate-500 font-medium">{disc.authority} • {disc.date}</span>
+                    </div>
+                    <a
+                      href={disc.url}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        alert(`Opening proactive public document: ${disc.title} from official portal.`);
+                      }}
+                      className="bg-success-green hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2 rounded-lg shrink-0 shadow-sm cursor-pointer"
+                    >
+                      Open official document
+                    </a>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {searchResults.length > 0 && (
             <div className="mt-6 rounded-xl border border-slate-200 bg-slate-50 p-4 divide-y divide-slate-200">
               {searchResults.map(faq => (
@@ -321,14 +395,14 @@ export default function LandingView({ setActiveView, language }: LandingViewProp
                     <span className="text-[10px] font-bold text-slate-400 font-mono">{faq.citation}</span>
                   </div>
                   <h4 className="text-sm font-bold text-slate-800 mt-1">{faq.question}</h4>
-                  <p className="text-xs text-slate-600 mt-1 leading-relaxed">{faq.answer}</p>
+                  <p className="text-xs text-slate-650 mt-1 leading-relaxed">{faq.answer}</p>
                 </div>
               ))}
             </div>
           )}
-          {searchQuery && searchResults.length === 0 && (
+          {searchQuery && searchResults.length === 0 && disclosureResults.length === 0 && (
             <div className="mt-4 text-center text-xs text-slate-500 py-4 bg-slate-50 rounded-xl border border-dashed border-slate-200">
-              We couldn\'t find a matching official result. Try searching with other terms or check out the{' '}
+              We couldn't find a matching official result. Try searching with other terms or check out the{' '}
               <button onClick={() => setActiveView('help')} className="text-primary-blue font-bold hover:underline cursor-pointer">
                 Help Centre FAQ
               </button>

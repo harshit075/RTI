@@ -1,14 +1,24 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
-  --color-primary-navy: #1e3a8a;
-  --color-primary-blue: #2563eb;
-  --color-secondary-saffron: #3b82f6;
-  --color-secondary-gold: #60a5fa;
-  --color-text-charcoal: #1e293b;
-  --color-bg-ice: #eff6ff;
-  --color-bg-slate: #f8fafc;
+  --color-primary-navy: #123B5D;
+  --color-primary-blue: #123B5D;
+  --color-secondary-saffron: #F59E0B;
+  --color-secondary-gold: #F59E0B;
+  --color-text-charcoal: #17212B;
+  --color-bg-ice: #F7F8FA;
+  --color-bg-slate: #FFFFFF;
   
+  --color-success-green: #16845B;
+  --color-warning-amber: #B7791F;
+  --color-error-red: #C0392B;
+  --color-bg-warm: #F7F8FA;
+  --color-text-primary: #17212B;
+  --color-text-secondary: #52606D;
+  --color-border-slate: #D9E0E6;
+
   --animate-pulse-slow: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   --animate-float: float 4s ease-in-out infinite;
 }
@@ -19,14 +29,14 @@
 }
 
 :root {
-  --background: #f8fafc;
-  --foreground: #1d2d44;
+  --background: #F7F8FA;
+  --foreground: #17212B;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family: 'Inter', 'Noto Sans Devanagari', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   overflow-x: hidden;
 }
 

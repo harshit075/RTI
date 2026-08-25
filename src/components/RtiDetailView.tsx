@@ -34,6 +34,7 @@ export default function RtiDetailView({
   const [showAppealWizard, setShowAppealWizard] = useState(false);
   const [appealReason, setAppealReason] = useState('Information incomplete');
   const [appealText, setAppealText] = useState('');
+  const [showOnlyMissing, setShowOnlyMissing] = useState(false);
 
   const rti = rtis.find(r => r.id === rtiId);
   if (!rti) return <div>RTI not found</div>;
@@ -361,9 +362,15 @@ Mob: 9876543210`;
                 <div className="bg-slate-50 rounded-xl p-3 border border-slate-150 flex justify-between items-center text-xs">
                   <div>
                     <span className="font-bold text-slate-800 block">Answer Resolution</span>
-                    <span className="text-[10px] text-slate-400">Comparing original questions vs reply</span>
+                    <span className="text-[10px] text-slate-450 block">Comparing original questions vs reply</span>
+                    <button 
+                      onClick={() => setShowOnlyMissing(!showOnlyMissing)}
+                      className="text-primary-blue font-bold hover:underline mt-1 cursor-pointer block text-left"
+                    >
+                      {showOnlyMissing ? 'Show all questions' : 'Show me what is missing'}
+                    </button>
                   </div>
-                  <span className="font-black text-sm bg-blue-100 text-secondary-saffron px-3 py-1 rounded-lg">
+                  <span className="font-black text-sm bg-blue-100 text-secondary-saffron px-3 py-1 rounded-lg shrink-0">
                     {rti.id === 'rti-passport-101' ? '3 of 4 Answered' : '2 of 3 Answered'}
                   </span>
                 </div>
@@ -372,18 +379,19 @@ Mob: 9876543210`;
                 <div className="space-y-3">
                   {rti.questions.map((q, idx) => {
                     const isDenied = (rti.id === 'rti-passport-101' && idx === 2) || (rti.id === 'rti-railways-204' && idx === 2);
+                    if (showOnlyMissing && !isDenied) return null;
                     
                     return (
-                      <div key={idx} className="rounded-xl border border-slate-150 p-3 text-xs bg-slate-50/50">
+                      <div key={idx} className="rounded-xl border border-slate-150 p-3 text-xs bg-slate-50/50 animate-in fade-in duration-200">
                         <div className="flex items-center justify-between">
                           <span className="font-bold text-[10px] text-slate-400 uppercase">Question {idx + 1}</span>
                           <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full ${
-                            isDenied ? 'bg-red-50 text-red-700' : 'bg-emerald-50 text-emerald-700'
+                            isDenied ? 'bg-red-50 text-red-705' : 'bg-emerald-50 text-success-green'
                           }`}>
                             {isDenied ? '⚠ Omitted / Denied' : '✓ Addressed'}
                           </span>
                         </div>
-                        <p className="text-slate-700 font-medium mt-1 leading-snug">{q}</p>
+                        <p className="text-slate-755 font-medium mt-1 leading-snug">{q}</p>
                         
                         {isDenied && (
                           <div className="mt-2 text-[10.5px] bg-red-50/50 text-red-800 p-2 rounded-lg border border-red-100">
@@ -403,16 +411,16 @@ Mob: 9876543210`;
               {/* Appeal Trigger (Section 19) */}
               {rti.status !== 'First Appeal Filed' && (
                 <div className="border-t border-slate-100 pt-4 mt-4">
-                  <div className="bg-purple-50 rounded-xl p-3 border border-purple-200 text-xs text-purple-800 mb-3 leading-relaxed">
+                  <div className="bg-purple-50 rounded-xl p-3 border border-purple-250 text-xs text-purple-800 mb-3 leading-relaxed">
                     <span className="font-bold">First Appeal Available:</span> If you are dissatisfied because critical documents were omitted or denied, you can submit a first appeal to the FAA officer for resolution.
                   </div>
                   
                   <button
                     onClick={openAppealWizard}
-                    className="w-full bg-primary-navy hover:bg-primary-blue text-white font-bold text-xs py-3 rounded-xl shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
+                    className="w-full bg-primary-navy hover:bg-primary-navy/90 text-white font-extrabold text-xs py-3 rounded-xl shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
                   >
-                    <Scale className="h-4 w-4 text-secondary-gold" />
-                    File First Appeal (Free)
+                    <Scale className="h-4 w-4 text-secondary-saffron" />
+                    One-Click First Appeal (Free)
                   </button>
                 </div>
               )}
