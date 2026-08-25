@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { ShieldCheck, ExternalLink, Globe } from 'lucide-react';
+import { ShieldCheck, ExternalLink, Globe, Phone, Mail, FileText, CheckCircle2 } from 'lucide-react';
 
 interface FooterProps {
   setActiveView: (view: string) => void;
@@ -14,19 +14,19 @@ export default function Footer({ setActiveView, language, setHelpCategory }: Foo
     en: {
       brand: 'RTI Saathi',
       tagline: 'Citizen Right to Information Gateway',
-      desc: 'RTI Saathi is a digital citizen gateway designed to facilitate transparent RTI drafting, 30-day statutory tracking, and appellate redressal in accordance with the Right to Information Act, 2005.',
-      disclaimer: 'Practice & Demonstration Notice: RTI Saathi is an educational and practice citizen gateway built in compliance with statutory RTI Act 2005 workflows. In this demonstration environment, all filing and payment simulations are for training and civic awareness; no real banking charges are incurred.',
+      desc: 'RTI Saathi is a digital citizen platform designed to facilitate transparent RTI drafting, 30-day statutory tracking, and appellate redressal in accordance with the Right to Information Act, 2005.',
+      disclaimer: 'Practice & Demonstration Notice: RTI Saathi is an educational and civic practice gateway built in compliance with statutory RTI Act 2005 workflows. In this demonstration environment, all filing and payment steps are simulated for training and public awareness with zero real banking charges.',
       col1Title: 'RTI Actions',
       col1Items: [
-        { label: 'File an RTI', view: 'onboarding' },
+        { label: 'File an RTI Request', view: 'onboarding' },
         { label: 'Track Application', view: 'dashboard' },
         { label: 'File First Appeal', view: 'dashboard' },
         { label: 'Help & Knowledge Center', view: 'help' }
       ],
-      col2Title: 'Learn & Resources',
+      col2Title: 'Statutory Guidance',
       col2Items: [
         { label: 'RTI Act Basics', view: 'help', category: 'Basics' as const },
-        { label: 'Exempted Items (Sec 8)', view: 'help', category: 'Exemptions' as const },
+        { label: 'Exempted Items (Section 8)', view: 'help', category: 'Exemptions' as const },
         { label: 'Fee Schedule & Waiver', view: 'help', category: 'Fees' as const },
         { label: 'Appeals Process (FAA & CIC)', view: 'help', category: 'Appeals' as const }
       ],
@@ -37,12 +37,12 @@ export default function Footer({ setActiveView, language, setHelpCategory }: Foo
         { label: 'DoPT Official Portal', url: 'https://dopt.gov.in' },
         { label: 'National Portal of India', url: 'https://india.gov.in' }
       ],
-      col4Title: 'Legal & Tools',
+      col4Title: 'Tools & Utilities',
       col4Items: [
         { label: 'Payment Reconciliation', view: 'reconciliation' },
         { label: 'Public Authorities Directory', view: 'authorities' },
-        { label: 'Profile & Document Vault', view: 'profile' },
-        { label: 'Support & Grievance Desk', view: 'help' }
+        { label: 'Certified Document Vault', view: 'profile' },
+        { label: 'Citizen Support Desk', view: 'help' }
       ]
     },
     hi: {
@@ -57,10 +57,10 @@ export default function Footer({ setActiveView, language, setHelpCategory }: Foo
         { label: 'प्रथम अपील दायर करें', view: 'dashboard' },
         { label: 'सहायता केंद्र', view: 'help' }
       ],
-      col2Title: 'सीखें और संसाधन',
+      col2Title: 'कानूनी मार्गदर्शन',
       col2Items: [
         { label: 'आरटीआई कानून मूल बातें', view: 'help', category: 'Basics' as const },
-        { label: 'छूट प्राप्त वस्तुएं (Sec 8)', view: 'help', category: 'Exemptions' as const },
+        { label: 'छूट प्राप्त वस्तुएं (धारा 8)', view: 'help', category: 'Exemptions' as const },
         { label: 'शुल्क सूची व छूट', view: 'help', category: 'Fees' as const },
         { label: 'अपील प्रक्रिया (FAA व CIC)', view: 'help', category: 'Appeals' as const }
       ],
@@ -71,26 +71,27 @@ export default function Footer({ setActiveView, language, setHelpCategory }: Foo
         { label: 'डीओपीटी आधिकारिक वेबसाइट', url: 'https://dopt.gov.in' },
         { label: 'भारत का राष्ट्रीय पोर्टल', url: 'https://india.gov.in' }
       ],
-      col4Title: 'कानूनी व उपकरण',
+      col4Title: 'उपकरण व सेवाएं',
       col4Items: [
         { label: 'भुगतान मिलान (Reconciliation)', view: 'reconciliation' },
         { label: 'लोक प्राधिकारी निर्देशिका', view: 'authorities' },
-        { label: 'दस्तावेज़ वॉल्ट व प्रोफ़ाइल', view: 'profile' },
-        { label: 'सहायता व शिकायत डेस्क', view: 'help' }
+        { label: 'प्रमाणित दस्तावेज़ वॉल्ट', view: 'profile' },
+        { label: 'नागरिक सहायता डेस्क', view: 'help' }
       ]
     }
   }[language];
 
   return (
-    <footer className="bg-[#17212B] text-slate-300 border-t border-slate-800 transition-colors">
+    <footer className="bg-[#0A192F] text-slate-200 border-t-2 border-[#123B5D] relative z-20 pb-16">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-5">
+        {/* Main Grid: 5 Clean Columns */}
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-12">
           
-          {/* Brand Info (2 cols on large) */}
-          <div className="lg:col-span-2 space-y-3">
-            <div className="flex items-center gap-2.5">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-white p-0.5 shadow-3xs">
+          {/* Column 1: Brand Info & Support Box (4 cols on lg) */}
+          <div className="lg:col-span-4 space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white p-1 shadow-md shrink-0">
                 <img 
                   src="https://upload.wikimedia.org/wikipedia/commons/5/55/Emblem_of_India.svg" 
                   alt="State Emblem of India" 
@@ -98,31 +99,37 @@ export default function Footer({ setActiveView, language, setHelpCategory }: Foo
                 />
               </div>
               <div>
-                <span className="font-black text-white text-base tracking-tight">{t.brand}</span>
-                <span className="text-[10px] text-amber-400 font-bold block">{t.tagline}</span>
+                <span className="font-black text-white text-lg tracking-tight block">{t.brand}</span>
+                <span className="text-[11px] text-amber-400 font-extrabold tracking-wide block">{t.tagline}</span>
               </div>
             </div>
 
-            <p className="text-xs text-slate-400 leading-relaxed max-w-sm">
+            <p className="text-xs text-slate-300 leading-relaxed max-w-sm font-normal">
               {t.desc}
             </p>
 
-            <div className="text-[10px] text-slate-400 space-y-0.5 bg-slate-800/40 border border-slate-700/60 rounded-xl p-3 max-w-sm">
-              <span className="font-extrabold text-slate-200 block">Official RTI Support (DoPT):</span>
-              <p>Helpline: 011-24622461 (9:00 AM - 5:30 PM, Mon-Fri)</p>
-              <p>Email: rtionline-dopt@nic.in</p>
+            {/* Official Support Info Card */}
+            <div className="text-[11px] text-slate-300 space-y-1.5 bg-[#122B48] border border-blue-400/30 rounded-xl p-3.5 max-w-sm shadow-3xs">
+              <span className="font-black text-white text-xs block mb-1 flex items-center gap-1.5">
+                <Phone className="h-3.5 w-3.5 text-amber-400" />
+                Official RTI Support Desk (DoPT):
+              </span>
+              <p className="text-slate-200">Helpline: <strong className="text-white">011-24622461</strong> (9:00 AM - 5:30 PM, Mon-Fri)</p>
+              <p className="text-slate-200">Email: <strong className="text-white">rtionline-dopt@nic.in</strong></p>
             </div>
           </div>
 
-          {/* Column 1: Actions */}
-          <div className="space-y-3">
-            <h4 className="text-xs font-black uppercase tracking-wider text-white">{t.col1Title}</h4>
-            <ul className="space-y-2 text-xs">
+          {/* Column 2: RTI Actions (2 cols on lg) */}
+          <div className="lg:col-span-2 space-y-3">
+            <h4 className="text-xs font-black uppercase tracking-wider text-amber-400 border-b border-slate-700/80 pb-2">
+              {t.col1Title}
+            </h4>
+            <ul className="space-y-2.5 text-xs">
               {t.col1Items.map((item, idx) => (
                 <li key={idx}>
                   <button
                     onClick={() => setActiveView(item.view)}
-                    className="hover:text-amber-400 text-left transition-colors cursor-pointer"
+                    className="hover:text-amber-400 text-slate-200 text-left transition-colors cursor-pointer font-medium hover:translate-x-0.5 transform inline-block"
                   >
                     {item.label}
                   </button>
@@ -131,10 +138,12 @@ export default function Footer({ setActiveView, language, setHelpCategory }: Foo
             </ul>
           </div>
 
-          {/* Column 2: Learn */}
-          <div className="space-y-3">
-            <h4 className="text-xs font-black uppercase tracking-wider text-white">{t.col2Title}</h4>
-            <ul className="space-y-2 text-xs">
+          {/* Column 3: Statutory Guidance (2 cols on lg) */}
+          <div className="lg:col-span-2 space-y-3">
+            <h4 className="text-xs font-black uppercase tracking-wider text-amber-400 border-b border-slate-700/80 pb-2">
+              {t.col2Title}
+            </h4>
+            <ul className="space-y-2.5 text-xs">
               {t.col2Items.map((item, idx) => (
                 <li key={idx}>
                   <button
@@ -144,7 +153,7 @@ export default function Footer({ setActiveView, language, setHelpCategory }: Foo
                       }
                       setActiveView(item.view);
                     }}
-                    className="hover:text-amber-400 text-left transition-colors cursor-pointer"
+                    className="hover:text-amber-400 text-slate-200 text-left transition-colors cursor-pointer font-medium hover:translate-x-0.5 transform inline-block"
                   >
                     {item.label}
                   </button>
@@ -153,53 +162,70 @@ export default function Footer({ setActiveView, language, setHelpCategory }: Foo
             </ul>
           </div>
 
-          {/* Column 3: Legal & Tools */}
-          <div className="space-y-3">
-            <h4 className="text-xs font-black uppercase tracking-wider text-white">{t.col4Title}</h4>
-            <ul className="space-y-2 text-xs">
+          {/* Column 4: Official Portals (2 cols on lg) */}
+          <div className="lg:col-span-2 space-y-3">
+            <h4 className="text-xs font-black uppercase tracking-wider text-amber-400 border-b border-slate-700/80 pb-2">
+              {t.col3Title}
+            </h4>
+            <ul className="space-y-2.5 text-xs">
+              {t.col3Links.map((link, idx) => (
+                <li key={idx}>
+                  <a
+                    href={link.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-amber-400 text-slate-200 text-left transition-colors flex items-center gap-1 font-medium"
+                  >
+                    <span>{link.label}</span>
+                    <ExternalLink className="h-3 w-3 text-slate-400 shrink-0" />
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Column 5: Tools & Utilities (2 cols on lg) */}
+          <div className="lg:col-span-2 space-y-3">
+            <h4 className="text-xs font-black uppercase tracking-wider text-amber-400 border-b border-slate-700/80 pb-2">
+              {t.col4Title}
+            </h4>
+            <ul className="space-y-2.5 text-xs">
               {t.col4Items.map((item, idx) => (
                 <li key={idx}>
                   <button
                     onClick={() => setActiveView(item.view)}
-                    className="hover:text-amber-400 text-left transition-colors cursor-pointer"
+                    className="hover:text-amber-400 text-slate-200 text-left transition-colors cursor-pointer font-medium hover:translate-x-0.5 transform inline-block"
                   >
                     {item.label}
                   </button>
                 </li>
               ))}
             </ul>
-
-            <div className="pt-2 border-t border-slate-800">
-              <span className="text-[10px] font-black uppercase text-slate-400 block mb-1.5">{t.col3Title}</span>
-              <div className="space-y-1 text-[11px]">
-                {t.col3Links.map((link, idx) => (
-                  <a
-                    key={idx}
-                    href={link.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:text-amber-400 text-slate-400 transition-colors flex items-center gap-1"
-                  >
-                    {link.label} ↗
-                  </a>
-                ))}
-              </div>
-            </div>
           </div>
 
         </div>
 
-        {/* Disclaimer Section */}
-        <div className="mt-10 border-t border-slate-800 pt-6">
-          <div className="rounded-xl border border-amber-400/20 bg-amber-500/5 p-4 text-[11px] text-slate-400 leading-relaxed">
-            <p>{t.disclaimer}</p>
+        {/* Practice & Demonstration Disclaimer Banner */}
+        <div className="mt-10 border-t border-slate-700 pt-6">
+          <div className="rounded-2xl border border-amber-400/30 bg-[#122B48]/80 p-4.5 text-xs text-slate-200 leading-relaxed shadow-3xs">
+            <p className="font-normal">
+              <strong className="text-amber-400 font-extrabold mr-1">Statutory Practice & Demonstration Portal:</strong>
+              {t.disclaimer}
+            </p>
           </div>
-          <div className="mt-4 flex flex-col sm:flex-row items-center justify-between text-[11px] text-slate-500 gap-2">
-            <span>© 2026 RTI Saathi • Right to Information Citizen Gateway</span>
-            <div className="flex items-center gap-4">
-              <span>National Informatics Centre (NIC) Compliance Standards</span>
+
+          {/* Bottom Copyright & Compliance Bar */}
+          <div className="mt-6 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 gap-3 border-t border-slate-800/80 pt-4">
+            <span className="font-medium text-slate-300">© 2026 RTI Saathi • Right to Information Citizen Gateway</span>
+            <div className="flex flex-wrap items-center gap-3 text-slate-300">
+              <span className="flex items-center gap-1 text-emerald-400 font-bold">
+                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
+                NIC Standards
+              </span>
               <span>•</span>
-              <span>WCAG 2.2 AA Accessible</span>
+              <span className="text-slate-300 font-medium">GIGW 3.0 Aligned</span>
+              <span>•</span>
+              <span className="text-slate-300 font-medium">WCAG 2.2 AA</span>
             </div>
           </div>
         </div>
