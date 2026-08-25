@@ -1,7 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Sparkles, HelpCircle, CheckCircle, AlertTriangle, ArrowRight, CornerDownRight, Landmark, Search, BarChart } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { 
+  Sparkles, HelpCircle, CheckCircle, AlertTriangle, ArrowRight, 
+  CornerDownRight, Landmark, Search, BarChart, MapPin, Building2, ExternalLink 
+} from 'lucide-react';
 import { Authority, mockTemplates, geographicHierarchy, mockAuthorities } from '../data/mockData';
 
 interface OnboardingViewProps {
@@ -21,9 +24,37 @@ export default function OnboardingView({ setActiveView, setDraftRti, language }:
   const [geoState, setGeoState] = useState('');
   const [geoDistrict, setGeoDistrict] = useState('');
   const [geoLocalBody, setGeoLocalBody] = useState('');
+  const [districtSearch, setDistrictSearch] = useState('');
 
-  const selectedStateObj = geographicHierarchy.find(s => s.name === geoState);
-  const selectedDistrictObj = selectedStateObj?.districts.find(d => d.name === geoDistrict);
+  const selectedStateObj = useMemo(() => {
+    return geographicHierarchy.find(s => s.name === geoState);
+  }, [geoState]);
+
+  const selectedDistrictObj = useMemo(() => {
+    return selectedStateObj?.districts.find(d => d.name === geoDistrict);
+  }, [selectedStateObj, geoDistrict]);
+
+  // Global search across all states & districts
+  const searchResults = useMemo(() => {
+    if (!districtSearch.trim() || districtSearch.trim().length < 2) return [];
+    const query = districtSearch.toLowerCase().trim();
+    const results: Array<{ state: string; district: string; localBodiesCount: number }> = [];
+
+    for (const state of geographicHierarchy) {
+      for (const dist of state.districts) {
+        if (dist.name.toLowerCase().includes(query) || state.name.toLowerCase().includes(query)) {
+          results.push({
+            state: state.name,
+            district: dist.name,
+            localBodiesCount: dist.localBodies.length
+          });
+          if (results.length >= 8) break;
+        }
+      }
+      if (results.length >= 8) break;
+    }
+    return results;
+  }, [districtSearch]);
 
   // Real-time AI Copilot Computations
   const lowerText = rawText.toLowerCase();
@@ -66,86 +97,81 @@ export default function OnboardingView({ setActiveView, setDraftRti, language }:
 
   const handleTopicSelect = (topicId: string) => {
     setSelectedTopic(topicId);
-    
-    // Autofill text box with a helpful template
-    const templates: Record<string, string> = {
-      passport: 'I want to know the reasons for the delay in issuing my passport. My file number is DL2068472910, submitted in May 2026. The police verification was completed but passport is still processing.',
-      aadhaar: 'Provide the status of my Aadhaar correction request submitted on 10th June 2026 under update request ID 8291048. Also provide details on why the biometric update failed twice.',
-      railway: 'I want to see the budget allocation and completion report for the platform escalators at Jaipur Junction that were tender-released in 2025.',
-      epf: 'State the reasons for the delay in transferring my EPF balance under transfer claim ID 7294820 from my previous employer to current account. The claim was submitted 45 days ago.',
-      road: 'I want to know how much money was spent on the construction of the bypass road in my village Rampur, District Alwar, Rajasthan between January 2022 and December 2025.',
-      education: 'Provide copies of the circulars and minutes of meetings regarding the recognition and funding grants for XYZ State University during the financial year 2025-26.',
-      other: ''
-    };
-    setRawText(templates[topicId] || '');
     setAnalysisResult(null);
+    
+    // Auto-fill template suggestion
+    const template = mockTemplates.find(t => t.id.includes(topicId));
+    if (template && !rawText) {
+      setRawText(template.questions.join('\n'));
+    }
+  };
+
+  const handleSelectSearchResult = (st: string, dist: string) => {
+    setGeoState(st);
+    setGeoDistrict(dist);
+    setGeoLocalBody('');
+    setDistrictSearch('');
   };
 
   const runAnalysis = () => {
     if (!rawText.trim()) return;
 
     setAnalyzing(true);
-    setAnalysisResult(null);
 
-    // Simulate AI extraction and suitability analysis (Section 8 + Section 23 Central/State routing)
     setTimeout(() => {
-      const lowerText = rawText.toLowerCase();
-      
-      // 1. Check Indic Input (Hinglish or Devanagari characters)
-      const hasIndicChars = /[\u0900-\u097F]/.test(rawText);
-      const indicKeywords = ['mujhe', 'kharcha', 'gaon', 'road', 'pichle', 'saal', 'chahiye', 'paisa', 'kam', 'kab', 'kaise'];
-      const hasIndicKeywords = indicKeywords.some(kw => lowerText.includes(kw));
-      const isIndicInput = hasIndicChars || hasIndicKeywords;
-      
-      let indicTranslation = '';
-      if (isIndicInput) {
-        if (lowerText.includes('road') || lowerText.includes('kharcha') || lowerText.includes('sarak') || lowerText.includes('sadak')) {
-          indicTranslation = 'Provide administrative sanctions, expenditure logs, and contractor details for road construction in Rampur village during the last 3 years.';
-        } else {
-          indicTranslation = 'Provide standard operating procedures, police verification timelines, and officer remarks regarding the delayed passport issue.';
-        }
-      }
-
-      // 2. Check Suitability (Good RTI vs Needs Improvement)
+      // 1. Analyze suitability (Section 8 exemptions)
       let isGood = true;
       let suitabilityFeedback = 'Your request is well-structured and focuses on accessing records, which is appropriate for RTI.';
       
-      if (lowerText.includes('why did you') || lowerText.includes('why is') || lowerText.includes('how can you') || lowerText.includes('why are you ignoring') || lowerText.includes('kyun') || lowerText.includes('kyu')) {
+      if (lowerText.includes('national security') || lowerText.includes('cabinet paper') || lowerText.includes('foreign country') || lowerText.includes('intelligence bureau') || lowerText.includes('raw agent')) {
         isGood = false;
-        suitabilityFeedback = 'Needs Modification: RTI is primarily for accessing records, files, orders, and documents that already exist. Try requesting the recorded reasons, file movements, or correspondence regarding your issue, rather than asking general "Why" questions or demanding explanations.';
+        suitabilityFeedback = 'Potential Section 8 Exemption: Information regarding national security, strategic interests, or cabinet deliberations is exempt under Section 8(1) of the RTI Act 2005.';
+      } else if (lowerText.includes('why was i not') || lowerText.includes('why did you') || lowerText.includes('why did the officer') || lowerText.includes('kyu nahi')) {
+        isGood = false;
+        suitabilityFeedback = 'Under RTI Act Section 2(f), you can only seek existing material records (e.g. log sheets, file notings, reports). Public Information Officers cannot answer philosophical "Why" questions.';
       }
 
-      // 3. Extract entities
-      let timePeriod = 'Not specified';
-      if (lowerText.match(/(2022|2023|2024|2025|2026)/g)) {
-        const years = lowerText.match(/(2022|2023|2024|2025|2026)/g);
-        timePeriod = years ? [...new Set(years)].join(' to ') : 'Not specified';
-      } else if (lowerText.includes('3 years') || lowerText.includes('three years') || lowerText.includes('3 saal') || lowerText.includes('teen saal')) {
-        timePeriod = 'Last 3 years';
+      // 2. Extract or estimate time period
+      let timePeriod = 'Recent (Last 1-3 years)';
+      const yearMatch = rawText.match(/\b(20\d{2}|19\d{2})\b/g);
+      if (yearMatch) {
+        timePeriod = yearMatch.join(', ');
       }
 
-      let location = 'Central jurisdiction / Not specific';
-      if (lowerText.includes('rampur') || lowerText.includes('alwar') || lowerText.includes('village') || lowerText.includes('gaon')) {
-        location = 'Rampur Village, Alwar District';
-      } else if (lowerText.includes('jaipur')) {
-        location = 'Jaipur Junction Railway Station';
+      // 3. Detect location / geographic hints
+      let location = geoDistrict ? `${geoDistrict}, ${geoState}` : 'National / Central';
+      if (lowerText.includes('jaipur')) location = 'Jaipur, Rajasthan';
+      else if (lowerText.includes('delhi')) location = 'Delhi NCT';
+      else if (lowerText.includes('mumbai')) location = 'Mumbai, Maharashtra';
+      else if (lowerText.includes('bengaluru') || lowerText.includes('bangalore')) location = 'Bengaluru, Karnataka';
+      else if (lowerText.includes('lucknow')) location = 'Lucknow, Uttar Pradesh';
+      else if (lowerText.includes('patna')) location = 'Patna, Bihar';
+
+      // 3.5 Indic Language detection & assistance (Hinglish/Hindi query helper)
+      const isIndicInput = /[\u0900-\u097F]/.test(rawText) || lowerText.includes('mera') || lowerText.includes('mujhe') || lowerText.includes('kab tak') || lowerText.includes('jaankari') || lowerText.includes('paisa') || lowerText.includes('sarkari');
+      let indicTranslation = '';
+      if (isIndicInput) {
+        indicTranslation = `Formalized RTI Request: "Kindly provide attested copies of records, sanction orders, and file notings related to: ${rawText.replace(/[\n\r]+/g, ' ')}"`;
       }
 
-      // 4. Central vs State routing check
+      // 4. Central vs State Jurisdiction Routing Guard (P0)
       let isStateDept = false;
-      let routingWarning = null;
-      let statePortalUrl = 'https://rtionline.gov.in'; // fallback
-      let stateName = 'the State Government';
+      let routingWarning = '';
+      let stateName = '';
+      let statePortalUrl = '';
 
       const stateKeywords = [
-        { name: 'Delhi NCT', keywords: ['delhi', 'nct', 'mcd', 'dda', 'delhi jal board'], portal: 'https://rtionline.delhi.gov.in/' },
-        { name: 'Uttar Pradesh', keywords: ['uttar pradesh', 'up ', 'lucknow', 'up police', 'noida authority', 'kanpur'], portal: 'https://rtionline.up.gov.in/' },
-        { name: 'Maharashtra', keywords: ['maharashtra', 'mumbai', 'bmc', 'pune', 'mahaonline', 'thane'], portal: 'https://rtionline.maharashtra.gov.in/' },
-        { name: 'Karnataka', keywords: ['karnataka', 'bangalore', 'bengaluru', 'bbmp', 'ksp', 'mysore'], portal: 'https://rtionline.karnataka.gov.in/' },
-        { name: 'Rajasthan', keywords: ['rajasthan', 'jaipur', 'ajmer', 'sso rajasthan', 'gram panchayat', 'jodhpur'], portal: 'https://sso.rajasthan.gov.in/' }
+        { keywords: ['delhi jal board', 'djb', 'mcd', 'delhi government', 'dtc bus'], name: 'Delhi NCT', portal: 'https://rtionline.delhi.gov.in' },
+        { keywords: ['uttar pradesh', 'up police', 'lucknow municipal', 'kanpur', 'noida authority', 'up government', 'up pcmc', 'up jal nigam'], name: 'Uttar Pradesh', portal: 'http://rtionline.up.gov.in' },
+        { keywords: ['maharashtra', 'bmc', 'mcgm', 'pune municipal', 'mumbai police', 'mhada', 'mmrda'], name: 'Maharashtra', portal: 'https://rtionline.maharashtra.gov.in' },
+        { keywords: ['karnataka', 'bbmp', 'bda', 'bengaluru police', 'kptcl', 'karnataka government', 'bescom'], name: 'Karnataka', portal: 'https://rtionline.karnataka.gov.in' },
+        { keywords: ['rajasthan', 'jaipur development authority', 'jda', 'rajasthan police', 'jodhpur municipal'], name: 'Rajasthan', portal: 'https://rti.rajasthan.gov.in' },
+        { keywords: ['bihar', 'patna municipal', 'bihar police', 'bihar government'], name: 'Bihar', portal: 'http://jaankari.bihar.gov.in' },
+        { keywords: ['tamil nadu', 'chennai corporation', 'cmda', 'tneb', 'tn police'], name: 'Tamil Nadu', portal: 'https://rtionline.tn.gov.in' },
+        { keywords: ['west bengal', 'kolkata municipal', 'kmda', 'wb police'], name: 'West Bengal', portal: 'https://wb.gov.in' }
       ];
 
-      const localKeywords = ['panchayat', 'municipal', 'corporation', 'municipality', 'tahsildar', 'collectorate', 'state road', 'rto', 'state board', 'village road', 'police station', 'water board', 'local school', 'state university'];
+      const localKeywords = ['nagar nigam', 'nagar palika', 'zilla parishad', 'panchayat', 'municipal corporation', 'municipality', 'state police', 'state board'];
 
       const matchesState = stateKeywords.find(item => 
         item.keywords.some(kw => lowerText.includes(kw))
@@ -153,13 +179,13 @@ export default function OnboardingView({ setActiveView, setDraftRti, language }:
 
       const hasLocalTerm = localKeywords.some(kw => lowerText.includes(kw));
 
-      if (matchesState || hasLocalTerm) {
+      if (matchesState || hasLocalTerm || (geoState && geoState !== 'Chandigarh')) {
         // Special Legal Edge Case: Delhi Police reports to the Central MHA (Ministry of Home Affairs), not State.
         const isDelhiPoliceEdgeCase = lowerText.includes('delhi police') || lowerText.includes('delhi traffic police');
         
         if (!isDelhiPoliceEdgeCase) {
           isStateDept = true;
-          stateName = matchesState ? matchesState.name : 'State Government';
+          stateName = matchesState ? matchesState.name : (geoState || 'State Government');
           statePortalUrl = matchesState ? matchesState.portal : 'https://rtionline.gov.in';
           
           routingWarning = `This request references state or local jurisdiction items (${stateName}). Filing state/local authorities through the Central RTI Online portal will result in rejection with NO REFUND. We recommend filing directly through the official ${stateName} RTI portal.`;
@@ -206,7 +232,7 @@ export default function OnboardingView({ setActiveView, setDraftRti, language }:
         extractedTopic: selectedTopic || 'General Inquiry'
       });
       setAnalyzing(false);
-    }, 1500);
+    }, 1200);
   };
 
   const proceedToBuilder = () => {
@@ -227,22 +253,25 @@ export default function OnboardingView({ setActiveView, setDraftRti, language }:
   };
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6">
+    <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6">
       
       {/* Back button */}
       <button 
         onClick={() => setActiveView('landing')}
-        className="text-xs font-bold text-slate-500 hover:text-primary-navy mb-6 flex items-center gap-1 cursor-pointer"
+        className="text-xs font-bold text-slate-600 hover:text-primary-navy mb-4 flex items-center gap-1 cursor-pointer transition-colors"
       >
         ← Back to Homepage
       </button>
 
-      <div className="text-center max-w-2xl mx-auto mb-10">
-        <Landmark className="h-10 w-10 text-primary-navy mx-auto mb-3" />
-        <h2 className="text-2xl font-black text-primary-navy tracking-tight dark:text-white">
+      {/* Header Banner */}
+      <div className="text-center max-w-2xl mx-auto mb-8">
+        <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-primary-navy/10 text-primary-navy mb-3">
+          <Landmark className="h-6 w-6 text-primary-navy" />
+        </div>
+        <h2 className="text-2xl sm:text-3xl font-black text-primary-navy tracking-tight dark:text-white">
           {language === 'en' ? 'Describe What You Need' : 'बताएं कि आपको क्या जानकारी चाहिए'}
         </h2>
-        <p className="text-xs text-slate-500 mt-2">
+        <p className="text-xs sm:text-sm text-slate-600 mt-2 font-medium">
           {language === 'en' 
             ? 'We will analyze your request, check if it is suitable, suggest the correct department, and draft the questions.'
             : 'हम आपके अनुरोध का विश्लेषण करेंगे, जाँचेंगे कि क्या यह उपयुक्त है, सही विभाग का सुझाव देंगे, और प्रश्नों का मसौदा तैयार करेंगे।'}
@@ -250,29 +279,175 @@ export default function OnboardingView({ setActiveView, setDraftRti, language }:
       </div>
 
       {/* Central-only Scope Warning */}
-      <div className="rounded-2xl border border-[#E5E2D9] bg-[#FAF9F5] text-slate-700 p-4.5 mb-6 text-xs flex gap-3 items-start leading-relaxed shadow-2xs">
-        <AlertTriangle className="h-5.5 w-5.5 text-[#B94A48] shrink-0 mt-0.5" />
+      <div className="rounded-2xl border border-amber-300 bg-amber-50 text-slate-800 p-4.5 mb-6 text-xs flex gap-3.5 items-start leading-relaxed shadow-sm">
+        <AlertTriangle className="h-5 w-5 text-amber-700 shrink-0 mt-0.5" />
         <div>
-          <span className="font-extrabold block text-sm uppercase text-[#B94A48] mb-0.5">Central Government Ministries Scope Only</span>
-          RTI Online portal is ONLY for filing requests with **Central Government Ministries, Departments, and Public Authorities**. 
-          State Government authorities (e.g. Uttar Pradesh, Maharashtra, Karnataka, Delhi NCT) cannot be filed here. State applications will be returned with <span className="font-extrabold text-[#B94A48]">NO REFUND</span>. 
+          <span className="font-extrabold block text-sm uppercase text-amber-900 mb-0.5">Central Government Ministries Scope Notice</span>
+          RTI Online portal is designated for filing requests with <strong>Central Government Ministries, Departments, and Central Public Authorities</strong>. 
+          State Government and local municipal authorities must be filed through their respective State RTI portals.
           <div className="mt-2.5">
             <a 
               href="https://rtionline.gov.in/request/allpa.php" 
               target="_blank" 
               rel="noopener noreferrer" 
-              className="text-[#123B5D] font-extrabold hover:underline mr-4 inline-flex items-center gap-1.5 bg-white/70 px-2.5 py-1.5 rounded-lg border border-[#E5E2D9] shadow-2xs"
+              className="text-primary-navy font-bold hover:underline inline-flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-xs"
             >
-              <Search className="h-3 w-3" /> View Registered 2000+ Public Authorities List ↗
+              <Search className="h-3.5 w-3.5 text-primary-navy" /> View Official List of 2,000+ Central Public Authorities ↗
             </a>
           </div>
         </div>
       </div>
 
+      {/* Geographic Authority & Local Body Finder (Comprehensive) */}
+      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm mb-6 dark:bg-slate-900 dark:border-slate-800">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+          <div>
+            <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100 flex items-center gap-2">
+              <MapPin className="h-4 w-4 text-primary-navy" />
+              State, District & Local Body Authority Finder
+            </h3>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Select any of India's 28 States, 8 UTs, 770+ Districts, or Municipal Corporations / Local Bodies.
+            </p>
+          </div>
+          <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 self-start sm:self-auto">
+            36 States/UTs • 770+ Districts
+          </span>
+        </div>
+
+        {/* Quick Search Autocomplete */}
+        <div className="relative mb-4">
+          <div className="relative">
+            <Search className="absolute left-3.5 top-3 h-4 w-4 text-slate-400" />
+            <input 
+              type="text"
+              value={districtSearch}
+              onChange={(e) => setDistrictSearch(e.target.value)}
+              placeholder="Quick search any district or city (e.g. Kanpur, Ghaziabad, Pune, Patna, Indore, Kozhikode)..."
+              className="w-full rounded-xl border border-slate-300 bg-slate-50 pl-10 pr-4 py-2.5 text-xs font-semibold text-slate-800 outline-none focus:border-primary-blue focus:bg-white transition-all shadow-xs"
+            />
+          </div>
+
+          {searchResults.length > 0 && (
+            <div className="absolute z-20 left-0 right-0 top-full mt-1.5 rounded-xl border border-slate-200 bg-white shadow-xl overflow-hidden max-h-56 overflow-y-auto">
+              <div className="p-2 bg-slate-50 border-b border-slate-100 text-[10px] font-bold text-slate-500 uppercase">
+                Matching Districts & Authorities
+              </div>
+              {searchResults.map((item, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => handleSelectSearchResult(item.state, item.district)}
+                  className="w-full text-left px-3.5 py-2.5 hover:bg-blue-50/70 border-b border-slate-50 flex items-center justify-between text-xs cursor-pointer transition-colors"
+                >
+                  <div>
+                    <span className="font-bold text-slate-900">{item.district}</span>
+                    <span className="text-slate-500 text-[11px] ml-2">({item.state})</span>
+                  </div>
+                  <span className="text-[10.5px] font-semibold text-primary-navy bg-blue-50 px-2 py-0.5 rounded-md">
+                    {item.localBodiesCount} Local Bodies Available
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* 3-Tier Cascading Selectors */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+          <div>
+            <label className="text-[10px] font-extrabold text-slate-600 block uppercase mb-1">1. Select State / UT</label>
+            <select
+              value={geoState}
+              onChange={(e) => {
+                setGeoState(e.target.value);
+                setGeoDistrict('');
+                setGeoLocalBody('');
+              }}
+              className="w-full rounded-xl border border-slate-300 bg-slate-50 p-2.5 text-xs font-bold text-slate-800 outline-none focus:border-primary-navy focus:bg-white transition-all"
+            >
+              <option value="">-- Select State / UT ({geographicHierarchy.length}) --</option>
+              {geographicHierarchy.map(s => (
+                <option key={s.name} value={s.name}>{s.name} ({s.districts.length} Districts)</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="text-[10px] font-extrabold text-slate-600 block uppercase mb-1">2. Select District</label>
+            <select
+              value={geoDistrict}
+              disabled={!geoState}
+              onChange={(e) => {
+                setGeoDistrict(e.target.value);
+                setGeoLocalBody('');
+              }}
+              className="w-full rounded-xl border border-slate-300 bg-slate-50 p-2.5 text-xs font-bold text-slate-800 outline-none focus:border-primary-navy focus:bg-white transition-all disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed"
+            >
+              <option value="">
+                {geoState ? `-- Select District (${selectedStateObj?.districts.length || 0}) --` : 'Select State First'}
+              </option>
+              {selectedStateObj?.districts.map(d => (
+                <option key={d.name} value={d.name}>{d.name}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="text-[10px] font-extrabold text-slate-600 block uppercase mb-1">3. Select Local Body / Dept</label>
+            <select
+              value={geoLocalBody}
+              disabled={!geoDistrict}
+              onChange={(e) => {
+                const val = e.target.value;
+                setGeoLocalBody(val);
+              }}
+              className="w-full rounded-xl border border-slate-300 bg-slate-50 p-2.5 text-xs font-bold text-slate-800 outline-none focus:border-primary-navy focus:bg-white transition-all disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed"
+            >
+              <option value="">
+                {geoDistrict ? `-- Select Local Body (${selectedDistrictObj?.localBodies.length || 0}) --` : 'Select District First'}
+              </option>
+              {selectedDistrictObj?.localBodies.map(b => (
+                <option key={b.name} value={b.name}>{b.name}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* Selected Local Body Action & Info Card */}
+        {geoDistrict && (
+          <div className="mt-4 rounded-xl border border-blue-200 bg-blue-50/60 p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="flex items-start gap-2.5">
+              <Building2 className="h-5 w-5 text-primary-navy shrink-0 mt-0.5" />
+              <div>
+                <div className="text-xs font-black text-slate-900">
+                  {geoLocalBody ? geoLocalBody : `All local authorities in District ${geoDistrict}`}
+                </div>
+                <div className="text-[11px] text-slate-600 font-medium mt-0.5">
+                  Jurisdiction: {geoDistrict}, {geoState} • State Public Authority
+                </div>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                const bodyText = geoLocalBody || `Municipal Corporation / District Administration of ${geoDistrict}`;
+                const insertStatement = `Regarding public records, work tenders, funds allocation and execution reports under ${bodyText}, District ${geoDistrict}, ${geoState}.\n`;
+                if (!rawText.includes(geoDistrict)) {
+                  setRawText(prev => insertStatement + (prev ? '\n' + prev : ''));
+                }
+              }}
+              className="px-3.5 py-2 rounded-lg bg-primary-navy hover:bg-primary-blue text-white text-xs font-bold shadow-xs flex items-center gap-1.5 shrink-0 cursor-pointer transition-all"
+            >
+              <CornerDownRight className="h-3.5 w-3.5" />
+              Insert into Query Box
+            </button>
+          </div>
+        )}
+      </div>
+
       {/* Step 1: Select Topic */}
       <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm mb-6 dark:bg-slate-900 dark:border-slate-800">
-        <h3 className="font-bold text-sm text-slate-800 mb-4 dark:text-slate-200">
-          {language === 'en' ? '1. Select a category of information:' : '1. जानकारी की एक श्रेणी चुनें:'}
+        <h3 className="font-bold text-sm text-slate-900 mb-3.5 dark:text-slate-100">
+          {language === 'en' ? 'Select Subject / Category:' : 'जानकारी की एक श्रेणी चुनें:'}
         </h3>
         
         <div className="flex flex-wrap gap-2">
@@ -282,80 +457,13 @@ export default function OnboardingView({ setActiveView, setDraftRti, language }:
               onClick={() => handleTopicSelect(t.id)}
               className={`rounded-xl px-4 py-2.5 text-xs font-bold border transition-all cursor-pointer ${
                 selectedTopic === t.id
-                  ? 'bg-primary-navy border-primary-navy text-white'
-                  : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100 hover:border-slate-350'
+                  ? 'bg-primary-navy border-primary-navy text-white shadow-xs'
+                  : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100 hover:border-slate-300'
               }`}
             >
               {t.label}
             </button>
           ))}
-        </div>
-      </div>
-
-      {/* Geographic Finder */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm mb-6 dark:bg-slate-900 dark:border-slate-800">
-        <h3 className="font-bold text-sm text-slate-800 mb-2 dark:text-slate-200">
-          Geographic Authority Finder (Optional)
-        </h3>
-        <p className="text-[10.5px] text-slate-500 mb-3">
-          If your issue concerns a specific local body, select the state and district to narrow down the authority.
-        </p>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <div>
-            <label className="text-[9px] font-extrabold text-slate-400 block uppercase mb-1">State</label>
-            <select
-              value={geoState}
-              onChange={(e) => {
-                setGeoState(e.target.value);
-                setGeoDistrict('');
-                setGeoLocalBody('');
-              }}
-              className="w-full rounded-xl border border-slate-300 bg-slate-50 p-2.5 text-xs font-bold text-slate-700 outline-none"
-            >
-              <option value="">Select State</option>
-              {geographicHierarchy.map(s => (
-                <option key={s.name} value={s.name}>{s.name}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="text-[9px] font-extrabold text-slate-400 block uppercase mb-1">District</label>
-            <select
-              value={geoDistrict}
-              disabled={!geoState}
-              onChange={(e) => {
-                setGeoDistrict(e.target.value);
-                setGeoLocalBody('');
-              }}
-              className="w-full rounded-xl border border-slate-300 bg-slate-50 p-2.5 text-xs font-bold text-slate-700 outline-none disabled:bg-slate-100 disabled:cursor-not-allowed"
-            >
-              <option value="">Select District</option>
-              {selectedStateObj?.districts.map(d => (
-                <option key={d.name} value={d.name}>{d.name}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="text-[9px] font-extrabold text-slate-400 block uppercase mb-1">Local Body</label>
-            <select
-              value={geoLocalBody}
-              disabled={!geoDistrict}
-              onChange={(e) => {
-                const val = e.target.value;
-                setGeoLocalBody(val);
-                const selectedBody = selectedDistrictObj?.localBodies.find(b => b.name === val);
-                if (selectedBody) {
-                  setRawText(prev => `Regarding road construction, municipal projects and public works under ${selectedBody.name} in district ${geoDistrict}, ${geoState}. \n${prev}`);
-                }
-              }}
-              className="w-full rounded-xl border border-slate-300 bg-slate-50 p-2.5 text-xs font-bold text-slate-700 outline-none disabled:bg-slate-100 disabled:cursor-not-allowed"
-            >
-              <option value="">Select Local Body</option>
-              {selectedDistrictObj?.localBodies.map(b => (
-                <option key={b.name} value={b.name}>{b.name}</option>
-              ))}
-            </select>
-          </div>
         </div>
       </div>
 
@@ -367,7 +475,7 @@ export default function OnboardingView({ setActiveView, setDraftRti, language }:
           
           {/* Templates library */}
           <div>
-            <h3 className="font-bold text-xs text-slate-400 uppercase tracking-wider mb-2">RTI Template Library</h3>
+            <h3 className="font-bold text-xs text-slate-500 uppercase tracking-wider mb-2">Standard RTI Template Questions</h3>
             <div className="flex flex-wrap gap-1.5">
               {mockTemplates.map(temp => (
                 <button
@@ -386,21 +494,21 @@ export default function OnboardingView({ setActiveView, setDraftRti, language }:
           </div>
 
           <div className="border-t border-slate-100 pt-3">
-            <h3 className="font-bold text-sm text-slate-800 mb-2 dark:text-slate-200 font-sans">
-              {language === 'en' ? '2. Tell us what you want to know in plain language:' : '2. सरल भाषा में बताएं कि आप क्या जानना चाहते हैं:'}
+            <h3 className="font-bold text-sm text-slate-900 mb-1.5 dark:text-slate-100 font-sans">
+              {language === 'en' ? 'Describe what records or information you need in plain language:' : 'सरल भाषा में बताएं कि आप क्या जानना चाहते हैं:'}
             </h3>
-            <p className="text-[10.5px] text-slate-400 mb-3">
+            <p className="text-[11px] text-slate-500 mb-3">
               {language === 'en' 
-                ? 'Example: "I want to know the road budget and work order details for rampur village road constructed in 2022-2025."'
-                : 'उदाहरण: "मुझे 2022-2025 में बनी रामपुर गांव की सड़क के बजट और वर्क ऑर्डर का विवरण चाहिए।"'}
+                ? 'Example: "Provide certified copies of work orders, expenditures, and completion reports for road repairs in 2023-2025."'
+                : 'उदाहरण: "2023-2025 में सड़क मरम्मत के वर्क ऑर्डर, खर्च और पूर्णता रिपोर्ट की प्रमाणित प्रतियां प्रदान करें।"'}
             </p>
 
             <textarea
               rows={6}
               value={rawText}
               onChange={(e) => setRawText(e.target.value)}
-              placeholder={language === 'en' ? 'Type your description here...' : 'यहाँ अपना विवरण टाइप करें...'}
-              className="w-full rounded-xl border border-slate-350 px-4 py-3 text-sm text-slate-800 outline-none focus:border-primary-blue bg-slate-50 leading-relaxed font-medium"
+              placeholder={language === 'en' ? 'Type your request description here...' : 'यहाँ अपना विवरण टाइप करें...'}
+              className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-900 outline-none focus:border-primary-blue focus:bg-white bg-slate-50 leading-relaxed font-medium transition-all"
             />
           </div>
 
@@ -408,16 +516,16 @@ export default function OnboardingView({ setActiveView, setDraftRti, language }:
             <button
               onClick={runAnalysis}
               disabled={analyzing || !rawText.trim()}
-              className="rounded-xl bg-primary-navy px-6 py-3 text-xs font-bold text-white hover:bg-primary-blue disabled:bg-slate-300 disabled:cursor-not-allowed flex items-center gap-1.5 shadow transition-all cursor-pointer"
+              className="rounded-xl bg-primary-navy px-6 py-3 text-xs font-bold text-white hover:bg-primary-blue disabled:bg-slate-300 disabled:cursor-not-allowed flex items-center gap-2 shadow transition-all cursor-pointer"
             >
               {analyzing ? (
                 <>
-                  <span className="h-3.5 w-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  {language === 'en' ? 'Analyzing query...' : 'विश्लेषण किया जा रहा है...'}
+                  <span className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  {language === 'en' ? 'Analyzing Jurisdiction & Authority...' : 'विश्लेषण किया जा रहा है...'}
                 </>
               ) : (
                 <>
-                  <Sparkles className="h-4 w-4 text-secondary-gold" />
+                  <Sparkles className="h-4 w-4 text-yellow-300" />
                   {language === 'en' ? 'Analyze & Find Department' : 'विश्लेषण करें और विभाग खोजें'}
                 </>
               )}
@@ -426,10 +534,10 @@ export default function OnboardingView({ setActiveView, setDraftRti, language }:
         </div>
 
         {/* Right Column: AI Copilot Sidebar (span 1) */}
-        <div className="rounded-2xl border border-[#E5E2D9] bg-[#FAF9F5] p-5 space-y-4 shadow-2xs">
+        <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-5 space-y-4 shadow-xs">
           <div className="flex items-center gap-1.5 border-b border-slate-200 pb-2 mb-2">
-            <Sparkles className="h-4.5 w-4.5 text-secondary-saffron" />
-            <h4 className="font-extrabold text-xs uppercase tracking-wider text-slate-850">RTI AI Copilot</h4>
+            <Sparkles className="h-4.5 w-4.5 text-primary-navy" />
+            <h4 className="font-extrabold text-xs uppercase tracking-wider text-slate-900">RTI AI Copilot</h4>
           </div>
 
           {/* Health Score Progress Bar */}
@@ -453,15 +561,15 @@ export default function OnboardingView({ setActiveView, setDraftRti, language }:
           <div className="space-y-3 text-[11px] leading-relaxed text-slate-700">
             {/* Specificity feedback */}
             {specificityLevel === 'Weak' && rawText.trim().length > 0 && (
-              <div className="p-2.5 rounded-lg bg-red-50 border border-red-200 text-red-800">
+              <div className="p-2.5 rounded-lg bg-red-50 border border-red-200 text-red-800 font-medium">
                 <strong>Query is too short:</strong> Please describe the record or event in detail (minimum 35 characters recommended).
               </div>
             )}
 
             {/* Time period warning */}
             {!hasTimePeriod && rawText.trim().length > 0 && (
-              <div className="p-2.5 rounded-lg bg-amber-50 border border-amber-200 text-amber-900">
-                <strong>Timeframe missing:</strong> Your request doesn't specify a time period. Recommends adding dates (e.g. "between 2024 and 2025") to prevent reject delays.
+              <div className="p-2.5 rounded-lg bg-amber-50 border border-amber-200 text-amber-900 font-medium">
+                <strong>Timeframe missing:</strong> Your request doesn't specify a time period. Recommends adding dates (e.g. "between 2023 and 2025") to prevent reject delays.
               </div>
             )}
 
@@ -471,8 +579,8 @@ export default function OnboardingView({ setActiveView, setDraftRti, language }:
                 <div>
                   <strong>"Why" Question Detected:</strong> Your request asks for reasons. A stronger RTI should request existing records instead.
                 </div>
-                <div className="border-t border-amber-200/50 pt-1 text-[10px] italic">
-                  <strong>Try requesting:</strong>
+                <div className="border-t border-amber-200/50 pt-1 text-[10px]">
+                  <strong>Recommended alternatives:</strong>
                   <ul className="list-disc pl-3.5 mt-0.5 space-y-0.5 font-medium">
                     <li>Copy of inspection reports</li>
                     <li>Work order / Sanction order copy</li>
@@ -485,7 +593,7 @@ export default function OnboardingView({ setActiveView, setDraftRti, language }:
 
             {/* Scope Optimizer Warning */}
             {isTooBroad && (
-              <div className="p-2.5 rounded-lg bg-red-50 border border-red-200 text-red-800">
+              <div className="p-2.5 rounded-lg bg-red-50 border border-red-200 text-red-800 font-medium">
                 <strong>Request is too broad:</strong> Recommends specifying a location, project name, or concrete document type to prevent processing rejections.
               </div>
             )}
@@ -507,15 +615,13 @@ export default function OnboardingView({ setActiveView, setDraftRti, language }:
           
           {/* Indic Assistant Translator */}
           {analysisResult.isIndicInput && (
-            <div className="rounded-2xl border border-amber-250 bg-amber-50/20 text-amber-900 p-5 shadow-2xs">
-              <div className="flex items-start gap-3">
-                <div>
-                  <h4 className="font-bold text-sm text-amber-800">Indic Language Assistant (Hinglish/Hindi detected)</h4>
-                  <p className="text-xs mt-1 leading-relaxed opacity-95">We formalized your request for optimal legal clarity:</p>
-                  <p className="text-xs font-bold mt-2 bg-white/70 p-2.5 rounded-lg border border-amber-100 italic text-slate-800">
-                    "{analysisResult.indicTranslation}"
-                  </p>
-                </div>
+            <div className="rounded-2xl border border-amber-300 bg-amber-50/50 text-amber-900 p-5 shadow-xs">
+              <div>
+                <h4 className="font-bold text-sm text-amber-900">Indic Language Assistant (Hinglish/Hindi detected)</h4>
+                <p className="text-xs mt-1 leading-relaxed text-amber-800">We formalized your request for optimal legal clarity:</p>
+                <p className="text-xs font-bold mt-2 bg-white p-3 rounded-xl border border-amber-200 italic text-slate-800 shadow-xs">
+                  "{analysisResult.indicTranslation}"
+                </p>
               </div>
             </div>
           )}
@@ -523,8 +629,8 @@ export default function OnboardingView({ setActiveView, setDraftRti, language }:
           {/* Suitability Box (Section 8) */}
           <div className={`rounded-2xl border p-5 ${
             analysisResult.isGood 
-              ? 'bg-emerald-50 border-emerald-200 text-emerald-800' 
-              : 'bg-amber-50 border-amber-200 text-amber-850'
+              ? 'bg-emerald-50 border-emerald-300 text-emerald-900' 
+              : 'bg-amber-50 border-amber-300 text-amber-900'
           }`}>
             <div className="flex items-start gap-3">
               {analysisResult.isGood ? (
@@ -538,27 +644,34 @@ export default function OnboardingView({ setActiveView, setDraftRti, language }:
                     ? (language === 'en' ? 'RTI Suitability: Good Request' : 'आरटीआई उपयुक्तता: सही अनुरोध')
                     : (language === 'en' ? 'RTI Suitability: Needs Modification' : 'आरटीआई उपयुक्तता: संशोधन की आवश्यकता')}
                 </h4>
-                <p className="text-xs mt-1 leading-relaxed opacity-90">{analysisResult.suitabilityFeedback}</p>
+                <p className="text-xs mt-1 leading-relaxed opacity-95">{analysisResult.suitabilityFeedback}</p>
               </div>
             </div>
           </div>
 
-          {/* Central vs State routing warning (Section 23) */}
+          {/* Central vs State routing warning (High-contrast Red Alert) */}
           {analysisResult.isStateDept && (
-            <div className="rounded-2xl border bg-red-50 border-red-200 text-red-950 p-5">
-              <div className="flex items-start gap-3">
-                <AlertTriangle className="h-5.5 w-5.5 text-red-650 shrink-0 mt-0.5 animate-bounce" />
-                <div>
-                  <h4 className="font-bold text-sm">State Jurisdiction Detected ({analysisResult.stateName})</h4>
-                  <p className="text-xs mt-1 leading-relaxed opacity-90">{analysisResult.routingWarning}</p>
-                  <a 
-                    href={analysisResult.statePortalUrl} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="inline-block mt-3 bg-red-650 hover:bg-red-750 text-white font-bold text-[11px] px-3.5 py-1.5 rounded-lg shadow-sm"
-                  >
-                    Go to official {analysisResult.stateName} RTI Portal ↗
-                  </a>
+            <div className="rounded-2xl border-2 border-red-300 bg-red-50 text-red-950 p-5.5 shadow-sm">
+              <div className="flex items-start gap-3.5">
+                <AlertTriangle className="h-6 w-6 text-red-600 shrink-0 mt-0.5" />
+                <div className="space-y-2">
+                  <h4 className="font-black text-base text-red-900">
+                    State Jurisdiction Detected ({analysisResult.stateName})
+                  </h4>
+                  <p className="text-xs leading-relaxed text-red-800 font-medium">
+                    {analysisResult.routingWarning}
+                  </p>
+                  <div>
+                    <a 
+                      href={analysisResult.statePortalUrl} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs px-4 py-2.5 rounded-xl shadow-sm transition-all"
+                    >
+                      Go to official {analysisResult.stateName} RTI Portal
+                      <ExternalLink className="h-3.5 w-3.5" />
+                    </a>
+                  </div>
                 </div>
               </div>
             </div>
@@ -567,7 +680,7 @@ export default function OnboardingView({ setActiveView, setDraftRti, language }:
           {/* Suggested Department Box with Match Ratings & Alternatives */}
           <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:bg-slate-900 dark:border-slate-800">
             <div className="flex justify-between items-center mb-4">
-              <h4 className="font-extrabold text-xs uppercase tracking-wider text-slate-400">Match Confidence & suggested authority</h4>
+              <h4 className="font-extrabold text-xs uppercase tracking-wider text-slate-500">Match Confidence & Suggested Public Authority</h4>
               <span className="bg-emerald-100 text-emerald-800 text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider">
                 91% Match
               </span>
@@ -575,81 +688,81 @@ export default function OnboardingView({ setActiveView, setDraftRti, language }:
             
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
               <div className="flex items-center gap-3">
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary-navy/5 text-primary-navy">
-                  <Landmark className="h-6 w-6 text-primary-blue" />
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary-navy/10 text-primary-navy">
+                  <Landmark className="h-6 w-6 text-primary-navy" />
                 </div>
                 <div>
-                  <h5 className="font-bold text-slate-850 text-base leading-snug dark:text-slate-100">
+                  <h5 className="font-extrabold text-slate-900 text-base leading-snug dark:text-slate-100">
                     {analysisResult.suggestedAuth.name}
                   </h5>
-                  <p className="text-xs text-slate-550 font-bold">
+                  <p className="text-xs text-slate-600 font-bold mt-0.5">
                     {analysisResult.suggestedAuth.ministry} • Recommended
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="border-t border-slate-150 my-4 pt-4 text-xs text-slate-650 dark:text-slate-400">
-              <span className="font-extrabold text-slate-800 block mb-1 dark:text-slate-200">Why recommended?</span>
+            <div className="border-t border-slate-150 my-4 pt-4 text-xs text-slate-700 dark:text-slate-300">
+              <span className="font-extrabold text-slate-900 block mb-1 dark:text-slate-100">Why recommended?</span>
               {analysisResult.matchWhy}
             </div>
 
-            {/* Alternatives (Section 4) */}
+            {/* Alternatives */}
             <div className="border-t border-slate-150 my-4 pt-4">
-              <span className="font-extrabold text-xs text-slate-400 uppercase tracking-wider block mb-2">Alternative Authorities Available</span>
+              <span className="font-extrabold text-xs text-slate-500 uppercase tracking-wider block mb-2.5">Alternative Authorities Available</span>
               <div className="space-y-2">
-                <div className="bg-slate-50 rounded-xl p-3 border border-slate-150 flex justify-between items-center text-xs">
+                <div className="bg-slate-50 rounded-xl p-3 border border-slate-200 flex justify-between items-center text-xs">
                   <div>
-                    <span className="font-bold text-slate-800 block">Department of Personnel and Training (DoPT)</span>
-                    <span className="text-[10px] text-slate-500">Ministry of Personnel, Public Grievances and Pensions</span>
+                    <span className="font-bold text-slate-900 block">Department of Personnel and Training (DoPT)</span>
+                    <span className="text-[10.5px] text-slate-500">Ministry of Personnel, Public Grievances and Pensions</span>
                   </div>
-                  <span className="font-bold text-slate-700 bg-slate-200 px-2 py-0.5 rounded">68% Match</span>
+                  <span className="font-bold text-slate-700 bg-slate-200 px-2 py-0.5 rounded text-[11px]">68% Match</span>
                 </div>
-                <div className="bg-slate-50 rounded-xl p-3 border border-slate-150 flex justify-between items-center text-xs">
+                <div className="bg-slate-50 rounded-xl p-3 border border-slate-200 flex justify-between items-center text-xs">
                   <div>
-                    <span className="font-bold text-slate-800 block">Ministry of Road Transport and Highways (Alternate Branch)</span>
-                    <span className="text-[10px] text-slate-500">Regional Coordination Office</span>
+                    <span className="font-bold text-slate-900 block">Ministry of Road Transport and Highways (Alternate Division)</span>
+                    <span className="text-[10.5px] text-slate-500">Regional Project Coordination Office</span>
                   </div>
-                  <span className="font-bold text-slate-700 bg-slate-200 px-2 py-0.5 rounded">54% Match</span>
+                  <span className="font-bold text-slate-700 bg-slate-200 px-2 py-0.5 rounded text-[11px]">54% Match</span>
                 </div>
               </div>
             </div>
 
-            <div className="bg-slate-50 border border-slate-150 rounded-xl p-3.5 flex flex-wrap gap-4 text-xs">
+            <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 flex flex-wrap gap-6 text-xs">
               <div>
-                <span className="text-slate-400 font-bold block text-[9.5px] uppercase">Time Period</span>
-                <span className="font-bold text-slate-700">{analysisResult.timePeriod}</span>
+                <span className="text-slate-500 font-bold block text-[10px] uppercase">Time Period</span>
+                <span className="font-bold text-slate-800">{analysisResult.timePeriod}</span>
               </div>
               <div>
-                <span className="text-slate-400 font-bold block text-[9.5px] uppercase">Location</span>
-                <span className="font-bold text-slate-700">{analysisResult.location}</span>
+                <span className="text-slate-500 font-bold block text-[10px] uppercase">Location / Territory</span>
+                <span className="font-bold text-slate-800">{analysisResult.location}</span>
               </div>
             </div>
 
-            {/* Official Source Verification Notice (P0) */}
-            <div className="mt-4 border-t border-slate-150 pt-3 flex items-start gap-2 text-[10.5px] text-slate-500 leading-relaxed bg-[#FAF9F5] p-3 rounded-xl border border-[#E5E2D9]">
-              <CheckCircle className="h-4.5 w-4.5 text-[#B94A48] shrink-0 mt-0.5" />
+            {/* Official Source Verification Notice */}
+            <div className="mt-4 border-t border-slate-200 pt-3 flex items-start gap-2.5 text-xs text-slate-600 leading-relaxed bg-slate-50/70 p-3 rounded-xl border border-slate-200">
+              <CheckCircle className="h-4.5 w-4.5 text-primary-navy shrink-0 mt-0.5" />
               <div>
-                <strong>Official Source Verification:</strong> Suggestions generated according to the official RTI Act (Section 4 proactive disclosure mandates) and official DoPT FAQ guidelines. (Last verified: 25 August 2026).
+                <strong>Official Source Verification:</strong> Department mapping verified against official Central & State RTI Directories according to Section 4 proactive disclosure mandates.
               </div>
             </div>
 
             {/* CTA to proceed */}
-            <div className="mt-6 flex justify-end gap-3">
+            <div className="mt-6 flex flex-col sm:flex-row justify-end gap-3">
               <button
                 onClick={() => {
                   setAnalysisResult(null);
-                  setSelectedTopic('other'); // lets user select other category manually
+                  setSelectedTopic('other');
                 }}
-                className="rounded-xl border border-slate-200 px-4 py-2.5 text-xs font-bold text-slate-650 hover:bg-slate-50 cursor-pointer"
+                className="rounded-xl border border-slate-300 px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 cursor-pointer transition-colors"
               >
-                See other authorities
+                Choose Different Category
               </button>
               <button
                 onClick={proceedToBuilder}
-                className="rounded-xl bg-primary-navy hover:bg-primary-blue px-6 py-2.5 text-xs font-bold text-white flex items-center gap-1 shadow cursor-pointer"
+                className="rounded-xl bg-primary-navy hover:bg-primary-blue px-6 py-2.5 text-xs font-bold text-white flex items-center justify-center gap-1.5 shadow cursor-pointer transition-all"
               >
-                Use Recommended Authority & Proceed
+                Proceed to Draft Application
                 <ArrowRight className="h-4 w-4" />
               </button>
             </div>
