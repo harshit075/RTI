@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   HelpCircle, Search, Sparkles, Send, Inbox, AlertCircle, 
-  MessageSquare, Compass, ShieldQuestion, Landmark
+  MessageSquare, Compass, ShieldQuestion, Landmark, ArrowRight, CheckCircle2 
 } from 'lucide-react';
 import { FAQ, mockFAQs } from '../data/mockData';
 
@@ -52,7 +52,7 @@ export default function HelpView({
   const [submittedTicketId, setSubmittedTicketId] = useState('');
   const [faqs, setFaqs] = useState<FAQ[]>(mockFAQs);
 
-  React.useEffect(() => {
+  useEffect(() => {
     fetch('/api/faqs')
       .then(res => (res.ok ? res.json() : mockFAQs))
       .then(data => setFaqs(Array.isArray(data) && data.length > 0 ? data : mockFAQs))
@@ -83,83 +83,78 @@ export default function HelpView({
     setTicketDetails('');
   };
 
-  const getStuckOptions = (stage: string) => {
-    switch (stage) {
-      case 'payment':
-        return [
-          { q: 'Money deducted but registration number not generated?', a: 'Under the official process, payment reconciliation can take up to 24-48 hours. Do not pay again. Submit a support ticket containing your bank transaction ID, and our administrator will manual-verify and register your RTI.' },
-          { q: 'UPI QR code not loading?', a: 'Ensure you are not in low-bandwidth mode. You can try shifting to Credit Card / Netbanking, or clear cache and try again.' }
-        ];
-      case 'authority':
-        return [
-          { q: 'Unsure if Central or State government department?', a: 'Central ministries cover Railways, Passports, Aadhaar (UIDAI), Income Tax, EPFO, and National Highways. Land, police, municipalities, and local village roads are managed by State departments. Open our state router or consult the department directory.' },
-          { q: 'What is a CPIO?', a: 'The Central Public Information Officer (CPIO) is the designated nodal officer in every government authority responsible for processing RTI requests and providing information.' }
-        ];
-      default:
-        return [
-          { q: 'CPIO has rejected my RTI. What should I do?', a: 'If the rejection cites Section 8 exemptions, review if the denied details concern private third-party data. If not, file a First Appeal. If it was rejected without citing any sections, appeal immediately as it violates Section 7(8).' },
-          { q: 'Information provided is incomplete. How to request missing items?', a: 'Do not file a new RTI. Open the RTI details page, launch the First Appeal Wizard, and draft an appeal requesting the FAA to direct the CPIO to release the remaining records.' }
-        ];
-    }
-  };
+  const glossaryItems = [
+    { term: 'CPIO (Central Public Information Officer)', desc: 'Designated nodal officer responsible for processing RTI requests and providing information under Section 5(1).' },
+    { term: 'FAA (First Appellate Authority)', desc: 'Senior quasi-judicial officer within the same department who hears First Appeals filed under Section 19(1).' },
+    { term: 'CIC (Central Information Commission)', desc: 'Highest statutory appellate body for Central RTI appeals filed under Section 19(3).' },
+    { term: 'Deemed Refusal', desc: 'If no reply is received within 30 statutory days, the application is legally deemed rejected, allowing immediate free appeal.' },
+    { term: 'Section 8(1) Exemptions', desc: 'Statutory clauses specifying non-disclosable items (national security, cabinet deliberations, trade secrets).' },
+    { term: 'Section 4 Proactive Disclosure', desc: 'Mandatory publication of organization structures, budgets, employee salaries, and contact directories.' }
+  ].filter(item => item.term.toLowerCase().includes(glossarySearch.toLowerCase()) || item.desc.toLowerCase().includes(glossarySearch.toLowerCase()));
 
   return (
-    <div className="flex-1 bg-slate-50 dark:bg-slate-950 px-4 py-8 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-5xl">
+    <div className="flex-1 bg-[#F7F8FA] px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-5xl space-y-6">
         
         {/* Header */}
-        <div className="mb-8 text-center sm:text-left">
-          <h2 className="text-2xl font-black text-primary-navy tracking-tight dark:text-white">Help & Support Centre</h2>
-          <p className="text-xs text-slate-500 mt-1">FAQ lookup, context-aware instructions, and system support tickets.</p>
+        <div className="border-b border-[#D9E0E6] pb-4">
+          <h1 className="text-2xl sm:text-3xl font-black text-[#17212B] tracking-tight">
+            {language === 'en' ? 'Help & Knowledge Center' : 'सहायता व जानकारी केंद्र'}
+          </h1>
+          <p className="text-xs text-[#52606D] mt-1 font-medium">
+            {language === 'en' 
+              ? 'Statutory guidance, citizen handbook, plain-language glossary, and grievance desk.'
+              : 'कानूनी नियम, अक्सर पूछे जाने वाले प्रश्न और सहायता डेस्क।'}
+          </p>
         </div>
 
         {/* Grid layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           
-          {/* Left Column: FAQ, Guide & Glossary Explorer */}
+          {/* Left Column: FAQ, Guide & Glossary Explorer (2 cols) */}
           <div className="lg:col-span-2 space-y-6">
             
             {/* Top-Level Help Tabs */}
-            <div className="flex border border-slate-200 bg-white rounded-xl p-1 shadow-sm dark:bg-slate-900 dark:border-slate-800">
+            <div className="flex border border-[#D9E0E6] bg-white rounded-2xl p-1.5 shadow-3xs">
               <button
                 onClick={() => setActiveHelpTab('faqs')}
-                className={`flex-1 rounded-lg py-2.5 text-xs font-bold text-center transition-all cursor-pointer ${
-                  activeHelpTab === 'faqs' ? 'bg-primary-navy text-white shadow-xs' : 'text-slate-500 hover:bg-slate-50/50'
+                className={`flex-1 rounded-xl py-2 text-xs font-bold text-center transition-all cursor-pointer ${
+                  activeHelpTab === 'faqs' ? 'bg-[#123B5D] text-white shadow-3xs' : 'text-slate-600 hover:bg-slate-50'
                 }`}
               >
                 {language === 'en' ? 'Frequently Asked Questions' : 'अक्सर पूछे जाने वाले प्रश्न'}
               </button>
               <button
                 onClick={() => setActiveHelpTab('guide')}
-                className={`flex-1 rounded-lg py-2.5 text-xs font-bold text-center transition-all cursor-pointer ${
-                  activeHelpTab === 'guide' ? 'bg-primary-navy text-white shadow-xs' : 'text-slate-500 hover:bg-slate-50/50'
+                className={`flex-1 rounded-xl py-2 text-xs font-bold text-center transition-all cursor-pointer ${
+                  activeHelpTab === 'guide' ? 'bg-[#123B5D] text-white shadow-3xs' : 'text-slate-600 hover:bg-slate-50'
                 }`}
               >
-                {language === 'en' ? 'Citizen Guide Stepper' : 'नागरिक गाइड'}
+                {language === 'en' ? 'Citizen Lifecycle Guide' : 'नागरिक गाइड'}
               </button>
               <button
                 onClick={() => setActiveHelpTab('glossary')}
-                className={`flex-1 rounded-lg py-2.5 text-xs font-bold text-center transition-all cursor-pointer ${
-                  activeHelpTab === 'glossary' ? 'bg-primary-navy text-white shadow-xs' : 'text-slate-500 hover:bg-slate-50/50'
+                className={`flex-1 rounded-xl py-2 text-xs font-bold text-center transition-all cursor-pointer ${
+                  activeHelpTab === 'glossary' ? 'bg-[#123B5D] text-white shadow-3xs' : 'text-slate-600 hover:bg-slate-50'
                 }`}
               >
-                {language === 'en' ? 'Legal Jargon Glossary' : 'कानूनी शब्दावली'}
+                {language === 'en' ? 'Legal Terms Glossary' : 'कानूनी शब्दावली'}
               </button>
             </div>
 
             {/* TAB 1: FAQ PANEL */}
             {activeHelpTab === 'faqs' && (
-              <div className="space-y-6">
+              <div className="space-y-4">
                 {/* Category tabs */}
-                <div className="rounded-xl border border-slate-200 bg-white p-2 flex flex-wrap gap-1 shadow-sm dark:bg-slate-900 dark:border-slate-800">
+                <div className="rounded-2xl border border-[#D9E0E6] bg-white p-2 flex flex-wrap gap-1 shadow-3xs">
                   {categories.map(c => (
                     <button
                       key={c}
                       onClick={() => setActiveCategory(c as any)}
-                      className={`rounded-lg px-3 py-1.5 text-xs font-bold transition-all cursor-pointer ${
+                      className={`rounded-xl px-3 py-1.5 text-xs font-bold transition-all cursor-pointer ${
                         activeCategory === c
-                          ? 'bg-primary-navy text-white'
-                          : 'text-slate-550 hover:bg-slate-50'
+                          ? 'bg-[#123B5D] text-white shadow-3xs'
+                          : 'text-slate-600 hover:bg-slate-50'
                       }`}
                     >
                       {c}
@@ -168,49 +163,49 @@ export default function HelpView({
                 </div>
 
                 {/* FAQs List */}
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {filteredFAQs.map(faq => (
-                    <div key={faq.id} className="rounded-2xl border border-slate-250 bg-white p-5 shadow-sm dark:bg-slate-900 dark:border-slate-800">
-                      <div className="flex justify-between items-start gap-2 border-b border-slate-100 pb-2 mb-3">
-                        <span className="text-[10px] uppercase font-bold text-secondary-saffron tracking-wider bg-blue-50 px-2 py-0.5 rounded">
+                    <div key={faq.id} className="rounded-2xl border border-[#D9E0E6] bg-white p-5 shadow-3xs space-y-2">
+                      <div className="flex justify-between items-start gap-2">
+                        <span className="text-[10px] uppercase font-black text-[#123B5D] tracking-wider bg-blue-50 px-2 py-0.5 rounded-md border border-blue-200">
                           {faq.category}
                         </span>
-                        <span className="text-[10px] font-bold text-slate-400 font-mono">{faq.citation}</span>
+                        <span className="text-[10px] font-mono font-bold text-slate-400">{faq.citation}</span>
                       </div>
-                      <h4 className="font-extrabold text-slate-855 text-sm dark:text-slate-100">{faq.question}</h4>
-                      <p className="text-xs text-slate-600 mt-2 leading-relaxed dark:text-slate-400">{faq.answer}</p>
+                      <h4 className="font-extrabold text-[#17212B] text-sm">{faq.question}</h4>
+                      <p className="text-xs text-[#52606D] leading-relaxed font-normal">{faq.answer}</p>
                     </div>
                   ))}
                 </div>
               </div>
             )}
 
-            {/* TAB 2: INTERACTIVE STEPPER CITIZEN GUIDE */}
+            {/* TAB 2: INTERACTIVE CITIZEN GUIDE */}
             {activeHelpTab === 'guide' && (
-              <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm dark:bg-slate-900 dark:border-slate-800 space-y-6">
+              <div className="bg-white rounded-2xl border border-[#D9E0E6] p-6 shadow-3xs space-y-6">
                 <div>
-                  <h3 className="font-extrabold text-sm text-slate-855 dark:text-white uppercase tracking-wider mb-1">
-                    Interactive Citizen Guide & User Manual
+                  <h3 className="font-black text-sm text-[#17212B] uppercase tracking-wider">
+                    Interactive Citizen Guide
                   </h3>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-[#52606D] mt-0.5">
                     Follow the standard 5-step lifecycle of an RTI application under the Right to Information Act, 2005.
                   </p>
                 </div>
 
-                {/* Stepper Steps Indicators */}
+                {/* Stepper Steps */}
                 <div className="flex justify-between items-center relative gap-2 pb-2">
-                  <div className="absolute top-4 left-0 right-0 h-0.5 bg-slate-200 -z-10" />
+                  <div className="absolute top-4 left-0 right-0 h-0.5 bg-[#D9E0E6] -z-0" />
                   {[1, 2, 3, 4, 5].map((step, idx) => (
                     <button
                       key={step}
                       type="button"
                       onClick={() => setActiveGuideStep(idx)}
-                      className={`h-8 w-8 rounded-full font-bold text-xs flex items-center justify-center border transition-all cursor-pointer z-10 ${
+                      className={`h-8 w-8 rounded-full font-black text-xs flex items-center justify-center border transition-all cursor-pointer z-10 ${
                         activeGuideStep === idx
-                          ? 'bg-primary-navy text-white border-primary-navy scale-110 shadow'
+                          ? 'bg-[#123B5D] text-white border-[#123B5D] scale-110 shadow-3xs'
                           : activeGuideStep > idx
-                          ? 'bg-emerald-500 text-white border-emerald-500'
-                          : 'bg-white text-slate-400 border-slate-200 hover:bg-slate-50'
+                          ? 'bg-emerald-600 text-white border-emerald-600'
+                          : 'bg-white text-slate-400 border-[#D9E0E6] hover:bg-slate-50'
                       }`}
                     >
                       {step}
@@ -219,185 +214,108 @@ export default function HelpView({
                 </div>
 
                 {/* Stepper Content */}
-                <div className="bg-slate-50/50 border border-slate-200 rounded-2xl p-5 space-y-4">
+                <div className="bg-[#F7F8FA] border border-[#D9E0E6] rounded-2xl p-5 space-y-3 text-xs">
                   {activeGuideStep === 0 && (
-                    <div className="space-y-2.5">
-                      <span className="text-[10px] font-black uppercase text-secondary-saffron tracking-wider bg-amber-100 px-2.5 py-0.5 rounded-full">
-                        Step 1: Drafting with AI Nudges
+                    <div className="space-y-2">
+                      <span className="text-[10px] font-black uppercase text-[#123B5D] bg-blue-50 border border-blue-200 px-2.5 py-0.5 rounded-full">
+                        Step 1: Framing Specific Questions
                       </span>
-                      <h4 className="font-bold text-sm text-slate-800">Framing Specific RTI Questions</h4>
-                      <p className="text-xs text-slate-600 leading-relaxed">
-                        CPIO officers often reject vague or interrogative requests such as <em>"Why are roads broken?"</em>. 
-                        Under the Act, you must request <strong>specific official records</strong> (e.g. work orders, bills, inspection reports, maps). 
-                        Our AI Assistant scans your description and converts it into precise queries targeting actual documents.
+                      <h4 className="font-extrabold text-sm text-[#17212B]">Requesting Material Records under Section 6(1)</h4>
+                      <p className="text-[#52606D] leading-relaxed">
+                        CPIO officers reject vague or philosophical requests such as <em>"Why was my road not built?"</em>. Under Section 2(f), you must request certified copies of pre-existing material records (e.g. sanction orders, disbursement ledgers, inspection certificates).
                       </p>
                     </div>
                   )}
 
                   {activeGuideStep === 1 && (
-                    <div className="space-y-2.5">
-                      <span className="text-[10px] font-black uppercase text-secondary-saffron tracking-wider bg-amber-100 px-2.5 py-0.5 rounded-full">
+                    <div className="space-y-2">
+                      <span className="text-[10px] font-black uppercase text-[#123B5D] bg-blue-50 border border-blue-200 px-2.5 py-0.5 rounded-full">
                         Step 2: Statutory Fee Payment
                       </span>
-                      <h4 className="font-bold text-sm text-slate-800">Fee Exemption & Gateway Checkout</h4>
-                      <p className="text-xs text-slate-600 leading-relaxed">
-                        Filing an RTI with a Central Authority requires a statutory fee of <strong>₹10</strong>. 
-                        If you belong to the Below Poverty Line (BPL) category, select the BPL waiver and upload a scan of your BPL card; the fee will be waived. 
-                        For simulated purposes, our portal provides transaction tokens instantly.
+                      <h4 className="font-extrabold text-sm text-[#17212B]">Fee Exemption & Bharatkosh Payment</h4>
+                      <p className="text-[#52606D] leading-relaxed">
+                        Filing an RTI with a Central Public Authority requires a statutory fee of ₹10. If you possess a verified BPL card, the fee is completely waived under Section 7(5).
                       </p>
                     </div>
                   )}
 
                   {activeGuideStep === 2 && (
-                    <div className="space-y-2.5">
-                      <span className="text-[10px] font-black uppercase text-secondary-saffron tracking-wider bg-amber-100 px-2.5 py-0.5 rounded-full">
+                    <div className="space-y-2">
+                      <span className="text-[10px] font-black uppercase text-[#123B5D] bg-blue-50 border border-blue-200 px-2.5 py-0.5 rounded-full">
                         Step 3: The 30-Day Clock
                       </span>
-                      <h4 className="font-bold text-sm text-slate-800">Statutory Response Windows</h4>
-                      <p className="text-xs text-slate-600 leading-relaxed">
-                        Under Section 7(1) of the Act, the CPIO must either supply the information or reject the request with grounds within <strong>30 calendar days</strong>. 
-                        If no reply is received by this deadline, it is legally treated as a <strong>Deemed Refusal</strong>, allowing you to file an appeal immediately for free.
+                      <h4 className="font-extrabold text-sm text-[#17212B]">Statutory Response Deadlines</h4>
+                      <p className="text-[#52606D] leading-relaxed">
+                        Under Section 7(1), the CPIO is mandated to supply records within 30 calendar days. If no reply is provided by this deadline, it is treated as a <strong>Deemed Refusal</strong>, allowing you to file an appeal immediately for free.
                       </p>
                     </div>
                   )}
 
                   {activeGuideStep === 3 && (
-                    <div className="space-y-2.5">
-                      <span className="text-[10px] font-black uppercase text-secondary-saffron tracking-wider bg-amber-100 px-2.5 py-0.5 rounded-full">
+                    <div className="space-y-2">
+                      <span className="text-[10px] font-black uppercase text-[#123B5D] bg-blue-50 border border-blue-200 px-2.5 py-0.5 rounded-full">
                         Step 4: First Appeal to FAA
                       </span>
-                      <h4 className="font-bold text-sm text-slate-800">Escalating to Appellate Officers</h4>
-                      <p className="text-xs text-slate-600 leading-relaxed">
-                        If the CPIO fails to respond within 30 days, or if they provide incomplete or misleading answers, you can file a <strong>First Appeal</strong> under Section 19(1). 
-                        This appeal is routed to the department's senior <strong>First Appellate Authority (FAA)</strong>, who has 30 to 45 days to issue a deciding order.
+                      <h4 className="font-extrabold text-sm text-[#17212B]">Section 19(1) Appellate Redressal</h4>
+                      <p className="text-[#52606D] leading-relaxed">
+                        If the CPIO fails to respond within 30 days or provides incomplete answers without citing Section 8 exemptions, file a First Appeal to the designated First Appellate Authority (FAA).
                       </p>
                     </div>
                   )}
 
                   {activeGuideStep === 4 && (
-                    <div className="space-y-2.5">
-                      <span className="text-[10px] font-black uppercase text-secondary-saffron tracking-wider bg-amber-100 px-2.5 py-0.5 rounded-full">
+                    <div className="space-y-2">
+                      <span className="text-[10px] font-black uppercase text-[#123B5D] bg-blue-50 border border-blue-200 px-2.5 py-0.5 rounded-full">
                         Step 5: Second Appeal to CIC
                       </span>
-                      <h4 className="font-bold text-sm text-slate-800">Central Information Commission</h4>
-                      <p className="text-xs text-slate-600 leading-relaxed">
-                        If the FAA rejects your appeal, ignores the deadline, or issues an unsatisfactory decision, you can escalate by filing a <strong>Second Appeal</strong> under Section 19(3) to the Central Information Commission (CIC). 
-                        Our system provides an automated CIC wizard to compile the petition for filing.
+                      <h4 className="font-extrabold text-sm text-[#17212B]">Central Information Commission</h4>
+                      <p className="text-[#52606D] leading-relaxed">
+                        If the FAA rejects your appeal or ignores the deadline, escalate by filing a Second Appeal under Section 19(3) to the Central Information Commission (CIC).
                       </p>
                     </div>
                   )}
 
-                  {/* Navigation buttons inside stepper */}
-                  <div className="flex justify-between border-t border-slate-200/60 pt-4 mt-2">
+                  <div className="flex justify-between border-t border-slate-200 pt-3">
                     <button
                       type="button"
                       disabled={activeGuideStep === 0}
                       onClick={() => setActiveGuideStep(activeGuideStep - 1)}
-                      className="px-3.5 py-1.5 text-xs font-bold text-slate-500 hover:text-slate-700 bg-white border border-slate-200 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                      className="px-3 py-1 text-xs font-bold text-slate-600 bg-white border border-[#D9E0E6] rounded-lg disabled:opacity-40 cursor-pointer"
                     >
-                      ← Previous Step
+                      ← Previous
                     </button>
                     <button
                       type="button"
                       disabled={activeGuideStep === 4}
                       onClick={() => setActiveGuideStep(activeGuideStep + 1)}
-                      className="px-3.5 py-1.5 text-xs font-bold text-white bg-primary-navy hover:bg-primary-blue rounded-lg disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                      className="px-3 py-1 text-xs font-bold text-white bg-[#123B5D] rounded-lg disabled:opacity-40 cursor-pointer"
                     >
-                      Next Step →
+                      Next Step ➔
                     </button>
                   </div>
                 </div>
               </div>
             )}
 
-            {/* TAB 3: LEGAL JARGON GLOSSARY LOOKUP */}
+            {/* TAB 3: GLOSSARY */}
             {activeHelpTab === 'glossary' && (
-              <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm dark:bg-slate-900 dark:border-slate-800 space-y-6">
-                <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3 border-b border-slate-100 pb-4">
-                  <div>
-                    <h3 className="font-extrabold text-sm text-slate-855 dark:text-white uppercase tracking-wider mb-1">
-                      Legal Jargon Explained
-                    </h3>
-                    <p className="text-xs text-slate-500">
-                      Translate complex RTI legal definitions into simple plain-language terms.
-                    </p>
-                  </div>
-                  {/* Glossary Search Box */}
-                  <div className="relative w-full sm:w-[200px]">
-                    <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-slate-400" />
-                    <input
-                      type="text"
-                      value={glossarySearch}
-                      onChange={(e) => setGlossarySearch(e.target.value)}
-                      placeholder="Search glossary..."
-                      className="w-full pl-9 pr-3 py-1.5 border border-slate-300 rounded-lg text-xs outline-none bg-slate-50 focus:border-primary-blue focus:bg-white"
-                    />
-                  </div>
+              <div className="bg-white rounded-2xl border border-[#D9E0E6] p-6 shadow-3xs space-y-4">
+                <div className="relative">
+                  <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                  <input
+                    type="text"
+                    value={glossarySearch}
+                    onChange={(e) => setGlossarySearch(e.target.value)}
+                    placeholder="Search legal term (e.g. CPIO, FAA, Deemed Refusal, Section 8)..."
+                    className="w-full pl-9 pr-4 py-2 border border-[#D9E0E6] rounded-xl text-xs bg-[#F7F8FA] outline-none focus:border-[#123B5D]"
+                  />
                 </div>
 
-                {/* Glossary Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {[
-                    {
-                      term: 'CPIO',
-                      full: 'Central Public Information Officer',
-                      definition: 'The nodal officer designated in every government department to receive, process, and answer incoming RTI requests.',
-                      sec: 'Section 5(1)'
-                    },
-                    {
-                      term: 'FAA',
-                      full: 'First Appellate Authority',
-                      definition: 'A senior departmental officer designated to review appeals if the CPIO refuses or ignores your original RTI request.',
-                      sec: 'Section 19(1)'
-                    },
-                    {
-                      term: 'Section 4 Disclosures',
-                      full: 'Proactive Information Publishing',
-                      definition: 'The statutory requirement for government departments to pre-emptively publish budgets, structure, and salary details online so citizens do not need to file requests.',
-                      sec: 'Section 4(1)(b)'
-                    },
-                    {
-                      term: 'Section 8 Exemptions',
-                      full: 'Withheld Information Clauses',
-                      definition: 'Clauses under which CPIOs can refuse info (e.g. security, privacy, cabinet notes), provided there is no larger public interest.',
-                      sec: 'Section 8(1)'
-                    },
-                    {
-                      term: 'Deemed Refusal',
-                      full: 'Implied Rejection due to Delay',
-                      definition: 'If the CPIO fails to reply within 30 days, the law assumes the request was refused, enabling appeals immediately for free.',
-                      sec: 'Section 7(2)'
-                    },
-                    {
-                      term: 'CIC',
-                      full: 'Central Information Commission',
-                      definition: 'The supreme oversight body that hears Second Appeals. Their decisions are binding and carry penalty powers against officers.',
-                      sec: 'Section 12 / 19(3)'
-                    }
-                  ]
-                  .filter(item => 
-                    item.term.toLowerCase().includes(glossarySearch.toLowerCase()) || 
-                    item.full.toLowerCase().includes(glossarySearch.toLowerCase()) ||
-                    item.definition.toLowerCase().includes(glossarySearch.toLowerCase())
-                  )
-                  .map((item, idx) => (
-                    <div 
-                      key={idx} 
-                      className="group border border-slate-200 hover:border-primary-blue bg-slate-50/50 hover:bg-white rounded-xl p-4.5 transition-all shadow-3xs flex flex-col justify-between"
-                      title={`Statutory Reference: ${item.sec}`}
-                    >
-                      <div>
-                        <div className="flex justify-between items-start gap-1">
-                          <span className="font-extrabold text-sm text-primary-navy group-hover:text-primary-blue">{item.term}</span>
-                          <span className="text-[9px] bg-slate-200/60 font-bold px-1.5 py-0.5 rounded text-slate-500 font-mono">{item.sec}</span>
-                        </div>
-                        <span className="text-[10px] text-slate-400 font-bold block mt-0.5">{item.full}</span>
-                        <p className="text-xs text-slate-600 leading-relaxed mt-2.5">{item.definition}</p>
-                      </div>
-                      <div className="border-t border-slate-200/60 pt-2 mt-3 flex justify-between items-center text-[10px] text-slate-400 font-bold">
-                        <span>Translate: Citizens English</span>
-                        <span className="text-primary-blue group-hover:underline">Section Details →</span>
-                      </div>
+                <div className="space-y-3">
+                  {glossaryItems.map((item, idx) => (
+                    <div key={idx} className="p-4 rounded-xl border border-[#D9E0E6] bg-[#F7F8FA] space-y-1">
+                      <h4 className="font-extrabold text-xs text-[#123B5D]">{item.term}</h4>
+                      <p className="text-xs text-[#52606D] leading-relaxed">{item.desc}</p>
                     </div>
                   ))}
                 </div>
@@ -406,166 +324,98 @@ export default function HelpView({
 
           </div>
 
-          {/* Right Column: Stuck Helper & Ticket Support */}
+          {/* Right Column: Support Ticket Submission */}
           <div className="space-y-6">
-            
-            {/* Context Stuck helper */}
-            <div className="rounded-2xl border border-slate-205 bg-white p-5 shadow-sm dark:bg-slate-900 dark:border-slate-850">
-              <h3 className="font-extrabold text-sm text-primary-navy border-b border-slate-100 pb-3 mb-3 dark:text-white flex items-center gap-1.5">
-                <Compass className="h-5 w-5 text-secondary-saffron" />
-                I'm Stuck - Instant Guides
-              </h3>
-              
-              <div className="space-y-4">
-                <div>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-2">Category: Payments</span>
-                  <div className="space-y-2">
-                    {getStuckOptions('payment').map((o, idx) => (
-                      <details key={idx} className="group border border-slate-100 rounded-lg p-2.5 bg-slate-50/50 cursor-pointer">
-                        <summary className="text-[11px] font-bold text-slate-700 list-none flex justify-between items-center select-none">
-                          {o.q}
-                          <span className="text-slate-400 group-open:rotate-180 transition-transform">▼</span>
-                        </summary>
-                        <p className="text-[10.5px] text-slate-550 mt-2 leading-relaxed border-t border-slate-100 pt-2">{o.a}</p>
-                      </details>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-2">Category: Authority & Laws</span>
-                  <div className="space-y-2">
-                    {getStuckOptions('authority').map((o, idx) => (
-                      <details key={idx} className="group border border-slate-100 rounded-lg p-2.5 bg-slate-50/50 cursor-pointer">
-                        <summary className="text-[11px] font-bold text-slate-700 list-none flex justify-between items-center select-none">
-                          {o.q}
-                          <span className="text-slate-400 group-open:rotate-180 transition-transform">▼</span>
-                        </summary>
-                        <p className="text-[10.5px] text-slate-550 mt-2 leading-relaxed border-t border-slate-100 pt-2">{o.a}</p>
-                      </details>
-                    ))}
-                  </div>
-                </div>
+            <div className="bg-white rounded-2xl border border-[#D9E0E6] p-6 shadow-3xs space-y-4">
+              <div className="border-b border-slate-100 pb-3">
+                <h3 className="font-extrabold text-sm text-[#17212B] flex items-center gap-1.5">
+                  <MessageSquare className="h-4 w-4 text-[#123B5D]" />
+                  Citizen Support Desk
+                </h3>
+                <p className="text-[11px] text-[#52606D] mt-0.5">
+                  Facing an issue with payment, application numbers, or response uploads?
+                </p>
               </div>
-            </div>
 
-            {/* Official support desk contact info */}
-            <div className="rounded-2xl border border-slate-800 bg-slate-950 text-white p-5 shadow-sm">
-              <h3 className="font-extrabold text-sm border-b border-slate-850 pb-3 mb-3">
-                Official Help Desk (DoPT)
-              </h3>
-              <p className="text-[11px] text-slate-400 leading-relaxed mb-4">
-                For technical issues, payment sync issues, or enquiries on the official government portals, contact the Central Helpline:
-              </p>
-              <div className="space-y-2 text-[11px]">
-                <div className="flex justify-between border-b border-slate-850 pb-2">
-                  <span className="text-slate-400">Helpline Phone</span>
-                  <span className="font-extrabold text-slate-200 font-mono">011-24622461</span>
+              {submittedTicketId && (
+                <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-900 space-y-1">
+                  <div className="font-bold flex items-center gap-1">
+                    <CheckCircle2 className="h-4 w-4 text-emerald-600" /> Ticket Created: {submittedTicketId}
+                  </div>
+                  <p className="text-[11px] text-emerald-800">Our citizen support officer will review and update status shortly.</p>
                 </div>
-                <div className="flex justify-between border-b border-slate-850 pb-2">
-                  <span className="text-slate-400">Working Hours</span>
-                  <span className="font-semibold text-slate-200">9:00 AM – 5:30 PM (Mon-Fri)</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-400">Support Email</span>
-                  <span className="font-extrabold text-secondary-saffron font-mono">rtionline-dopt@nic.in</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Support Ticket Submission */}
-            <div className="rounded-2xl border border-slate-205 bg-white p-5 shadow-sm dark:bg-slate-900 dark:border-slate-850">
-              <h3 className="font-extrabold text-sm text-primary-navy border-b border-slate-100 pb-3 mb-3 dark:text-white flex items-center gap-1.5">
-                <MessageSquare className="h-5 w-5 text-secondary-saffron" />
-                Submit Support Ticket
-              </h3>
+              )}
 
               <form onSubmit={handleTicketSubmit} className="space-y-3 text-xs">
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-450 uppercase mb-1">Issue Category</label>
+                  <label className="block text-[10px] font-black text-[#52606D] uppercase mb-1">Issue Category</label>
                   <select
                     value={ticketIssue}
                     onChange={(e) => setTicketIssue(e.target.value)}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-xs text-slate-800 bg-slate-50 outline-none"
+                    className="w-full rounded-xl border border-[#D9E0E6] p-2 text-xs font-bold text-slate-800 bg-[#F7F8FA]"
                   >
-                    <option value="Payment completed but registration number missing">Payment failed / missing Reg No</option>
-                    <option value="Document upload error">Document upload failure</option>
-                    <option value="Department suggestion incorrect">Department selection query</option>
-                    <option value="Other portal problem">Other technical issue</option>
+                    <option value="Payment completed but registration number missing">Payment completed but registration missing</option>
+                    <option value="CPIO contact details invalid or outdated">CPIO contact details invalid or outdated</option>
+                    <option value="Need assistance with First Appeal filing">Need assistance with First Appeal filing</option>
+                    <option value="Document preview rendering issue">Document preview rendering issue</option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-450 uppercase mb-1">Associated RTI Reg No (Optional)</label>
+                  <label className="block text-[10px] font-black text-[#52606D] uppercase mb-1">Related Application ID (Optional)</label>
                   <input
                     type="text"
                     value={ticketRegNo}
                     onChange={(e) => setTicketRegNo(e.target.value)}
-                    placeholder="e.g. MORLY/R/2026/05931"
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-xs text-slate-800 bg-slate-50 outline-none"
+                    placeholder="e.g. RTI-2026-001245"
+                    className="w-full rounded-xl border border-[#D9E0E6] p-2 text-xs font-mono font-bold text-slate-800 bg-[#F7F8FA]"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-450 uppercase mb-1">Describe the problem</label>
+                  <label className="block text-[10px] font-black text-[#52606D] uppercase mb-1">Describe Your Issue</label>
                   <textarea
-                    rows={3}
+                    rows={4}
+                    required
                     value={ticketDetails}
                     onChange={(e) => setTicketDetails(e.target.value)}
-                    placeholder="Include transaction ID, timestamp, and details..."
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-xs text-slate-800 bg-slate-50 outline-none focus:border-primary-blue"
+                    placeholder="Describe transaction references, dates, or what happened..."
+                    className="w-full rounded-xl border border-[#D9E0E6] p-2.5 text-xs text-slate-800 bg-[#F7F8FA]"
                   />
                 </div>
 
                 <button
                   type="submit"
-                  disabled={!ticketDetails.trim()}
-                  className="w-full rounded-xl bg-primary-navy hover:bg-primary-blue text-white font-bold py-2.5 disabled:bg-slate-200 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
+                  className="w-full rounded-xl bg-[#123B5D] hover:bg-[#0A2540] text-white py-2.5 text-xs font-black shadow-3xs cursor-pointer transition-all flex items-center justify-center gap-1.5"
                 >
-                  <Send className="h-3.5 w-3.5" /> Submit Support Request
+                  <Send className="h-3.5 w-3.5" /> Submit Support Ticket
                 </button>
               </form>
 
-              {/* Submitted Confirmation */}
-              {submittedTicketId && (
-                <div className="mt-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-[10.5px] p-2.5 rounded-lg flex items-start gap-1.5 animate-in fade-in">
-                  <AlertCircle className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
-                  <div>
-                    <span className="font-bold">Ticket Submitted: {submittedTicketId}</span>
-                    <p className="opacity-90 mt-0.5">Admin will review transaction notes and update in 24 hours.</p>
-                  </div>
-                </div>
-              )}
-
-              {/* Tickets History List */}
-              <div className="border-t border-slate-100 mt-4 pt-4 space-y-2">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Ticket History</span>
-                
+              {/* Active Support Tickets List */}
+              <div className="border-t border-slate-100 pt-3 space-y-2">
+                <span className="text-[10px] font-black uppercase text-slate-400 block">Your Support Tickets</span>
                 {tickets.map(tkt => (
-                  <div key={tkt.id} className="border border-slate-200 rounded-lg p-2.5 bg-slate-50/50 text-[11px]">
+                  <div key={tkt.id} className="p-3 rounded-xl bg-[#F7F8FA] border border-[#D9E0E6] text-xs space-y-1">
                     <div className="flex justify-between items-center">
-                      <span className="font-bold text-slate-800">{tkt.id}</span>
-                      <span className={`font-extrabold px-1.5 py-0.5 rounded text-[9px] uppercase ${
-                        tkt.status === 'Resolved' ? 'bg-emerald-50 text-emerald-700' : 'bg-blue-50 text-blue-700'
+                      <span className="font-mono font-extrabold text-[#123B5D]">{tkt.id}</span>
+                      <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${
+                        tkt.status === 'Resolved' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-900'
                       }`}>
                         {tkt.status}
                       </span>
                     </div>
-                    <p className="font-semibold text-slate-700 mt-1 leading-snug">{tkt.issue}</p>
-                    <p className="text-slate-600 mt-1 line-clamp-2 italic">{tkt.details}</p>
-                    
+                    <p className="font-semibold text-slate-800 text-[11px]">{tkt.issue}</p>
                     {tkt.reply && (
-                      <div className="mt-2 bg-white border border-slate-200 p-2 rounded-lg text-[10.5px] text-slate-700 leading-snug">
-                        <span className="font-bold text-primary-navy block mb-0.5">Admin Response:</span>
-                        {tkt.reply}
-                      </div>
+                      <p className="text-[10.5px] text-slate-600 bg-white p-2 rounded-lg border border-slate-200 mt-1">
+                        <strong>Reply:</strong> {tkt.reply}
+                      </p>
                     )}
                   </div>
                 ))}
               </div>
 
             </div>
-
           </div>
 
         </div>
