@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { 
   FileText, Search, ShieldCheck, CreditCard, Clock, BellRing, 
-  HelpCircle, Sparkles, BookOpen, Scale, ArrowRight, CornerDownRight 
+  HelpCircle, Sparkles, BookOpen, Scale, ArrowRight, CornerDownRight, RefreshCw 
 } from 'lucide-react';
 import { mockFAQs, FAQ } from '../data/mockData';
 
@@ -61,16 +61,16 @@ export default function LandingView({ setActiveView, language }: LandingViewProp
       trustSupport: 'Accessibility & Support',
       howItWorksTitle: 'How RTI Saathi Works',
       howItWorksSub: 'Filing an RTI doesn\'t require a legal degree. We guide you step-by-step.',
-      step1: 'Describe your request',
-      step1Desc: 'Type your question in natural language (English or Hindi). Our AI extracts the key terms.',
-      step2: 'Select Authority',
-      step2Desc: 'We suggest the correct Central/State public department so you never file in the wrong place.',
-      step3: 'AI Draft Builder',
-      step3Desc: 'We automatically format your query into 5 precise, legally appropriate questions to avoid CPIO rejection.',
-      step4: 'Secure Review & Pay',
-      step4Desc: 'Review the generated form, upload BPL certificate if applicable, and complete the ₹10 fee payment.',
-      step5: 'Track & Appeal',
-      step5Desc: 'Track statutory countdowns. If they omit answers, generate a First Appeal in two clicks.',
+      step1: 'Submit Request to CPIO',
+      step1Desc: 'Formulate and submit your inquiry to the Central Public Information Officer (CPIO) of the matching authority.',
+      step2: 'CPIO Decision (30 Days)',
+      step2Desc: 'CPIO must supply the requested records or reject under Section 8 exemptions within 30 days.',
+      step3: 'FAA First Appeal',
+      step3Desc: 'If CPIO rejects, responds late, or omits questions, file a First Appeal to the senior FAA officer within 30 days.',
+      step4: 'FAA Order (30-45 Days)',
+      step4Desc: 'The First Appellate Authority decides your appeal and issues a final department order.',
+      step5: 'Second Appeal to CIC',
+      step5Desc: 'If FAA appeal is unsatisfactory, legally appeal to the Central Information Commission (CIC) at cic.gov.in.',
       faqTitle: 'Frequently Asked Questions',
       viewAllFaqs: 'View Help Centre FAQs',
       quickActionsTitle: 'What do you want to do today?',
@@ -84,8 +84,8 @@ export default function LandingView({ setActiveView, language }: LandingViewProp
       quickAuthSub: 'Search government CPIOs',
       quickSearch: 'Search Disclosures',
       quickSearchSub: 'Browse public files',
-      quickLearn: 'Learn RTI Act',
-      quickLearnSub: 'Basics, fees and limits'
+      quickReconcile: 'Reconcile Payment',
+      quickReconcileSub: 'Money deducted, request pending?'
     },
     hi: {
       heroTitle: 'वह जानकारी प्राप्त करें जिसे जानने का आपको अधिकार है।',
@@ -103,16 +103,16 @@ export default function LandingView({ setActiveView, language }: LandingViewProp
       trustSupport: 'अभिगम्यता और सहायता',
       howItWorksTitle: 'आरटीआई साथी कैसे काम करता है',
       howItWorksSub: 'आरटीआई दाखिल करने के लिए किसी कानूनी डिग्री की आवश्यकता नहीं है। हम कदम-दर-कदम मार्गदर्शन करते हैं।',
-      step1: 'अपना अनुरोध बताएं',
-      step1Desc: 'अपनी समस्या को सरल भाषा में लिखें (अंग्रेजी या हिंदी)। हमारा एआई मुख्य शब्दों को समझ लेता है।',
-      step2: 'विभाग का चयन करें',
-      step2Desc: 'हम सही सरकारी विभाग का सुझाव देते हैं ताकि आप कभी भी गलत जगह आवेदन न भेजें।',
-      step3: 'एआई ड्राफ्ट बिल्डर',
-      step3Desc: 'हम आपके प्रश्न को 5 विशिष्ट, कानूनी रूप से उपयुक्त प्रश्नों में प्रारूपित करते हैं ताकि विभाग खारिज न कर सके।',
-      step4: 'समीक्षा और भुगतान',
-      step4Desc: 'तैयार प्रपत्र की जांच करें, यदि आवश्यक हो तो बीपीएल प्रमाण पत्र अपलोड करें, और ₹10 शुल्क का भुगतान करें।',
-      step5: 'ट्रैक और अपील',
-      step5Desc: 'समयसीमा को ट्रैक करें। यदि विभाग आधा-अधूर उत्तर देता है, तो केवल दो क्लिक में प्रथम अपील तैयार करें।',
+      step1: 'सीपीआईओ को अनुरोध भेजें',
+      step1Desc: 'सीपीआईओ को अपना प्रश्न प्रारूपित करके प्रस्तुत करें।',
+      step2: 'सीपीआईओ निर्णय (30 दिन)',
+      step2Desc: 'सीपीआईओ को 30 दिनों के भीतर दस्तावेज़ देने होंगे या धारा 8 के तहत अस्वीकार करना होगा।',
+      step3: 'प्रथम अपील (FAA)',
+      step3Desc: 'यदि जवाब अधूरा है या देरी हुई है, तो 30 दिनों के भीतर वरिष्ठ अपील अधिकारी को प्रथम अपील भेजें।',
+      step4: 'FAA आदेश (30-45 दिन)',
+      step4Desc: 'प्रथम अपील अधिकारी आपकी अपील पर सुनवाई करके अंतिम आदेश जारी करता है।',
+      step5: 'CIC को द्वितीय अपील',
+      step5Desc: 'यदि प्रथम अपील भी असंतोषजनक हो, तो cic.gov.in पर केंद्रीय सूचना आयोग (CIC) में अपील करें।',
       faqTitle: 'अक्सर पूछे जाने वाले प्रश्न (FAQ)',
       viewAllFaqs: 'सहायता केंद्र पर सभी प्रश्न देखें',
       quickActionsTitle: 'आज आप क्या करना चाहते हैं?',
@@ -126,8 +126,8 @@ export default function LandingView({ setActiveView, language }: LandingViewProp
       quickAuthSub: 'सरकारी अधिकारियों को खोजें',
       quickSearch: 'प्रकाशित दस्तावेज़',
       quickSearchSub: 'सार्वजनिक फाइलों को ब्राउज़ करें',
-      quickLearn: 'आरटीआई कानून जानें',
-      quickLearnSub: 'मूल बातें, शुल्क और सीमाएं'
+      quickReconcile: 'भुगतान मिलान (Reconciliation)',
+      quickReconcileSub: 'असफल भुगतानों को सिंक्रोनाइज़ करें'
     }
   }[language];
 
@@ -306,16 +306,18 @@ export default function LandingView({ setActiveView, language }: LandingViewProp
             <p className="text-xs text-slate-500 mt-2 leading-relaxed dark:text-slate-400">{t.quickSearchSub}</p>
           </div>
 
-          {/* Action 6: Learn RTI */}
+          {/* Action 6: Reconcile Payment */}
           <div 
-            onClick={() => setActiveView('help')}
-            className="group rounded-2xl bg-white border border-slate-200 p-6 hover:shadow-md hover:border-slate-300 hover:-translate-y-0.5 transition-all cursor-pointer dark:bg-slate-900 dark:border-slate-850"
+            onClick={() => {
+              alert("Payment Reconciliation: If fee was deducted from your bank but your RTI status is showing pending, enter transaction details or contact rtionline-dopt@nic.in. Statuses sync with NIC within 24 hours. (Official Helpline: 011-24622461)");
+            }}
+            className="group rounded-2xl bg-white border border-slate-200 p-6 hover:shadow-md hover:border-slate-350 hover:-translate-y-0.5 transition-all cursor-pointer dark:bg-slate-900 dark:border-slate-850"
           >
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-50 text-emerald-500 group-hover:bg-emerald-500 group-hover:text-white transition-colors mb-4">
-              <HelpCircle className="h-6 w-6" />
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-50 text-emerald-500 group-hover:bg-emerald-500 group-hover:text-white transition-colors mb-4 animate-pulse">
+              <RefreshCw className="h-6 w-6" />
             </div>
-            <h4 className="font-bold text-slate-900 text-base dark:text-white">{t.quickLearn}</h4>
-            <p className="text-xs text-slate-500 mt-2 leading-relaxed dark:text-slate-400">{t.quickLearnSub}</p>
+            <h4 className="font-bold text-slate-900 text-base dark:text-white">{t.quickReconcile}</h4>
+            <p className="text-xs text-slate-500 mt-2 leading-relaxed dark:text-slate-400">{t.quickReconcileSub}</p>
           </div>
 
         </div>

@@ -43,6 +43,18 @@ export default function ContextualHelp({ activeView, language }: ContextualHelpP
       subtitle: 'First Appeal Rule',
       simple: 'The legal clause under which you submit an appeal to the FAA if the CPIO replies late or gives unsatisfactory information.',
       official: 'Section 19(1) allows any person who does not receive a decision within the specified time, or is aggrieved by a CPIO decision, to appeal to the senior officer.'
+    },
+    'Second Appeal (CIC)': {
+      title: 'Second Appeal (CIC)',
+      subtitle: 'Central Information Commission',
+      simple: 'The final appeal stage under the RTI Act. If your First Appeal is rejected or ignored by the FAA officer, you file a Second Appeal directly with the Central Information Commission (CIC).',
+      official: 'Filed under Section 19(3) of the RTI Act, 2005. The decision of the Commission is legally binding.'
+    },
+    'Payment Reconciliation': {
+      title: 'Payment Reconciliation',
+      subtitle: 'Failed Transactions Sync',
+      simple: 'If your ₹10 payment was deducted but the status shows pending, it means the transaction needs reconciliation. The portal automatically syncs status with SBI/NIC payment gateways within 24 hours.',
+      official: 'DoPT guidelines specify automatic verification of payments through the bank reconciliation portal.'
     }
   };
 
@@ -269,8 +281,8 @@ export default function ContextualHelp({ activeView, language }: ContextualHelpP
               <div className="bg-primary-navy/5 border border-primary-navy/10 rounded-xl p-3 flex gap-2 items-start text-[11px] leading-relaxed text-primary-navy">
                 <Info className="h-4 w-4 shrink-0 mt-0.5 text-primary-blue" />
                 <div>
-                  <span className="font-bold block">Need immediate government assistance?</span>
-                  If you are blocked on technical errors, call the national RTI support helpline at <span className="font-bold text-text-primary">1800-11-4460</span>.
+                  <span className="font-bold block">Official Government Help Desk</span>
+                  If you are blocked on technical errors, call the national RTI support helpline at <span className="font-bold text-text-primary">011-24622461</span> (Office Hours: 9:00 AM – 5:30 PM, Mon-Fri) or email <span className="font-bold text-text-primary">rtionline-dopt@nic.in</span>.
                 </div>
               </div>
             </div>

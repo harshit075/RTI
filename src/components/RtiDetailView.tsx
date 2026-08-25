@@ -409,7 +409,7 @@ Mob: 9876543210`;
               </div>
 
               {/* Appeal Trigger (Section 19) */}
-              {rti.status !== 'First Appeal Filed' && (
+              {rti.status !== 'First Appeal Filed' ? (
                 <div className="border-t border-slate-100 pt-4 mt-4">
                   <div className="bg-purple-50 rounded-xl p-3 border border-purple-250 text-xs text-purple-800 mb-3 leading-relaxed">
                     <span className="font-bold">First Appeal Available:</span> If you are dissatisfied because critical documents were omitted or denied, you can submit a first appeal to the FAA officer for resolution.
@@ -422,6 +422,23 @@ Mob: 9876543210`;
                     <Scale className="h-4 w-4 text-secondary-saffron" />
                     One-Click First Appeal (Free)
                   </button>
+                </div>
+              ) : (
+                <div className="border-t border-slate-100 pt-4 mt-4">
+                  <div className="bg-red-50 rounded-xl p-3 border border-red-200 text-xs text-red-800 mb-3 leading-relaxed animate-in fade-in duration-200">
+                    <span className="font-bold block mb-1">⚖️ Unsatisfied with First Appeal?</span>
+                    If the First Appellate Authority (FAA) decision is unsatisfactory or you do not receive a reply within 30-45 days, you can file a **Second Appeal** or **Complaint** to the Central Information Commission (CIC) under Section 19(3) of the RTI Act.
+                  </div>
+                  
+                  <a
+                    href="https://cic.gov.in"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full bg-red-650 hover:bg-red-700 text-white font-extrabold text-xs py-3 rounded-xl shadow-md flex items-center justify-center gap-1.5 cursor-pointer text-center"
+                  >
+                    <Scale className="h-4 w-4 text-white" />
+                    Go to Official CIC Portal (cic.gov.in) ↗
+                  </a>
                 </div>
               )}
             </div>

@@ -141,6 +141,14 @@ export default function Navbar({
           >
             {t.help}
           </button>
+          <button
+            onClick={() => {
+              alert("Payment Reconciliation: If fee was deducted from your bank but your RTI status is showing pending, enter transaction details or contact rtionline-dopt@nic.in. Statuses sync with NIC within 24 hours. (Official Helpline: 011-24622461)");
+            }}
+            className="rounded-md px-3.5 py-2 text-xs font-bold text-secondary-saffron hover:bg-slate-50 animate-pulse border border-dashed border-secondary-saffron focus-ring cursor-pointer"
+          >
+            Reconcile Payment
+          </button>
         </nav>
 
         {/* Accessibility, Localization and User Icons */}

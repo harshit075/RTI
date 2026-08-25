@@ -185,6 +185,26 @@ export default function OnboardingView({ setActiveView, setDraftRti, language }:
         </p>
       </div>
 
+      {/* Central-only Scope Warning */}
+      <div className="rounded-2xl border border-red-200 bg-red-50 text-red-805 p-4.5 mb-6 text-xs flex gap-3 items-start leading-relaxed">
+        <AlertTriangle className="h-5.5 w-5.5 text-red-600 shrink-0 mt-0.5" />
+        <div>
+          <span className="font-extrabold block text-sm uppercase text-red-900 mb-0.5">⚠️ Central Government Ministries Scope Only</span>
+          RTI Online portal is ONLY for filing requests with **Central Government Ministries, Departments, and Public Authorities**. 
+          State Government authorities (e.g. Uttar Pradesh, Maharashtra, Karnataka, Delhi NCT) cannot be filed here. State applications will be returned with <span className="font-extrabold text-red-950">NO REFUND</span>. 
+          <div className="mt-2.5">
+            <a 
+              href="https://rtionline.gov.in/request/authorityList.php" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="text-primary-navy font-extrabold hover:underline mr-4 inline-flex items-center gap-1 bg-white/60 px-2 py-1 rounded border border-red-200"
+            >
+              🔍 View Registered 2000+ Public Authorities List ↗
+            </a>
+          </div>
+        </div>
+      </div>
+
       {/* Step 1: Select Topic */}
       <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm mb-6 dark:bg-slate-900 dark:border-slate-800">
         <h3 className="font-bold text-sm text-slate-800 mb-4 dark:text-slate-200">

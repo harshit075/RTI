@@ -38,6 +38,22 @@ export default function AuthoritiesView({ language }: AuthoritiesViewProps) {
           </p>
         </div>
 
+        {/* Scope warning and link */}
+        <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 text-red-805 p-4 text-xs flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+          <div>
+            <span className="font-extrabold block text-sm uppercase text-red-900 mb-0.5">⚠️ Central Scope Alert</span>
+            This lookup contains registered Central Ministries only. Filing for state-level entities will result in application rejection.
+          </div>
+          <a
+            href="https://rtionline.gov.in/request/authorityList.php"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="bg-primary-navy hover:bg-primary-blue text-white font-bold px-4 py-2 rounded-lg text-[10.5px] whitespace-nowrap shadow cursor-pointer text-center w-full sm:w-auto"
+          >
+            Official Public Authorities Directory ↗
+          </a>
+        </div>
+
         {/* Filters */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
           {/* Search bar */}
