@@ -308,20 +308,7 @@ export interface RtiTemplate {
   questions: string[];
 }
 
-export interface GeoLocalBody {
-  name: string;
-  authorityId: string;
-}
-
-export interface GeoDistrict {
-  name: string;
-  localBodies: GeoLocalBody[];
-}
-
-export interface GeoState {
-  name: string;
-  districts: GeoDistrict[];
-}
+export { type GeoLocalBody, type GeoDistrict, type GeoState, geographicHierarchy } from './geoHierarchyData';
 
 export const mockDisclosures: PublicDisclosure[] = [
   {
@@ -421,59 +408,6 @@ export const mockTemplates: RtiTemplate[] = [
   }
 ];
 
-export const geographicHierarchy: GeoState[] = [
-  {
-    name: 'Rajasthan',
-    districts: [
-      {
-        name: 'Jodhpur',
-        localBodies: [
-          { name: 'Jodhpur Municipal Corporation (North)', authorityId: 'morth' },
-          { name: 'Jodhpur Municipal Corporation (South)', authorityId: 'morth' },
-          { name: 'Jodhpur Development Authority (JDA)', authorityId: 'morth' }
-        ]
-      },
-      {
-        name: 'Jaipur',
-        localBodies: [
-          { name: 'Jaipur Greater Municipal Corporation', authorityId: 'morth' },
-          { name: 'Jaipur Heritage Municipal Corporation', authorityId: 'morth' },
-          { name: 'Jaipur Development Authority (JDA)', authorityId: 'morth' }
-        ]
-      }
-    ]
-  },
-  {
-    name: 'Maharashtra',
-    districts: [
-      {
-        name: 'Mumbai City',
-        localBodies: [
-          { name: 'Brihanmumbai Municipal Corporation (BMC)', authorityId: 'morth' },
-          { name: 'Mumbai Metropolitan Region Development Authority (MMRDA)', authorityId: 'morth' }
-        ]
-      },
-      {
-        name: 'Pune',
-        localBodies: [
-          { name: 'Pune Municipal Corporation (PMC)', authorityId: 'morth' },
-          { name: 'Pimpri Chinchwad Municipal Corporation (PCMC)', authorityId: 'morth' }
-        ]
-      }
-    ]
-  },
-  {
-    name: 'Delhi',
-    districts: [
-      {
-        name: 'New Delhi',
-        localBodies: [
-          { name: 'New Delhi Municipal Council (NDMC)', authorityId: 'morth' },
-          { name: 'Municipal Corporation of Delhi (MCD)', authorityId: 'morth' }
-        ]
-      }
-    ]
-  }
-];
+
 
 export const inMemoryRtis: RTIApplication[] = [...initialRTIs];
