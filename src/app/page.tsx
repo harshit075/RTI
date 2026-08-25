@@ -13,60 +13,38 @@ import HelpView from '../components/HelpView';
 import ProfileView from '../components/ProfileView';
 import ContextualHelp from '../components/ContextualHelp';
 import ReconciliationView from '../components/ReconciliationView';
+import AuthView from '../components/AuthView';
+import ProductTourModal from '../components/ProductTourModal';
 
-import { initialRTIs, RTIApplication } from '../data/mockData';
+import { initialRTIs, RTIApplication, defaultDemoUser, DemoUser, mockNotifications, MockNotification } from '../data/mockData';
 
 export default function Home() {
   // Navigation Routing States
   const [activeView, setActiveView] = useState<string>('landing');
-  const [selectedRtiId, setSelectedRtiId] = useState<string>('');
+  const [selectedRtiId, setSelectedRtiId] = useState<string>('rti-road-jaipur-1245');
 
+  // Authenticated Demo User State
+  const [currentUser, setCurrentUser] = useState<DemoUser>(defaultDemoUser);
 
+  // Product Tour Modal State
+  const [isTourOpen, setIsTourOpen] = useState<boolean>(false);
 
-  // Accessibility & Localization States (Section 35)
+  // Accessibility & Localization States
   const [language, setLanguage] = useState<'en' | 'hi'>('en');
   const [lowBandwidth, setLowBandwidth] = useState<boolean>(false);
   const [textSize, setTextSize] = useState<'normal' | 'large'>('normal');
   const [helpCategory, setHelpCategory] = useState<'All' | 'Basics' | 'Fees' | 'Process' | 'Appeals' | 'Exemptions'>('All');
 
-  // RTI Applications Mock DB (prefilled with default data, persisted to LocalStorage)
+  // RTI Applications Mock DB
   const [rtis, setRtis] = useState<RTIApplication[]>(initialRTIs);
   
   // Builder Temp Draft state
   const [draftRti, setDraftRti] = useState<any>(null);
 
-  // System Notifications list (Section 25)
-  const [notifications, setNotifications] = useState<Array<{
-    id: string;
-    title: string;
-    time: string;
-    type: 'alert' | 'update' | 'deadline' | 'info';
-    read: boolean;
-  }>>([
-    {
-      id: 'notif-1',
-      title: 'First Appeal deadline approaching for Passport Delay Inquiry',
-      time: '1 day ago',
-      type: 'deadline',
-      read: false
-    },
-    {
-      id: 'notif-2',
-      title: 'CPIO response letter received for Platform Upgrades Tender',
-      time: '2 days ago',
-      type: 'update',
-      read: false
-    },
-    {
-      id: 'notif-3',
-      title: 'Welcome to RTI Saathi. Set up email OTP verification in Profile.',
-      time: '3 days ago',
-      type: 'info',
-      read: true
-    }
-  ]);
+  // System Notifications list
+  const [notifications, setNotifications] = useState<MockNotification[]>(mockNotifications);
 
-  // Fetch all RTIs from database with fallback
+  // Fetch all RTIs with graceful fallback
   const fetchRtis = async () => {
     try {
       const res = await fetch('/api/rtis');
@@ -77,20 +55,27 @@ export default function Home() {
         }
       }
     } catch {
-      // Graceful fallback to initial mock dataset if network is offline or reloading
       setRtis(prev => (prev && prev.length > 0 ? prev : initialRTIs));
     }
   };
 
-  // Load from database on mount
+  // Load from database & localStorage on mount
   useEffect(() => {
     fetchRtis();
+    try {
+      const savedUser = localStorage.getItem('rti_demo_user');
+      if (savedUser) {
+        setCurrentUser(JSON.parse(savedUser));
+      }
+    } catch (e) {
+      console.warn('LocalStorage error:', e);
+    }
     // Ensure document never has .dark class
     document.documentElement.classList.remove('dark');
   }, []);
 
   const addNotification = (title: string, type: 'alert' | 'update' | 'deadline' | 'info') => {
-    const newNotif = {
+    const newNotif: MockNotification = {
       id: `notif-${Date.now()}`,
       title,
       time: 'Just now',
@@ -103,6 +88,48 @@ export default function Home() {
   const markNotificationsRead = () => {
     const updated = notifications.map(n => ({ ...n, read: true }));
     setNotifications(updated);
+  };
+
+  const handleLoginSuccess = (user: DemoUser, isDemo: boolean = true) => {
+    setCurrentUser(user);
+    try {
+      localStorage.setItem('rti_demo_user', JSON.stringify(user));
+    } catch (e) {}
+    setActiveView('dashboard');
+  };
+
+  const handleLogout = () => {
+    setCurrentUser(defaultDemoUser);
+    try {
+      localStorage.removeItem('rti_demo_user');
+    } catch (e) {}
+    setActiveView('auth');
+  };
+
+  // Scenario Quick Switcher Handler
+  const handleSelectScenario = (scenario: string) => {
+    if (scenario === 'onboarding') {
+      setActiveView('onboarding');
+    } else if (scenario === 'authorities') {
+      setActiveView('authorities');
+    } else if (scenario.startsWith('rti-')) {
+      setSelectedRtiId(scenario);
+      setActiveView('detail');
+    } else {
+      setActiveView(scenario);
+    }
+  };
+
+  // Reset Demo Workspace Handler
+  const handleResetDemo = () => {
+    setRtis(initialRTIs);
+    setNotifications(mockNotifications);
+    setCurrentUser(defaultDemoUser);
+    try {
+      localStorage.removeItem('rti_demo_user');
+    } catch (e) {}
+    addNotification('Demo environment reset to initial fictional data.', 'info');
+    alert('Demo workspace reset! All RTIs, notifications, and application statuses have been restored to initial demo state.');
   };
 
   const addNewRti = async (newApp: RTIApplication) => {
@@ -161,12 +188,19 @@ export default function Home() {
       });
       if (res.ok) {
         await fetchRtis();
-        addNotification(`First Appeal filed successfully`, 'update');
-        alert('First Appeal letter successfully filed and dispatched to the Appellate Authority (FAA). You can track status on the timeline.');
       }
     } catch (err) {
       console.error('Failed to file first appeal:', err);
     }
+    
+    // Update local state directly for immediate reactivity
+    setRtis(prev => prev.map(r => r.id === id ? {
+      ...r,
+      status: 'First Appeal Filed',
+      appealReason: reason,
+      appealDate: '2026-08-25'
+    } : r));
+    addNotification(`First Appeal filed successfully (Case Ref: FAA-DEMO-2026-00421)`, 'update');
   };
 
   // Second Appeal submission handler
@@ -187,18 +221,27 @@ export default function Home() {
       });
       if (res.ok) {
         await fetchRtis();
-        addNotification(`Second Appeal filed with CIC successfully. Ref: ${secRegNo}`, 'update');
-        alert(`Second Appeal successfully filed and registered with the Central Information Commission (CIC) under reference ID: ${secRegNo}.`);
       }
     } catch (err) {
       console.error('Failed to file second appeal:', err);
     }
+
+    setRtis(prev => prev.map(r => r.id === id ? {
+      ...r,
+      status: 'Second Appeal Filed',
+      secondAppealReason: reason,
+      secondAppealDate: new Date().toISOString().substring(0, 10),
+      secondAppealText: appealText,
+      secondAppealRegNo: secRegNo
+    } : r));
+    addNotification(`Second Appeal filed with CIC successfully. Ref: ${secRegNo}`, 'update');
+    alert(`Second Appeal successfully registered with Central Information Commission (CIC) under reference: ${secRegNo}.`);
   };
 
   return (
     <div className={`min-h-screen flex flex-col ${lowBandwidth ? 'low-data-mode' : ''} ${textSize === 'large' ? 'text-lg' : 'text-sm'}`}>
       
-       {/* Top sticky navbar */}
+      {/* Top sticky navbar */}
       <Navbar 
         activeView={activeView} 
         setActiveView={setActiveView}
@@ -210,9 +253,14 @@ export default function Home() {
         setTextSize={setTextSize}
         notifications={notifications}
         markNotificationsRead={markNotificationsRead}
+        currentUser={currentUser}
+        onOpenTour={() => setIsTourOpen(true)}
+        onSelectScenario={handleSelectScenario}
+        onResetDemo={handleResetDemo}
+        onLogout={handleLogout}
       />
 
-      {/* Sticky Top Scrolling Marquee Warning */}
+      {/* Sticky Top Scrolling Notice Bar */}
       <div className="bg-amber-50/90 text-amber-900 border-b border-amber-200 text-xs py-1.5 px-4 flex items-center gap-2.5 font-medium shadow-xs overflow-hidden">
         <span className="bg-amber-700 text-white text-[10px] font-black uppercase px-2 py-0.5 rounded-md shrink-0 tracking-wider">
           Notice
@@ -230,6 +278,15 @@ export default function Home() {
           <LandingView 
             setActiveView={setActiveView} 
             language={language} 
+          />
+        )}
+
+        {activeView === 'auth' && (
+          <AuthView 
+            initialMode="login"
+            setActiveView={setActiveView}
+            onLoginSuccess={handleLoginSuccess}
+            language={language}
           />
         )}
         
@@ -259,6 +316,8 @@ export default function Home() {
             language={language}
             triggerMockResponse={triggerMockResponse}
             notifications={notifications}
+            currentUser={currentUser}
+            onOpenTour={() => setIsTourOpen(true)}
           />
         )}
 
@@ -304,6 +363,9 @@ export default function Home() {
             textSize={textSize}
             setTextSize={setTextSize}
             setLanguage={setLanguage}
+            currentUser={currentUser}
+            onResetDemo={handleResetDemo}
+            setActiveView={setActiveView}
           />
         )}
       </main>
@@ -313,6 +375,13 @@ export default function Home() {
         language={language} 
         setActiveView={setActiveView} 
         setHelpCategory={setHelpCategory}
+      />
+
+      {/* Interactive 6-Step Product Tour Modal */}
+      <ProductTourModal 
+        isOpen={isTourOpen}
+        onClose={() => setIsTourOpen(false)}
+        onNavigateToScenario={handleSelectScenario}
       />
 
       {/* Floating Contextual Help Assistant */}

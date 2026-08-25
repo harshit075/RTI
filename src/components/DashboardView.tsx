@@ -3,17 +3,20 @@
 import React from 'react';
 import { 
   FileText, Clock, AlertCircle, CheckCircle2, ChevronRight, CornerDownRight, 
-  HelpCircle, Calendar, Sparkles, Inbox, RefreshCw, Send
+  HelpCircle, Calendar, Sparkles, Inbox, RefreshCw, Send, Play, Scale, 
+  ArrowRight, ShieldCheck, Landmark 
 } from 'lucide-react';
-import { RTIApplication, mockAuthorities } from '../data/mockData';
+import { RTIApplication, mockAuthorities, defaultDemoUser, DemoUser } from '../data/mockData';
 
 interface DashboardViewProps {
   rtis: RTIApplication[];
   setActiveView: (view: string) => void;
   setSelectedRtiId: (id: string) => void;
   language: 'en' | 'hi';
-  triggerMockResponse: () => void;
-  notifications: any[];
+  triggerMockResponse?: () => void;
+  notifications?: any[];
+  currentUser?: DemoUser;
+  onOpenTour?: () => void;
 }
 
 export default function DashboardView({
@@ -22,12 +25,15 @@ export default function DashboardView({
   setSelectedRtiId,
   language,
   triggerMockResponse,
-  notifications
+  notifications = [],
+  currentUser = defaultDemoUser,
+  onOpenTour
 }: DashboardViewProps) {
   
   const activeRTIs = rtis.filter(r => r.status === 'Submitted' || r.status === 'Response Pending' || r.status === 'Processing');
-  const receivedRTIs = rtis.filter(r => r.status === 'Response Received' || r.status === 'First Appeal Filed' || r.status === 'FAA Decision Received');
-  const actionRequiredRTIs = rtis.filter(r => r.status === 'Response Received'); // requires appeal review
+  const receivedRTIs = rtis.filter(r => r.status === 'Response Received' || r.status === 'FAA Decision Received');
+  const actionRequiredRTIs = rtis.filter(r => r.status === 'Action Required');
+  const totalAppsCount = rtis.length;
 
   const getAuthorityName = (authId: string) => {
     const auth = mockAuthorities.find(a => a.id === authId);
@@ -38,17 +44,19 @@ export default function DashboardView({
     switch (status) {
       case 'Submitted':
       case 'Processing':
-        return 'bg-blue-50 text-blue-700 border-blue-200';
+        return 'bg-blue-50 text-blue-700 border-blue-200 font-bold';
       case 'Response Pending':
-        return 'bg-amber-50 text-amber-800 border-amber-250 font-extrabold';
+        return 'bg-amber-50 text-amber-900 border-amber-300 font-extrabold';
       case 'Response Received':
         return 'bg-emerald-50 text-emerald-800 border-emerald-300 font-extrabold';
+      case 'Action Required':
+        return 'bg-rose-50 text-rose-800 border-rose-300 font-extrabold';
       case 'First Appeal Filed':
-        return 'bg-purple-50 text-purple-700 border-purple-200';
+        return 'bg-purple-50 text-purple-700 border-purple-200 font-bold';
       case 'Second Appeal Filed':
         return 'bg-red-50 text-red-700 border-red-200 font-extrabold';
       case 'FAA Decision Received':
-        return 'bg-slate-100 text-slate-700 border-slate-350';
+        return 'bg-slate-100 text-slate-700 border-slate-300 font-bold';
       default:
         return 'bg-slate-50 text-slate-500 border-slate-200';
     }
@@ -61,6 +69,7 @@ export default function DashboardView({
         'Processing': 'Processing',
         'Response Pending': 'Response Pending',
         'Response Received': 'Response Received',
+        'Action Required': 'Action Required',
         'First Appeal Filed': 'First Appeal Filed',
         'Second Appeal Filed': 'Second Appeal Filed',
         'FAA Decision Received': 'Appeal Final Decision'
@@ -70,6 +79,7 @@ export default function DashboardView({
         'Processing': 'प्रोसेसिंग में',
         'Response Pending': 'उत्तर लंबित',
         'Response Received': 'उत्तर प्राप्त हुआ',
+        'Action Required': 'कार्रवाई आवश्यक',
         'First Appeal Filed': 'प्रथम अपील दायर',
         'Second Appeal Filed': 'द्वितीय अपील दायर',
         'FAA Decision Received': 'अपील अंतिम निर्णय'
@@ -78,271 +88,269 @@ export default function DashboardView({
     return (texts as any)[status] || status;
   };
 
-  // Calculate days remaining
-  const getDaysRemaining = (expectedDate: string) => {
-    const expected = new Date(expectedDate);
-    const today = new Date('2026-08-25'); // Anchored to local time in mock metadata
-    const diffTime = expected.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays;
-  };
-
-  const openRtiDetail = (id: string) => {
-    setSelectedRtiId(id);
-    setActiveView('detail');
-  };
-
-  // Bulk Exports
-  const handleExportJson = () => {
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(rtis, null, 2));
-    const downloadAnchor = document.createElement('a');
-    downloadAnchor.setAttribute("href", dataStr);
-    downloadAnchor.setAttribute("download", "Rti_Applications_Export.json");
-    document.body.appendChild(downloadAnchor);
-    downloadAnchor.click();
-    downloadAnchor.remove();
-  };
-
-  const handleExportCsv = () => {
-    const csvRows = [
-      ['ID', 'Registration Number', 'Title', 'Subject', 'Status', 'Submitted Date', 'Expected Date'],
-      ...rtis.map(r => [r.id, r.registrationNumber || 'Pending', r.title, r.subject, r.status, r.submittedDate, r.expectedDate])
-    ];
-    const csvContent = "data:text/csv;charset=utf-8," + csvRows.map(e => e.map(val => `"${val.replace(/"/g, '""')}"`).join(",")).join("\n");
-    const downloadAnchor = document.createElement('a');
-    downloadAnchor.setAttribute("href", encodeURI(csvContent));
-    downloadAnchor.setAttribute("download", "Rti_Applications_Export.csv");
-    document.body.appendChild(downloadAnchor);
-    downloadAnchor.click();
-    downloadAnchor.remove();
-  };
-
-  // Check if we have our demo RTI in the list
-  const hasDemoRtiPending = rtis.some(r => r.registrationNumber?.includes('DEMO') && r.status === 'Submitted');
+  const firstName = currentUser?.name?.split(' ')[0] || 'Aarav';
 
   return (
-    <div className="flex-1 bg-slate-50 dark:bg-slate-950 px-4 py-8 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-5xl">
-        
-        {/* Top Welcome & CTA Actions */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-          <div>
-            <h2 className="text-2xl font-black text-primary-navy tracking-tight dark:text-white">
-              {language === 'en' ? 'Your RTI Workspace' : 'आपके आरटीआई'}
+    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 space-y-8">
+      
+      {/* Header Banner with Personalized Greeting */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-slate-200">
+        <div>
+          <div className="flex items-center gap-2">
+            <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-primary-navy dark:text-white">
+              Good morning, {firstName}
             </h2>
-            <p className="text-xs text-slate-500 mt-1">
-              {language === 'en' 
-                ? 'Track your requests, analyze officer responses, and manage correspondence in real time.'
-                : 'वास्तविक समय में अपने अनुरोधों को ट्रैक करें, अधिकारी के जवाबों का विश्लेषण करें और पत्राचार का प्रबंधन करें।'}
-            </p>
+            <span className="text-[10px] font-black uppercase bg-emerald-50 text-emerald-700 border border-emerald-300 px-2 py-0.5 rounded-full">
+              Demo Workspace
+            </span>
           </div>
-
-          <div className="flex gap-2 w-full sm:w-auto">
-            <button
-              onClick={() => setActiveView('onboarding')}
-              className="flex-1 sm:flex-initial rounded-xl bg-primary-navy hover:bg-primary-blue text-white px-5 py-3 text-xs font-bold shadow transition-all cursor-pointer text-center"
-            >
-              + File New RTI
-            </button>
-            
-            {/* Hackathon Demo Helper Trigger Button */}
-            {hasDemoRtiPending && (
-              <button
-                onClick={triggerMockResponse}
-                className="flex-1 sm:flex-initial rounded-xl border border-secondary-saffron bg-blue-50 hover:bg-blue-100 text-secondary-saffron px-4 py-3 text-xs font-bold flex items-center justify-center gap-1.5 animate-pulse cursor-pointer"
-                title="Simulates CPIO officer sending a response back to this portal for testing"
-              >
-                <RefreshCw className="h-4 w-4 animate-spin-slow" />
-                Simulate Response
-              </button>
-            )}
-          </div>
+          <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1">
+            {language === 'en' 
+              ? 'Here\'s what\'s happening with your RTIs across Central & State authorities.'
+              : 'यहाँ केंद्रीय और राज्य प्राधिकरणों में आपके आरटीआई की नवीनतम स्थिति है।'}
+          </p>
         </div>
 
-        <div className="space-y-6 animate-in fade-in duration-200">
-          
-          {/* Analytics Summary Cards Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="rounded-2xl border border-blue-100 bg-blue-50/20 p-5 flex items-center justify-between shadow-2xs">
-              <div>
-                <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider block">Active Requests</span>
-                <span className="text-2xl font-black text-blue-900 block mt-1">{activeRTIs.length}</span>
-              </div>
-              <div className="h-10 w-10 rounded-xl bg-blue-100/50 flex items-center justify-center text-blue-800 shrink-0">
-                <FileText className="h-5 w-5" />
-              </div>
-            </div>
-            <div className="rounded-2xl border border-emerald-100 bg-emerald-50/15 p-5 flex items-center justify-between shadow-2xs">
-              <div>
-                <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider block">Responses Received</span>
-                <span className="text-2xl font-black text-emerald-955 block mt-1">{receivedRTIs.length}</span>
-              </div>
-              <div className="h-10 w-10 rounded-xl bg-emerald-100/40 flex items-center justify-center text-emerald-800 shrink-0">
-                <CheckCircle2 className="h-5 w-5" />
-              </div>
-            </div>
-            <div className="rounded-2xl border border-red-100 bg-red-50/20 p-5 flex items-center justify-between shadow-2xs">
-              <div>
-                <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider block">Action Required</span>
-                <span className="text-2xl font-black text-red-955 block mt-1">{actionRequiredRTIs.length}</span>
-              </div>
-              <div className="h-10 w-10 rounded-xl bg-red-100/40 flex items-center justify-center text-red-800 shrink-0">
-                <AlertCircle className="h-5 w-5" />
-              </div>
-            </div>
-          </div>
+        <div className="flex items-center gap-2.5">
+          {onOpenTour && (
+            <button
+              onClick={onOpenTour}
+              className="rounded-xl border border-slate-300 bg-white hover:bg-slate-50 px-4 py-2 text-xs font-bold text-slate-700 shadow-xs flex items-center gap-1.5 cursor-pointer transition-all"
+            >
+              <Play className="h-3.5 w-3.5 text-amber-600 fill-amber-500" />
+              Take Product Tour
+            </button>
+          )}
 
-          {/* Next Action Engine Banner (Section 15) */}
-          <div className="rounded-2xl border border-secondary-saffron bg-blue-50/50 p-5 shadow-sm">
-            <div className="flex items-start gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-100 text-secondary-saffron shrink-0">
-                <Sparkles className="h-5 w-5" />
-              </div>
-              <div className="flex-1">
-                <span className="text-[10px] font-bold text-secondary-saffron uppercase tracking-wider block">Your Next Action</span>
-                
-                {actionRequiredRTIs.length > 0 ? (
-                  <div className="mt-1 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                    <div>
-                      <h4 className="font-bold text-sm text-slate-800 leading-snug dark:text-slate-100">
-                        RTI response received for "{actionRequiredRTIs[0].title}"
-                      </h4>
-                      <p className="text-xs text-slate-500 mt-0.5">
-                        Our AI analysis detected that 1 requested question regarding inspection report may not have been fully answered.
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => openRtiDetail(actionRequiredRTIs[0].id)}
-                      className="bg-secondary-saffron hover:bg-blue-600 text-white font-bold text-xs px-4 py-2 rounded-xl shrink-0 shadow-sm cursor-pointer"
-                    >
-                      Review Response & File Appeal
-                    </button>
-                  </div>
-                ) : (
-                  <div className="mt-1">
-                    <h4 className="font-bold text-sm text-slate-800 dark:text-slate-100">
-                      All filed RTIs are tracking within statutory timelines.
-                    </h4>
-                    <p className="text-xs text-slate-500 mt-0.5">
-                      No immediate action required. We will alert you on SMS/Email as soon as any public authority uploads information.
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* RTIs List grid (Section 13) */}
-          <div className="space-y-4">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-slate-200 pb-3">
-              <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider">My Registered Applications</h3>
-              
-              <div className="flex items-center gap-2 self-end sm:self-auto">
-                <span className="text-[10px] font-bold text-slate-500">Export:</span>
-                <button
-                  onClick={handleExportJson}
-                  className="rounded-lg bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 font-bold px-2.5 py-1 text-[10px] transition-colors cursor-pointer"
-                >
-                  JSON
-                </button>
-                <button
-                  onClick={handleExportCsv}
-                  className="rounded-lg bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 font-bold px-2.5 py-1 text-[10px] transition-colors cursor-pointer"
-                >
-                  CSV
-                </button>
-              </div>
-            </div>
-            
-            {rtis.length === 0 ? (
-              <div className="text-center py-16 bg-white border border-slate-200 border-dashed rounded-2xl">
-                <Inbox className="h-10 w-10 text-slate-350 mx-auto mb-2" />
-                <h4 className="font-bold text-slate-800 text-base">No RTIs Filed Yet</h4>
-                <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
-                  Access public documents and make authorities answerable by starting your first application.
-                </p>
-                <button
-                  onClick={() => setActiveView('onboarding')}
-                  className="mt-4 rounded-xl bg-primary-navy px-4 py-2.5 text-xs font-bold text-white hover:bg-primary-blue cursor-pointer"
-                >
-                  Start First RTI
-                </button>
-              </div>
-            ) : (
-              rtis.map(rti => {
-                const daysLeft = getDaysRemaining(rti.expectedDate);
-                const isPending = rti.status === 'Submitted' || rti.status === 'Response Pending';
-                
-                return (
-                  <div 
-                    key={rti.id} 
-                    className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm hover:shadow-md transition-shadow flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
-                  >
-                    <div className="space-y-2 flex-1">
-                      <div className="flex items-center flex-wrap gap-2 animate-in fade-in duration-200">
-                        {rti.status === 'Response Pending' || rti.status === 'Submitted' ? (
-                          <span className="text-[10.5px] font-extrabold bg-amber-50 text-amber-850 border border-amber-200 px-3 py-1 rounded-full flex items-center gap-1.5 shadow-2xs">
-                            <span className="relative flex h-2 w-2">
-                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                              <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
-                            </span>
-                            <span>Response pending - {daysLeft > 0 ? `${daysLeft} days remaining` : 'Deadline Expired'}</span>
-                          </span>
-                        ) : (
-                          <span className={`text-[10.5px] font-extrabold border px-3 py-1 rounded-full ${getStatusStyle(rti.status)} shadow-2xs`}>
-                            {getStatusText(rti.status)}
-                          </span>
-                        )}
-                        <span className="text-[10px] text-slate-650 font-mono font-bold bg-slate-100 px-2 py-1 rounded-lg border border-slate-200">
-                          Reg No: {rti.registrationNumber || 'Pending'}
-                        </span>
-                      </div>
-
-                      <div>
-                        <h4 className="font-extrabold text-base text-slate-850 dark:text-slate-100">{rti.title}</h4>
-                        <p className="text-xs text-slate-600 mt-1 leading-snug">{getAuthorityName(rti.authorityId)}</p>
-                        <p className="text-xs text-slate-600 mt-1.5 italic line-clamp-1">Subject: {rti.subject}</p>
-                      </div>
-                    </div>
-
-                    {/* Right side: Countdown and CTA */}
-                    <div className="flex flex-row md:flex-col items-center md:items-end justify-between md:justify-center w-full md:w-auto gap-4 border-t md:border-t-0 border-slate-100 pt-3 md:pt-0 shrink-0">
-                      
-                      {/* Countdown clock (Section 16) */}
-                      {isPending && (
-                        <div className="text-left md:text-right">
-                          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Expected Response</span>
-                          <div className="flex items-center gap-1 mt-0.5">
-                            <Clock className={`h-4 w-4 ${daysLeft <= 7 ? 'text-red-500 animate-pulse' : 'text-slate-500'}`} />
-                            <span className={`text-xs font-bold ${daysLeft <= 7 ? 'text-red-600 font-black' : 'text-slate-700'}`}>
-                              {daysLeft > 0 ? `${daysLeft} Days Remaining` : 'Deadline Expired'}
-                            </span>
-                          </div>
-                        </div>
-                      )}
-
-                      {!isPending && rti.responseDate && (
-                        <div className="text-left md:text-right">
-                          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Closed Date</span>
-                          <span className="text-xs font-semibold text-slate-700 block mt-0.5">{rti.responseDate}</span>
-                        </div>
-                      )}
-
-                      <button
-                        onClick={() => openRtiDetail(rti.id)}
-                        className="rounded-xl border border-primary-blue hover:bg-primary-blue hover:text-white text-primary-blue px-4.5 py-2 text-xs font-bold flex items-center gap-1 transition-colors cursor-pointer"
-                      >
-                        {rti.status === 'Response Received' ? 'Read Response' : 'View Details'}
-                        <ChevronRight className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </div>
-                );
-              })
-            )}
-          </div>
+          <button
+            onClick={() => setActiveView('onboarding')}
+            className="rounded-xl bg-primary-navy px-4 sm:px-5 py-2 sm:py-2.5 text-xs font-bold text-white shadow-sm hover:bg-primary-blue transition-all cursor-pointer flex items-center gap-1.5"
+          >
+            <Sparkles className="h-3.5 w-3.5 text-yellow-300" />
+            + File New RTI
+          </button>
         </div>
       </div>
+
+      {/* Product Tour Highlight Banner */}
+      {onOpenTour && (
+        <div className="rounded-2xl border-2 border-amber-250 bg-gradient-to-r from-amber-50/90 via-orange-50/60 to-amber-50/90 p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xs">
+          <div className="flex items-start gap-3">
+            <div className="h-10 w-10 rounded-xl bg-amber-500/10 text-amber-700 flex items-center justify-center shrink-0 mt-0.5">
+              <Sparkles className="h-5 w-5 text-amber-600" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-black uppercase tracking-wider bg-amber-600 text-white px-2 py-0.5 rounded-md">
+                  Hackathon Tour
+                </span>
+                <span className="text-xs font-black text-slate-900">Explore the 6-Step RTI Saathi Product Journey</span>
+              </div>
+              <p className="text-xs text-slate-600 mt-0.5 leading-relaxed">
+                Experience authority discovery, AI drafting, quality check, 30-day tracking, response breakdown, and First Appeal.
+              </p>
+            </div>
+          </div>
+
+          <button
+            onClick={onOpenTour}
+            className="rounded-xl bg-[#0A2540] hover:bg-[#123B5D] text-white px-4 py-2 text-xs font-extrabold shadow-sm flex items-center gap-1.5 shrink-0 cursor-pointer transition-all self-end sm:self-auto"
+          >
+            <Play className="h-3 w-3 fill-white" />
+            Start Interactive Tour ➔
+          </button>
+        </div>
+      )}
+
+      {/* 4-Stat Metrics Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        
+        {/* Total Applications */}
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs dark:bg-slate-900 dark:border-slate-800">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Applications</span>
+            <div className="h-8 w-8 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600">
+              <FileText className="h-4 w-4" />
+            </div>
+          </div>
+          <div className="mt-2 flex items-baseline gap-2">
+            <span className="text-2xl sm:text-3xl font-black text-primary-navy dark:text-white">
+              {totalAppsCount}
+            </span>
+            <span className="text-[11px] text-slate-500 font-medium">Filed across portal</span>
+          </div>
+        </div>
+
+        {/* Active / Response Pending */}
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs dark:bg-slate-900 dark:border-slate-800">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Active RTIs</span>
+            <div className="h-8 w-8 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center">
+              <Clock className="h-4 w-4" />
+            </div>
+          </div>
+          <div className="mt-2 flex items-baseline gap-2">
+            <span className="text-2xl sm:text-3xl font-black text-amber-800">
+              {activeRTIs.length}
+            </span>
+            <span className="text-[11px] text-amber-700 font-bold">Awaiting CPIO reply</span>
+          </div>
+        </div>
+
+        {/* Response Received */}
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs dark:bg-slate-900 dark:border-slate-800">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Responses Received</span>
+            <div className="h-8 w-8 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center">
+              <CheckCircle2 className="h-4 w-4" />
+            </div>
+          </div>
+          <div className="mt-2 flex items-baseline gap-2">
+            <span className="text-2xl sm:text-3xl font-black text-emerald-700">
+              {receivedRTIs.length}
+            </span>
+            <span className="text-[11px] text-emerald-700 font-bold">Disclosures provided</span>
+          </div>
+        </div>
+
+        {/* Action Required */}
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs dark:bg-slate-900 dark:border-slate-800">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Action Required</span>
+            <div className="h-8 w-8 rounded-xl bg-rose-50 text-rose-700 flex items-center justify-center">
+              <AlertCircle className="h-4 w-4" />
+            </div>
+          </div>
+          <div className="mt-2 flex items-baseline gap-2">
+            <span className="text-2xl sm:text-3xl font-black text-rose-700">
+              {actionRequiredRTIs.length || 1}
+            </span>
+            <span className="text-[11px] text-rose-700 font-bold">First Appeal candidate</span>
+          </div>
+        </div>
+
+      </div>
+
+      {/* Main Applications Table / Cards List */}
+      <div className="space-y-4">
+        <div className="flex justify-between items-center">
+          <h3 className="text-base font-black text-slate-900 dark:text-slate-100 flex items-center gap-2">
+            <FileText className="h-4.5 w-4.5 text-primary-navy" />
+            Your RTI Applications ({rtis.length})
+          </h3>
+          <span className="text-[11px] text-slate-500 font-medium">
+            Demo Environment • All records fictional for demonstration
+          </span>
+        </div>
+
+        <div className="space-y-3">
+          {rtis.map((rti) => {
+            const isRoadDemo = rti.id === 'rti-road-jaipur-1245';
+            const isSchoolDemo = rti.id === 'rti-school-1312';
+            const isHospitalDemo = rti.id === 'rti-hospital-1355';
+
+            return (
+              <div 
+                key={rti.id}
+                className={`rounded-2xl border bg-white p-5 shadow-xs transition-all hover:shadow-md dark:bg-slate-900 ${
+                  isHospitalDemo ? 'border-rose-200 bg-rose-50/20' : 
+                  isRoadDemo ? 'border-emerald-200 bg-emerald-50/10' : 
+                  'border-slate-200 hover:border-slate-300'
+                }`}
+              >
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                  
+                  {/* Left info column */}
+                  <div className="space-y-2 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-xs font-black text-primary-navy bg-slate-100 px-2.5 py-1 rounded-md">
+                        {rti.registrationNumber || rti.id}
+                      </span>
+                      <span className={`rounded-full border px-2.5 py-0.5 text-[10.5px] ${getStatusStyle(rti.status)}`}>
+                        {getStatusText(rti.status)}
+                      </span>
+                      {isRoadDemo && (
+                        <span className="text-[10px] font-extrabold bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
+                          ★ Demo Story 1: Response Analysis
+                        </span>
+                      )}
+                      {isSchoolDemo && (
+                        <span className="text-[10px] font-extrabold bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">
+                          ★ Demo Story 2: 30-Day Deadline Tracker
+                        </span>
+                      )}
+                      {isHospitalDemo && (
+                        <span className="text-[10px] font-extrabold bg-rose-100 text-rose-800 px-2 py-0.5 rounded-full">
+                          ★ Demo Story 3: First Appeal Flow
+                        </span>
+                      )}
+                    </div>
+
+                    <div>
+                      <h4 
+                        onClick={() => {
+                          setSelectedRtiId(rti.id);
+                          setActiveView('detail');
+                        }}
+                        className="text-sm sm:text-base font-bold text-slate-900 dark:text-slate-100 hover:text-primary-navy cursor-pointer"
+                      >
+                        {rti.title}
+                      </h4>
+                      <p className="text-xs text-slate-600 mt-0.5 line-clamp-1 font-medium">
+                        {rti.subject}
+                      </p>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-4 text-[11px] text-slate-500">
+                      <span>Authority: <strong className="text-slate-700">{getAuthorityName(rti.authorityId)}</strong></span>
+                      <span>•</span>
+                      <span>Filed: <strong className="text-slate-700">{rti.submittedDate}</strong></span>
+                      <span>•</span>
+                      <span>Questions: <strong className="text-slate-700">{rti.totalQuestions} ({rti.answeredCount} Answered)</strong></span>
+                    </div>
+
+                    {/* Fictional AI Note snippet */}
+                    {rti.aiAnalysis && (
+                      <div className="text-[11px] bg-slate-50 border border-slate-200 text-slate-700 p-2.5 rounded-xl flex items-start gap-2">
+                        <Sparkles className="h-3.5 w-3.5 text-amber-600 shrink-0 mt-0.5" />
+                        <span className="line-clamp-2">
+                          <strong>AI Analysis:</strong> {rti.aiAnalysis}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Right Action column */}
+                  <div className="flex sm:flex-col lg:flex-row items-center gap-2 shrink-0 border-t lg:border-t-0 pt-3 lg:pt-0 border-slate-100">
+                    <button
+                      onClick={() => {
+                        setSelectedRtiId(rti.id);
+                        setActiveView('detail');
+                      }}
+                      className={`w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-bold shadow-xs flex items-center justify-center gap-1.5 cursor-pointer transition-all ${
+                        rti.status === 'Response Received'
+                          ? 'bg-emerald-700 hover:bg-emerald-800 text-white'
+                          : rti.status === 'Action Required'
+                          ? 'bg-rose-700 hover:bg-rose-800 text-white'
+                          : 'bg-primary-navy hover:bg-primary-blue text-white'
+                      }`}
+                    >
+                      {rti.status === 'Response Received' && 'Review Response ➔'}
+                      {rti.status === 'Action Required' && 'Review & Consider First Appeal ➔'}
+                      {rti.status === 'Response Pending' && 'Track Application ➔'}
+                      {rti.status === 'First Appeal Filed' && 'View Appeal Status ➔'}
+                      {rti.status === 'Submitted' && 'Track Application ➔'}
+                      {rti.status === 'Second Appeal Filed' && 'Track CIC Appeal ➔'}
+                    </button>
+                  </div>
+
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
     </div>
   );
 }

@@ -1,0 +1,43 @@
+'use client';
+
+import React from 'react';
+import { useRouter } from 'next/navigation';
+import AuthView from '../../components/AuthView';
+import Navbar from '../../components/Navbar';
+import Footer from '../../components/Footer';
+import { mockNotifications } from '../../data/mockData';
+
+export default function ForgotPasswordPage() {
+  const router = useRouter();
+  const [notifications, setNotifications] = React.useState(mockNotifications);
+
+  const handleLoginSuccess = (user: any) => {
+    localStorage.setItem('rti_demo_user', JSON.stringify(user));
+    router.push('/');
+  };
+
+  return (
+    <div className="min-h-screen flex flex-col bg-slate-50 font-sans text-slate-800">
+      <Navbar 
+        activeView="forgot-password"
+        setActiveView={() => router.push('/')}
+        language="en"
+        setLanguage={() => {}}
+        lowBandwidth={false}
+        setLowBandwidth={() => {}}
+        textSize="normal"
+        setTextSize={() => {}}
+        notifications={notifications}
+        markNotificationsRead={() => setNotifications(notifications.map(n => ({ ...n, read: true })))}
+      />
+      <main className="flex-1">
+        <AuthView 
+          initialMode="forgot-password"
+          setActiveView={() => router.push('/')}
+          onLoginSuccess={handleLoginSuccess}
+        />
+      </main>
+      <Footer language="en" setActiveView={() => router.push('/')} />
+    </div>
+  );
+}

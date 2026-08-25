@@ -168,11 +168,19 @@ export default function LandingView({ setActiveView, language }: LandingViewProp
               onClick={() => setActiveView('onboarding')}
               className="w-full sm:w-80 inline-flex items-center justify-center rounded-xl bg-primary-navy px-8 py-4.5 text-sm font-extrabold text-white shadow-md hover:bg-primary-blue hover:-translate-y-0.5 transition-all focus-ring cursor-pointer dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100"
             >
-              {language === 'en' ? 'Start an RTI ↗' : 'आरटीआई शुरू करें ↗'}
+              {language === 'en' ? 'Start an RTI ➔' : 'आरटीआई शुरू करें ➔'}
             </button>
 
-            {/* Two smaller secondary actions */}
+            {/* Secondary actions for Judges & Returning Citizens */}
             <div className="flex flex-wrap justify-center gap-3">
+              <button
+                onClick={() => setActiveView('auth')}
+                className="inline-flex items-center gap-1.5 rounded-xl bg-amber-50 border border-amber-300 px-5 py-2.5 text-xs font-extrabold text-amber-900 hover:bg-amber-100 transition-all focus-ring cursor-pointer shadow-3xs"
+              >
+                <Sparkles className="h-3.5 w-3.5 text-amber-600" />
+                <span>{language === 'en' ? 'Judge Demo Mode / Sign In' : 'डेमो मोड / साइन इन'}</span>
+              </button>
+
               <button
                 onClick={() => setActiveView('dashboard')}
                 className="inline-flex items-center justify-center rounded-xl bg-white border border-slate-200 px-5 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-all focus-ring cursor-pointer shadow-3xs dark:bg-slate-900 dark:border-slate-800 dark:text-slate-350"
