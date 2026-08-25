@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { Sparkles, HelpCircle, CheckCircle, AlertTriangle, ArrowRight, CornerDownRight, Landmark, Search, BarChart } from 'lucide-react';
-import { Authority, mockTemplates, geographicHierarchy } from '../data/mockData';
+import { Authority, mockTemplates, geographicHierarchy, mockAuthorities } from '../data/mockData';
 
 interface OnboardingViewProps {
   setActiveView: (view: string) => void;
@@ -15,7 +15,7 @@ export default function OnboardingView({ setActiveView, setDraftRti, language }:
   const [rawText, setRawText] = useState('');
   const [analyzing, setAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<any>(null);
-  const [authorities, setAuthorities] = useState<Authority[]>([]);
+  const [authorities, setAuthorities] = useState<Authority[]>(mockAuthorities);
 
   // Geographic Finder states
   const [geoState, setGeoState] = useState('');
@@ -49,9 +49,9 @@ export default function OnboardingView({ setActiveView, setDraftRti, language }:
 
   React.useEffect(() => {
     fetch('/api/authorities')
-      .then(res => res.json())
-      .then(data => setAuthorities(data))
-      .catch(err => console.error('Failed to load authorities:', err));
+      .then(res => (res.ok ? res.json() : mockAuthorities))
+      .then(data => setAuthorities(Array.isArray(data) && data.length > 0 ? data : mockAuthorities))
+      .catch(() => setAuthorities(mockAuthorities));
   }, []);
 
   const topics = [

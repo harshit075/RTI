@@ -5,7 +5,7 @@ import {
   FileText, Search, ShieldCheck, CreditCard, Clock, BellRing, 
   HelpCircle, Sparkles, BookOpen, Scale, ArrowRight, CornerDownRight, RefreshCw, AlertTriangle
 } from 'lucide-react';
-import { FAQ, mockDisclosures } from '../data/mockData';
+import { FAQ, mockDisclosures, mockFAQs } from '../data/mockData';
 
 interface LandingViewProps {
   setActiveView: (view: string) => void;
@@ -16,13 +16,13 @@ export default function LandingView({ setActiveView, language }: LandingViewProp
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<FAQ[]>([]);
   const [disclosureResults, setDisclosureResults] = useState<any[]>([]);
-  const [faqs, setFaqs] = useState<FAQ[]>([]);
+  const [faqs, setFaqs] = useState<FAQ[]>(mockFAQs);
 
   React.useEffect(() => {
     fetch('/api/faqs')
-      .then(res => res.json())
-      .then(data => setFaqs(data))
-      .catch(err => console.error('Failed to load FAQs:', err));
+      .then(res => (res.ok ? res.json() : mockFAQs))
+      .then(data => setFaqs(Array.isArray(data) && data.length > 0 ? data : mockFAQs))
+      .catch(() => setFaqs(mockFAQs));
   }, []);
 
   const t = {

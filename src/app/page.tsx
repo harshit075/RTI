@@ -30,7 +30,7 @@ export default function Home() {
   const [helpCategory, setHelpCategory] = useState<'All' | 'Basics' | 'Fees' | 'Process' | 'Appeals' | 'Exemptions'>('All');
 
   // RTI Applications Mock DB (prefilled with default data, persisted to LocalStorage)
-  const [rtis, setRtis] = useState<RTIApplication[]>([]);
+  const [rtis, setRtis] = useState<RTIApplication[]>(initialRTIs);
   
   // Builder Temp Draft state
   const [draftRti, setDraftRti] = useState<any>(null);
@@ -66,16 +66,19 @@ export default function Home() {
     }
   ]);
 
-  // Fetch all RTIs from database
+  // Fetch all RTIs from database with fallback
   const fetchRtis = async () => {
     try {
       const res = await fetch('/api/rtis');
       if (res.ok) {
         const data = await res.json();
-        setRtis(data);
+        if (Array.isArray(data) && data.length > 0) {
+          setRtis(data);
+        }
       }
-    } catch (err) {
-      console.error('Failed to fetch RTIs from database:', err);
+    } catch {
+      // Graceful fallback to initial mock dataset if network is offline or reloading
+      setRtis(prev => (prev && prev.length > 0 ? prev : initialRTIs));
     }
   };
 

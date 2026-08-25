@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { Landmark, Search, Globe, User, MapPin } from 'lucide-react';
-import { Authority } from '../data/mockData';
+import { Authority, mockAuthorities } from '../data/mockData';
 
 interface AuthoritiesViewProps {
   language: 'en' | 'hi';
@@ -11,13 +11,13 @@ interface AuthoritiesViewProps {
 export default function AuthoritiesView({ language }: AuthoritiesViewProps) {
   const [search, setSearch] = useState('');
   const [filterMinistry, setFilterMinistry] = useState('All');
-  const [authorities, setAuthorities] = useState<Authority[]>([]);
+  const [authorities, setAuthorities] = useState<Authority[]>(mockAuthorities);
 
   React.useEffect(() => {
     fetch('/api/authorities')
-      .then(res => res.json())
-      .then(data => setAuthorities(data))
-      .catch(err => console.error('Failed to load authorities:', err));
+      .then(res => (res.ok ? res.json() : mockAuthorities))
+      .then(data => setAuthorities(Array.isArray(data) && data.length > 0 ? data : mockAuthorities))
+      .catch(() => setAuthorities(mockAuthorities));
   }, []);
 
   const ministries = ['All', ...new Set(authorities.map(a => a.ministry))];

@@ -5,7 +5,7 @@ import {
   HelpCircle, Search, Sparkles, Send, Inbox, AlertCircle, 
   MessageSquare, Compass, ShieldQuestion, Landmark
 } from 'lucide-react';
-import { FAQ } from '../data/mockData';
+import { FAQ, mockFAQs } from '../data/mockData';
 
 interface HelpViewProps {
   language: 'en' | 'hi';
@@ -50,13 +50,13 @@ export default function HelpView({
     }
   ]);
   const [submittedTicketId, setSubmittedTicketId] = useState('');
-  const [faqs, setFaqs] = useState<FAQ[]>([]);
+  const [faqs, setFaqs] = useState<FAQ[]>(mockFAQs);
 
   React.useEffect(() => {
     fetch('/api/faqs')
-      .then(res => res.json())
-      .then(data => setFaqs(data))
-      .catch(err => console.error('Failed to load FAQs:', err));
+      .then(res => (res.ok ? res.json() : mockFAQs))
+      .then(data => setFaqs(Array.isArray(data) && data.length > 0 ? data : mockFAQs))
+      .catch(() => setFaqs(mockFAQs));
   }, []);
 
   const categories = ['All', 'Basics', 'Fees', 'Process', 'Appeals', 'Exemptions'];
