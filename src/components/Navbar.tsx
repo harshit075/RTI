@@ -110,9 +110,14 @@ export default function Navbar({
               />
             </div>
             <div>
-              <h1 className="text-lg sm:text-xl font-black tracking-tight text-[#123B5D]">
-                {t.brand}
-              </h1>
+              <div className="flex items-center gap-2">
+                <h1 className="text-lg sm:text-xl font-black tracking-tight text-[#123B5D]">
+                  {t.brand}
+                </h1>
+                <span className="inline-flex items-center text-[9px] font-black uppercase tracking-wider bg-amber-100 text-amber-900 border border-amber-300 px-1.5 py-0.5 rounded shadow-3xs">
+                  DEMO PURPOSE
+                </span>
+              </div>
               <p className="text-[10px] text-slate-500 font-medium hidden sm:block leading-none mt-0.5">
                 {t.tagline}
               </p>
@@ -170,6 +175,12 @@ export default function Navbar({
         {/* Right Side Utility Controls */}
         <div className="flex items-center gap-1.5 sm:gap-2.5">
           
+          {/* Demo Purpose Indicator Pill */}
+          <div className="hidden lg:flex items-center gap-1.5 bg-amber-50 border border-amber-300 text-amber-950 px-2.5 py-1 rounded-full text-[10px] font-black tracking-wider uppercase shadow-3xs">
+            <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
+            <span>DEMO PURPOSE</span>
+          </div>
+
           {/* Language Switcher */}
           <button
             onClick={() => setLanguage(language === 'en' ? 'hi' : 'en')}
