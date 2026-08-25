@@ -3,6 +3,9 @@ import { query } from '../../../lib/db';
 
 export async function GET() {
   try {
+    // Ensure notes column exists
+    await query('ALTER TABLE rtis ADD COLUMN IF NOT EXISTS notes TEXT;', []);
+    
     const { rows } = await query('SELECT * FROM rtis ORDER BY created_at DESC');
     const mapped = rows.map(r => ({
       id: r.id,
@@ -22,7 +25,8 @@ export async function GET() {
       answeredCount: r.answered_count,
       totalQuestions: r.total_questions,
       appealReason: r.appeal_reason,
-      appealDate: r.appeal_date
+      appealDate: r.appeal_date,
+      notes: r.notes
     }));
     return NextResponse.json(mapped);
   } catch (err: any) {
@@ -36,22 +40,25 @@ export async function POST(request: Request) {
     const {
       id, title, authorityId, subject, questions, submittedDate, expectedDate,
       status, paymentStatus, registrationNumber, responseDocumentUrl, responseDate,
-      responseSummary, answeredCount, totalQuestions, paymentId
+      responseSummary, answeredCount, totalQuestions, paymentId, notes
     } = body;
+
+    // Ensure notes column exists
+    await query('ALTER TABLE rtis ADD COLUMN IF NOT EXISTS notes TEXT;', []);
 
     const sql = `
       INSERT INTO rtis (
         id, title, authority_id, subject, questions, submitted_date, expected_date,
         status, payment_status, registration_number, response_document_url, response_date,
-        response_summary, answered_count, total_questions, payment_id
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
+        response_summary, answered_count, total_questions, payment_id, notes
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
       RETURNING *
     `;
 
     const values = [
       id, title, authorityId, subject, questions, submittedDate, expectedDate,
       status, paymentStatus, registrationNumber, responseDocumentUrl, responseDate,
-      responseSummary, answeredCount, totalQuestions, paymentId || null
+      responseSummary, answeredCount, totalQuestions, paymentId || null, notes || ''
     ];
 
     const { rows } = await query(sql, values);
@@ -72,7 +79,8 @@ export async function POST(request: Request) {
       responseDate: r.response_date,
       responseSummary: r.response_summary,
       answeredCount: r.answered_count,
-      totalQuestions: r.total_questions
+      totalQuestions: r.total_questions,
+      notes: r.notes
     };
 
     return NextResponse.json(created);

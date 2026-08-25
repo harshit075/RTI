@@ -9,6 +9,9 @@ export async function PATCH(
     const { id } = await params;
     const body = await request.json();
     
+    // Ensure notes column exists
+    await query('ALTER TABLE rtis ADD COLUMN IF NOT EXISTS notes TEXT;', []);
+    
     // Dynamically build SET query fields based on body params
     const fields: string[] = [];
     const values: any[] = [];
@@ -25,7 +28,8 @@ export async function PATCH(
       answeredCount: 'answered_count',
       totalQuestions: 'total_questions',
       paymentStatus: 'payment_status',
-      paymentId: 'payment_id'
+      paymentId: 'payment_id',
+      notes: 'notes'
     };
 
     for (const [key, val] of Object.entries(body)) {
@@ -73,7 +77,8 @@ export async function PATCH(
       answeredCount: r.answered_count,
       totalQuestions: r.total_questions,
       appealReason: r.appeal_reason,
-      appealDate: r.appeal_date
+      appealDate: r.appeal_date,
+      notes: r.notes
     };
 
     return NextResponse.json(updated);

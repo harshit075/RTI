@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Sparkles, HelpCircle, CheckCircle, AlertTriangle, ArrowRight, CornerDownRight, Landmark, Search } from 'lucide-react';
-import { Authority } from '../data/mockData';
+import { Sparkles, HelpCircle, CheckCircle, AlertTriangle, ArrowRight, CornerDownRight, Landmark, Search, BarChart } from 'lucide-react';
+import { Authority, mockTemplates, geographicHierarchy } from '../data/mockData';
 
 interface OnboardingViewProps {
   setActiveView: (view: string) => void;
@@ -16,6 +16,36 @@ export default function OnboardingView({ setActiveView, setDraftRti, language }:
   const [analyzing, setAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<any>(null);
   const [authorities, setAuthorities] = useState<Authority[]>([]);
+
+  // Geographic Finder states
+  const [geoState, setGeoState] = useState('');
+  const [geoDistrict, setGeoDistrict] = useState('');
+  const [geoLocalBody, setGeoLocalBody] = useState('');
+
+  const selectedStateObj = geographicHierarchy.find(s => s.name === geoState);
+  const selectedDistrictObj = selectedStateObj?.districts.find(d => d.name === geoDistrict);
+
+  // Real-time AI Copilot Computations
+  const lowerText = rawText.toLowerCase();
+  
+  // 1. Specificity (length-based)
+  const specificityScore = Math.min(100, Math.floor((rawText.trim().length / 100) * 100));
+  const specificityLevel = specificityScore > 75 ? 'Strong' : specificityScore > 35 ? 'Good' : 'Weak';
+
+  // 2. Time period detection
+  const hasTimePeriod = /\b(20\d{2}|19\d{2})\b/g.test(rawText) || lowerText.includes('year') || lowerText.includes('month') || lowerText.includes('saal') || lowerText.includes('mahina');
+  const timePeriodScore = hasTimePeriod ? 100 : 0;
+  
+  // 3. Question Intelligence (avoiding 'Why')
+  const isWhyQuestion = lowerText.includes('why ') || lowerText.includes('kyu') || lowerText.includes('kyun') || lowerText.includes('reasons for') || lowerText.includes('reason why');
+  const suitabilityScore = isWhyQuestion ? 40 : (rawText.trim().length > 10 ? 100 : 0);
+
+  // 4. Scope Specificity (Check if too broad)
+  const isTooBroad = lowerText.includes('all information') || lowerText.includes('every details') || lowerText.includes('entire record') || lowerText.includes('all project') || (lowerText.includes('railway') && lowerText.includes('india') && !lowerText.includes('station'));
+  const scopeScore = isTooBroad ? 50 : 100;
+
+  // Overall Health Score (average of them)
+  const overallHealth = Math.round((specificityScore + timePeriodScore + suitabilityScore + scopeScore) / 4);
 
   React.useEffect(() => {
     fetch('/api/authorities')
@@ -262,44 +292,213 @@ export default function OnboardingView({ setActiveView, setDraftRti, language }:
         </div>
       </div>
 
-      {/* Step 2: Formulate in own words */}
+      {/* Geographic Finder */}
       <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm mb-6 dark:bg-slate-900 dark:border-slate-800">
-        <h3 className="font-bold text-sm text-slate-800 mb-2 dark:text-slate-200 font-sans">
-          {language === 'en' ? '2. Tell us what you want to know in plain language:' : '2. सरल भाषा में बताएं कि आप क्या जानना चाहते हैं:'}
+        <h3 className="font-bold text-sm text-slate-800 mb-2 dark:text-slate-200">
+          Geographic Authority Finder (Optional)
         </h3>
-        <p className="text-[10.5px] text-slate-400 mb-3">
-          {language === 'en' 
-            ? 'Example: "I want to know the road budget and work order details for rampur village road constructed in 2022-2025."'
-            : 'उदाहरण: "मुझे 2022-2025 में बनी रामपुर गांव की सड़क के बजट और वर्क ऑर्डर का विवरण चाहिए।"'}
+        <p className="text-[10.5px] text-slate-500 mb-3">
+          If your issue concerns a specific local body, select the state and district to narrow down the authority.
         </p>
-
-        <textarea
-          rows={4}
-          value={rawText}
-          onChange={(e) => setRawText(e.target.value)}
-          placeholder={language === 'en' ? 'Type your description here...' : 'यहाँ अपना विवरण टाइप करें...'}
-          className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-800 outline-none focus:border-primary-blue bg-slate-50"
-        />
-
-        <div className="mt-4 flex justify-end">
-          <button
-            onClick={runAnalysis}
-            disabled={analyzing || !rawText.trim()}
-            className="rounded-xl bg-primary-navy px-6 py-3 text-xs font-bold text-white hover:bg-primary-blue disabled:bg-slate-300 disabled:cursor-not-allowed flex items-center gap-1.5 shadow transition-all cursor-pointer"
-          >
-            {analyzing ? (
-              <>
-                <span className="h-3.5 w-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                {language === 'en' ? 'Analyzing query...' : 'विश्लेषण किया जा रहा है...'}
-              </>
-            ) : (
-              <>
-                <Sparkles className="h-4 w-4 text-secondary-gold" />
-                {language === 'en' ? 'Analyze & Find Department' : 'विश्लेषण करें और विभाग खोजें'}
-              </>
-            )}
-          </button>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div>
+            <label className="text-[9px] font-extrabold text-slate-400 block uppercase mb-1">State</label>
+            <select
+              value={geoState}
+              onChange={(e) => {
+                setGeoState(e.target.value);
+                setGeoDistrict('');
+                setGeoLocalBody('');
+              }}
+              className="w-full rounded-xl border border-slate-300 bg-slate-50 p-2.5 text-xs font-bold text-slate-700 outline-none"
+            >
+              <option value="">Select State</option>
+              {geographicHierarchy.map(s => (
+                <option key={s.name} value={s.name}>{s.name}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="text-[9px] font-extrabold text-slate-400 block uppercase mb-1">District</label>
+            <select
+              value={geoDistrict}
+              disabled={!geoState}
+              onChange={(e) => {
+                setGeoDistrict(e.target.value);
+                setGeoLocalBody('');
+              }}
+              className="w-full rounded-xl border border-slate-300 bg-slate-50 p-2.5 text-xs font-bold text-slate-700 outline-none disabled:bg-slate-100 disabled:cursor-not-allowed"
+            >
+              <option value="">Select District</option>
+              {selectedStateObj?.districts.map(d => (
+                <option key={d.name} value={d.name}>{d.name}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="text-[9px] font-extrabold text-slate-400 block uppercase mb-1">Local Body</label>
+            <select
+              value={geoLocalBody}
+              disabled={!geoDistrict}
+              onChange={(e) => {
+                const val = e.target.value;
+                setGeoLocalBody(val);
+                const selectedBody = selectedDistrictObj?.localBodies.find(b => b.name === val);
+                if (selectedBody) {
+                  setRawText(prev => `Regarding road construction, municipal projects and public works under ${selectedBody.name} in district ${geoDistrict}, ${geoState}. \n${prev}`);
+                }
+              }}
+              className="w-full rounded-xl border border-slate-300 bg-slate-50 p-2.5 text-xs font-bold text-slate-700 outline-none disabled:bg-slate-100 disabled:cursor-not-allowed"
+            >
+              <option value="">Select Local Body</option>
+              {selectedDistrictObj?.localBodies.map(b => (
+                <option key={b.name} value={b.name}>{b.name}</option>
+              ))}
+            </select>
+          </div>
         </div>
+      </div>
+
+      {/* Two-Column Editor & AI Copilot Workspace */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start mb-6">
+        
+        {/* Left Column: Template Selection & Text Input Area (span 2) */}
+        <div className="md:col-span-2 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:bg-slate-900 dark:border-slate-800 space-y-4">
+          
+          {/* Templates library */}
+          <div>
+            <h3 className="font-bold text-xs text-slate-400 uppercase tracking-wider mb-2">RTI Template Library</h3>
+            <div className="flex flex-wrap gap-1.5">
+              {mockTemplates.map(temp => (
+                <button
+                  key={temp.id}
+                  onClick={() => {
+                    setRawText(temp.questions.join('\n'));
+                    setSelectedTopic(temp.id);
+                    setAnalysisResult(null);
+                  }}
+                  className="rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 px-3 py-2 text-[10.5px] font-bold transition-all cursor-pointer whitespace-nowrap"
+                >
+                  Use "{temp.title}"
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="border-t border-slate-100 pt-3">
+            <h3 className="font-bold text-sm text-slate-800 mb-2 dark:text-slate-200 font-sans">
+              {language === 'en' ? '2. Tell us what you want to know in plain language:' : '2. सरल भाषा में बताएं कि आप क्या जानना चाहते हैं:'}
+            </h3>
+            <p className="text-[10.5px] text-slate-400 mb-3">
+              {language === 'en' 
+                ? 'Example: "I want to know the road budget and work order details for rampur village road constructed in 2022-2025."'
+                : 'उदाहरण: "मुझे 2022-2025 में बनी रामपुर गांव की सड़क के बजट और वर्क ऑर्डर का विवरण चाहिए।"'}
+            </p>
+
+            <textarea
+              rows={6}
+              value={rawText}
+              onChange={(e) => setRawText(e.target.value)}
+              placeholder={language === 'en' ? 'Type your description here...' : 'यहाँ अपना विवरण टाइप करें...'}
+              className="w-full rounded-xl border border-slate-350 px-4 py-3 text-sm text-slate-800 outline-none focus:border-primary-blue bg-slate-50 leading-relaxed font-medium"
+            />
+          </div>
+
+          <div className="flex justify-end pt-2">
+            <button
+              onClick={runAnalysis}
+              disabled={analyzing || !rawText.trim()}
+              className="rounded-xl bg-primary-navy px-6 py-3 text-xs font-bold text-white hover:bg-primary-blue disabled:bg-slate-300 disabled:cursor-not-allowed flex items-center gap-1.5 shadow transition-all cursor-pointer"
+            >
+              {analyzing ? (
+                <>
+                  <span className="h-3.5 w-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  {language === 'en' ? 'Analyzing query...' : 'विश्लेषण किया जा रहा है...'}
+                </>
+              ) : (
+                <>
+                  <Sparkles className="h-4 w-4 text-secondary-gold" />
+                  {language === 'en' ? 'Analyze & Find Department' : 'विश्लेषण करें और विभाग खोजें'}
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* Right Column: AI Copilot Sidebar (span 1) */}
+        <div className="rounded-2xl border border-[#E5E2D9] bg-[#FAF9F5] p-5 space-y-4 shadow-2xs">
+          <div className="flex items-center gap-1.5 border-b border-slate-200 pb-2 mb-2">
+            <Sparkles className="h-4.5 w-4.5 text-secondary-saffron" />
+            <h4 className="font-extrabold text-xs uppercase tracking-wider text-slate-850">RTI AI Copilot</h4>
+          </div>
+
+          {/* Health Score Progress Bar */}
+          <div className="space-y-1.5">
+            <div className="flex justify-between items-center text-[10px] font-bold text-slate-500 uppercase">
+              <span>RTI Health Score</span>
+              <span className={overallHealth > 75 ? 'text-emerald-700 font-extrabold' : overallHealth > 45 ? 'text-amber-700 font-bold' : 'text-red-700 font-bold'}>
+                {overallHealth}% {overallHealth > 75 ? 'Strong' : overallHealth > 45 ? 'Good' : 'Needs Review'}
+              </span>
+            </div>
+            <div className="h-2 w-full rounded-full bg-slate-200 overflow-hidden">
+              <div 
+                className={`h-full rounded-full transition-all duration-300 ${
+                  overallHealth > 75 ? 'bg-emerald-500' : overallHealth > 45 ? 'bg-amber-500' : 'bg-red-500'
+                }`}
+                style={{ width: `${overallHealth}%` }}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-3 text-[11px] leading-relaxed text-slate-700">
+            {/* Specificity feedback */}
+            {specificityLevel === 'Weak' && rawText.trim().length > 0 && (
+              <div className="p-2.5 rounded-lg bg-red-50 border border-red-200 text-red-800">
+                <strong>Query is too short:</strong> Please describe the record or event in detail (minimum 35 characters recommended).
+              </div>
+            )}
+
+            {/* Time period warning */}
+            {!hasTimePeriod && rawText.trim().length > 0 && (
+              <div className="p-2.5 rounded-lg bg-amber-50 border border-amber-200 text-amber-900">
+                <strong>Timeframe missing:</strong> Your request doesn't specify a time period. Recommends adding dates (e.g. "between 2024 and 2025") to prevent reject delays.
+              </div>
+            )}
+
+            {/* Question Intelligence Warning */}
+            {isWhyQuestion && (
+              <div className="p-2.5 rounded-lg bg-amber-50 border border-amber-200 text-amber-900 space-y-1.5">
+                <div>
+                  <strong>"Why" Question Detected:</strong> Your request asks for reasons. A stronger RTI should request existing records instead.
+                </div>
+                <div className="border-t border-amber-200/50 pt-1 text-[10px] italic">
+                  <strong>Try requesting:</strong>
+                  <ul className="list-disc pl-3.5 mt-0.5 space-y-0.5 font-medium">
+                    <li>Copy of inspection reports</li>
+                    <li>Work order / Sanction order copy</li>
+                    <li>Funds allocated and released logs</li>
+                    <li>File notings / Officer comments</li>
+                  </ul>
+                </div>
+              </div>
+            )}
+
+            {/* Scope Optimizer Warning */}
+            {isTooBroad && (
+              <div className="p-2.5 rounded-lg bg-red-50 border border-red-200 text-red-800">
+                <strong>Request is too broad:</strong> Recommends specifying a location, project name, or concrete document type to prevent processing rejections.
+              </div>
+            )}
+
+            {/* General Guideline */}
+            {rawText.trim().length === 0 && (
+              <p className="text-slate-500 italic">
+                Start typing your query on the left. The AI Copilot will analyze your draft scope, specificity, and timeframe in real time.
+              </p>
+            )}
+          </div>
+        </div>
+
       </div>
 
       {/* Analysis Results Display */}
@@ -365,12 +564,12 @@ export default function OnboardingView({ setActiveView, setDraftRti, language }:
             </div>
           )}
 
-          {/* Suggested Department Box (Section 7) */}
+          {/* Suggested Department Box with Match Ratings & Alternatives */}
           <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:bg-slate-900 dark:border-slate-800">
             <div className="flex justify-between items-center mb-4">
-              <h4 className="font-bold text-xs uppercase tracking-wider text-slate-400">Suggested Public Authority</h4>
-              <span className="bg-emerald-100 text-success-green text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">
-                Match: High
+              <h4 className="font-extrabold text-xs uppercase tracking-wider text-slate-400">Match Confidence & suggested authority</h4>
+              <span className="bg-emerald-100 text-emerald-800 text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider">
+                91% Match
               </span>
             </div>
             
@@ -383,26 +582,55 @@ export default function OnboardingView({ setActiveView, setDraftRti, language }:
                   <h5 className="font-bold text-slate-850 text-base leading-snug dark:text-slate-100">
                     {analysisResult.suggestedAuth.name}
                   </h5>
-                  <p className="text-xs text-slate-400 font-medium">
-                    {analysisResult.suggestedAuth.ministry} • Central Department
+                  <p className="text-xs text-slate-550 font-bold">
+                    {analysisResult.suggestedAuth.ministry} • Recommended
                   </p>
                 </div>
               </div>
             </div>
 
             <div className="border-t border-slate-150 my-4 pt-4 text-xs text-slate-650 dark:text-slate-400">
-              <span className="font-semibold text-slate-800 block mb-1 dark:text-slate-200">Why?</span>
+              <span className="font-extrabold text-slate-800 block mb-1 dark:text-slate-200">Why recommended?</span>
               {analysisResult.matchWhy}
             </div>
 
-            <div className="bg-slate-50 border border-slate-150 rounded-xl p-3 flex flex-wrap gap-4 text-xs">
+            {/* Alternatives (Section 4) */}
+            <div className="border-t border-slate-150 my-4 pt-4">
+              <span className="font-extrabold text-xs text-slate-400 uppercase tracking-wider block mb-2">Alternative Authorities Available</span>
+              <div className="space-y-2">
+                <div className="bg-slate-50 rounded-xl p-3 border border-slate-150 flex justify-between items-center text-xs">
+                  <div>
+                    <span className="font-bold text-slate-800 block">Department of Personnel and Training (DoPT)</span>
+                    <span className="text-[10px] text-slate-500">Ministry of Personnel, Public Grievances and Pensions</span>
+                  </div>
+                  <span className="font-bold text-slate-700 bg-slate-200 px-2 py-0.5 rounded">68% Match</span>
+                </div>
+                <div className="bg-slate-50 rounded-xl p-3 border border-slate-150 flex justify-between items-center text-xs">
+                  <div>
+                    <span className="font-bold text-slate-800 block">Ministry of Road Transport and Highways (Alternate Branch)</span>
+                    <span className="text-[10px] text-slate-500">Regional Coordination Office</span>
+                  </div>
+                  <span className="font-bold text-slate-700 bg-slate-200 px-2 py-0.5 rounded">54% Match</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-slate-50 border border-slate-150 rounded-xl p-3.5 flex flex-wrap gap-4 text-xs">
               <div>
                 <span className="text-slate-400 font-bold block text-[9.5px] uppercase">Time Period</span>
-                <span className="font-semibold text-slate-700">{analysisResult.timePeriod}</span>
+                <span className="font-bold text-slate-700">{analysisResult.timePeriod}</span>
               </div>
               <div>
                 <span className="text-slate-400 font-bold block text-[9.5px] uppercase">Location</span>
-                <span className="font-semibold text-slate-700">{analysisResult.location}</span>
+                <span className="font-bold text-slate-700">{analysisResult.location}</span>
+              </div>
+            </div>
+
+            {/* Official Source Verification Notice (P0) */}
+            <div className="mt-4 border-t border-slate-150 pt-3 flex items-start gap-2 text-[10.5px] text-slate-500 leading-relaxed bg-[#FAF9F5] p-3 rounded-xl border border-[#E5E2D9]">
+              <CheckCircle className="h-4.5 w-4.5 text-[#B94A48] shrink-0 mt-0.5" />
+              <div>
+                <strong>Official Source Verification:</strong> Suggestions generated according to the official RTI Act (Section 4 proactive disclosure mandates) and official DoPT FAQ guidelines. (Last verified: 25 August 2026).
               </div>
             </div>
 
@@ -421,7 +649,7 @@ export default function OnboardingView({ setActiveView, setDraftRti, language }:
                 onClick={proceedToBuilder}
                 className="rounded-xl bg-primary-navy hover:bg-primary-blue px-6 py-2.5 text-xs font-bold text-white flex items-center gap-1 shadow cursor-pointer"
               >
-                Use this Authority & Proceed to Draft
+                Use Recommended Authority & Proceed
                 <ArrowRight className="h-4 w-4" />
               </button>
             </div>

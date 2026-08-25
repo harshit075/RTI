@@ -20,6 +20,8 @@ interface NavbarProps {
     read: boolean;
   }>;
   markNotificationsRead: () => void;
+  isExpertMode: boolean;
+  setIsExpertMode: (val: boolean) => void;
 }
 
 export default function Navbar({
@@ -32,7 +34,9 @@ export default function Navbar({
   textSize,
   setTextSize,
   notifications,
-  markNotificationsRead
+  markNotificationsRead,
+  isExpertMode,
+  setIsExpertMode
 }: NavbarProps) {
   const [showNotifications, setShowNotifications] = useState(false);
   const unreadCount = notifications.filter(n => !n.read).length;
@@ -147,6 +151,30 @@ export default function Navbar({
 
         {/* Accessibility, Localization and User Icons */}
         <div className="flex items-center gap-3">
+          
+          {/* Mode Selector (Simple / Expert Mode Toggle) */}
+          <div className="flex items-center rounded-full border border-slate-200 bg-slate-50 p-0.5 text-[10.5px] font-bold text-slate-700 shadow-2xs">
+            <button
+              onClick={() => setIsExpertMode(false)}
+              className={`rounded-full px-2.5 py-1 transition-colors cursor-pointer ${
+                !isExpertMode 
+                  ? 'bg-primary-navy text-white font-extrabold' 
+                  : 'text-slate-650 hover:text-primary-navy'
+              }`}
+            >
+              Simple
+            </button>
+            <button
+              onClick={() => setIsExpertMode(true)}
+              className={`rounded-full px-2.5 py-1 transition-colors cursor-pointer ${
+                isExpertMode 
+                  ? 'bg-secondary-saffron text-slate-900 font-black' 
+                  : 'text-slate-650 hover:text-primary-navy'
+              }`}
+            >
+              Expert
+            </button>
+          </div>
           
           {/* Language Toggle */}
           <button

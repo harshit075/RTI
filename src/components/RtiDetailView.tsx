@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { 
   FileText, Clock, AlertTriangle, CheckCircle2, ChevronRight, CornerDownRight, 
-  HelpCircle, ArrowLeft, Send, Sparkles, Scale, Landmark, FileDown, FolderOpen, MessagesSquare
+  HelpCircle, ArrowLeft, Send, Sparkles, Scale, Landmark, FileDown, FolderOpen, MessagesSquare, Check
 } from 'lucide-react';
 import { RTIApplication, mockAuthorities } from '../data/mockData';
 
@@ -22,7 +22,39 @@ export default function RtiDetailView({
   language,
   fileFirstAppeal
 }: RtiDetailViewProps) {
-  const [activeTab, setActiveTab] = useState<'timeline' | 'response' | 'documents' | 'ask-ai'>('timeline');
+  const [activeTab, setActiveTab] = useState<'timeline' | 'compare' | 'evidence' | 'notes' | 'appeal' | 'documents' | 'ask-ai'>('timeline');
+  
+  const rti = rtis.find(r => r.id === rtiId);
+
+  // Note state helpers
+  const [notesText, setNotesText] = useState(rti?.notes || '');
+  const [savingNotes, setSavingNotes] = useState(false);
+  const [notesSavedStatus, setNotesSavedStatus] = useState<'idle' | 'success' | 'error'>('idle');
+
+  const handleSaveNotes = async () => {
+    if (!rti) return;
+    setSavingNotes(true);
+    setNotesSavedStatus('idle');
+    try {
+      const res = await fetch(`/api/rtis/${rti.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ notes: notesText })
+      });
+      if (res.ok) {
+        setNotesSavedStatus('success');
+        rti.notes = notesText;
+      } else {
+        setNotesSavedStatus('error');
+      }
+    } catch (err) {
+      console.error(err);
+      setNotesSavedStatus('error');
+    } finally {
+      setSavingNotes(false);
+      setTimeout(() => setNotesSavedStatus('idle'), 3000);
+    }
+  };
   
   // Chat state
   const [chatMessages, setChatMessages] = useState<Array<{ sender: 'user' | 'ai'; text: string }>>([
@@ -36,7 +68,6 @@ export default function RtiDetailView({
   const [appealText, setAppealText] = useState('');
   const [showOnlyMissing, setShowOnlyMissing] = useState(false);
 
-  const rti = rtis.find(r => r.id === rtiId);
   if (!rti) return <div>RTI not found</div>;
 
   const auth = mockAuthorities.find(a => a.id === rti.authorityId);
@@ -137,36 +168,72 @@ Mob: 9876543210`;
           </div>
         </div>
 
-        {/* Tab Selection */}
-        <div className="flex border-b border-slate-200 mb-6 bg-white p-1 rounded-xl shadow-sm dark:bg-slate-900 dark:border-slate-800">
+        {/* Tab Selection (Multi-tab Case Workspace) */}
+        <div className="flex flex-wrap border-b border-slate-200 mb-6 bg-white p-1 rounded-xl shadow-sm gap-1">
           <button
             onClick={() => setActiveTab('timeline')}
-            className={`flex-1 py-2.5 text-xs font-bold rounded-lg transition-colors cursor-pointer ${
+            className={`px-4 py-2.5 text-xs font-bold rounded-lg transition-colors cursor-pointer ${
               activeTab === 'timeline'
                 ? 'bg-primary-navy text-white'
-                : 'text-slate-500 hover:text-primary-navy'
+                : 'text-slate-600 hover:text-primary-navy hover:bg-slate-50'
             }`}
           >
             Journey Timeline
           </button>
+          
+          <button
+            onClick={() => {
+              setActiveTab('notes');
+              // Sync notes text with parent in case it updated
+              if (rti) setNotesText(rti.notes || '');
+            }}
+            className={`px-4 py-2.5 text-xs font-bold rounded-lg transition-colors cursor-pointer ${
+              activeTab === 'notes'
+                ? 'bg-primary-navy text-white'
+                : 'text-slate-600 hover:text-primary-navy hover:bg-slate-50'
+            }`}
+          >
+            Private Notes
+          </button>
+
           {hasResponse && (
             <>
               <button
-                onClick={() => setActiveTab('response')}
-                className={`flex-1 py-2.5 text-xs font-bold rounded-lg transition-colors cursor-pointer ${
-                  activeTab === 'response'
+                onClick={() => setActiveTab('compare')}
+                className={`px-4 py-2.5 text-xs font-bold rounded-lg transition-colors cursor-pointer ${
+                  activeTab === 'compare'
                     ? 'bg-primary-navy text-white'
-                    : 'text-slate-500 hover:text-primary-navy'
+                    : 'text-slate-600 hover:text-primary-navy hover:bg-slate-50'
                 }`}
               >
-                Response Reader & Summary
+                Compare Response
+              </button>
+              <button
+                onClick={() => setActiveTab('evidence')}
+                className={`px-4 py-2.5 text-xs font-bold rounded-lg transition-colors cursor-pointer ${
+                  activeTab === 'evidence'
+                    ? 'bg-primary-navy text-white'
+                    : 'text-slate-600 hover:text-primary-navy hover:bg-slate-50'
+                }`}
+              >
+                Evidence Mapping
+              </button>
+              <button
+                onClick={() => setActiveTab('appeal')}
+                className={`px-4 py-2.5 text-xs font-bold rounded-lg transition-colors cursor-pointer ${
+                  activeTab === 'appeal'
+                    ? 'bg-primary-navy text-white'
+                    : 'text-slate-600 hover:text-primary-navy hover:bg-slate-50'
+                }`}
+              >
+                Appeal Assistant
               </button>
               <button
                 onClick={() => setActiveTab('ask-ai')}
-                className={`flex-1 py-2.5 text-xs font-bold rounded-lg transition-colors cursor-pointer ${
+                className={`px-4 py-2.5 text-xs font-bold rounded-lg transition-colors cursor-pointer ${
                   activeTab === 'ask-ai'
                     ? 'bg-primary-navy text-white'
-                    : 'text-slate-500 hover:text-primary-navy'
+                    : 'text-slate-600 hover:text-primary-navy hover:bg-slate-50'
                 }`}
               >
                 Ask Assistant (AI)
@@ -175,10 +242,10 @@ Mob: 9876543210`;
           )}
           <button
             onClick={() => setActiveTab('documents')}
-            className={`flex-1 py-2.5 text-xs font-bold rounded-lg transition-colors cursor-pointer ${
+            className={`px-4 py-2.5 text-xs font-bold rounded-lg transition-colors cursor-pointer ${
               activeTab === 'documents'
                 ? 'bg-primary-navy text-white'
-                : 'text-slate-500 hover:text-primary-navy'
+                : 'text-slate-600 hover:text-primary-navy hover:bg-slate-50'
             }`}
           >
             Documents Vault
@@ -197,8 +264,8 @@ Mob: 9876543210`;
                 
                 {/* Milestone 1: Registered */}
                 <div className="relative">
-                  <span className="absolute -left-[31px] top-0 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-emerald-500 text-white font-bold text-[9px] shadow-sm">
-                    ✓
+                  <span className="absolute -left-[31px] top-0 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-emerald-500 text-white font-bold shadow-sm">
+                    <Check className="h-2.5 w-2.5" />
                   </span>
                   <div>
                     <h4 className="font-bold text-slate-800 dark:text-slate-200">APPLICATION SUBMITTED & REGISTERED</h4>
@@ -208,8 +275,8 @@ Mob: 9876543210`;
 
                 {/* Milestone 2: Received by CPIO */}
                 <div className="relative">
-                  <span className="absolute -left-[31px] top-0 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-emerald-500 text-white font-bold text-[9px] shadow-sm">
-                    ✓
+                  <span className="absolute -left-[31px] top-0 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-emerald-500 text-white font-bold shadow-sm">
+                    <Check className="h-2.5 w-2.5" />
                   </span>
                   <div>
                     <h4 className="font-bold text-slate-800 dark:text-slate-200">RECEIVED BY PUBLIC AUTHORITY</h4>
@@ -219,10 +286,10 @@ Mob: 9876543210`;
 
                 {/* Milestone 3: Response Pending/Received */}
                 <div className="relative">
-                  <span className={`absolute -left-[31px] top-0 flex h-4.5 w-4.5 items-center justify-center rounded-full text-white font-bold text-[9px] shadow-sm ${
+                  <span className={`absolute -left-[31px] top-0 flex h-4.5 w-4.5 items-center justify-center rounded-full text-white font-bold shadow-sm ${
                     hasResponse ? 'bg-emerald-500' : 'bg-amber-500 animate-pulse'
                   }`}>
-                    {hasResponse ? '✓' : <Clock className="h-2.5 w-2.5 text-white" />}
+                    {hasResponse ? <Check className="h-2.5 w-2.5" /> : <Clock className="h-2.5 w-2.5 text-white" />}
                   </span>
                   <div>
                     <h4 className="font-bold text-slate-800 dark:text-slate-200">CPIO OFFICIAL REPLY</h4>
@@ -238,8 +305,8 @@ Mob: 9876543210`;
                 {rti.status === 'First Appeal Filed' && (
                   <>
                     <div className="relative">
-                      <span className="absolute -left-[31px] top-0 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-purple-500 text-white font-bold text-[9px] shadow-sm">
-                        ✓
+                      <span className="absolute -left-[31px] top-0 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-purple-500 text-white font-bold shadow-sm">
+                        <Check className="h-2.5 w-2.5" />
                       </span>
                       <div>
                         <h4 className="font-bold text-slate-800 dark:text-slate-200">FIRST APPEAL FILED</h4>
@@ -289,182 +356,189 @@ Mob: 9876543210`;
           </div>
         )}
 
-        {/* Tab 2: Response Reader (Section 17) */}
-        {activeTab === 'response' && !showAppealWizard && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Tab 2: Compare Response (Section 10) */}
+        {activeTab === 'compare' && (
+          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:bg-slate-900 dark:border-slate-800 space-y-6">
+            <div>
+              <h3 className="font-extrabold text-sm text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-2">Compare RTI Response</h3>
+              <p className="text-xs text-slate-555">Cross-reference your original questions against the responses supplied by the CPIO officer.</p>
+            </div>
             
-            {/* Left side: Simulated Official Document */}
-            <div className="rounded-2xl border border-slate-300 bg-white shadow-sm overflow-hidden flex flex-col h-[520px] dark:bg-slate-900 dark:border-slate-800">
-              <div className="bg-slate-100 border-b border-slate-200 px-4 py-3 flex justify-between items-center dark:bg-slate-800 dark:border-slate-700">
-                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-                  <FileText className="h-4 w-4 text-slate-400" />
-                  Official_CPIO_Reply.pdf
-                </span>
-                <button className="text-slate-650 hover:text-primary-navy p-1 rounded hover:bg-slate-200 flex items-center gap-1 text-[10px] font-bold cursor-pointer">
-                  <FileDown className="h-3.5 w-3.5" /> Download
-                </button>
-              </div>
-
-              {/* Scrollable Letter Mockup */}
-              <div className="flex-1 overflow-y-auto p-6 font-serif text-[11px] text-slate-800 leading-relaxed bg-slate-50 dark:bg-slate-950 dark:text-slate-350">
-                <div className="text-center font-bold mb-6 text-xs uppercase tracking-wide border-b border-slate-200 pb-4 text-slate-900 dark:text-white">
-                  {auth?.name}<br />
-                  GOVERNMENT OF INDIA
-                </div>
+            <div className="space-y-4">
+              {rti.questions.map((q, idx) => {
+                const isDenied = (rti.id === 'rti-passport-101' && idx === 2) || (rti.id === 'rti-railways-204' && idx === 2);
+                const isPartial = (rti.id === 'rti-passport-101' && idx === 3) || (rti.id === 'rti-railways-204' && idx === 1);
                 
-                <div className="flex justify-between mb-4">
-                  <span>Letter No: {rti.registrationNumber}/CPIO-26</span>
-                  <span>Date: {rti.responseDate}</span>
-                </div>
+                let statusBadge = <span className="bg-emerald-50 text-emerald-800 text-[10px] font-black px-2.5 py-1 rounded-full uppercase">Answered</span>;
+                let statusText = "Full administrative records and particulars supplied by the department.";
+                
+                if (isDenied) {
+                  statusBadge = <span className="bg-red-50 text-red-800 text-[10px] font-black px-2.5 py-1 rounded-full uppercase">Missing / Denied</span>;
+                  statusText = "The CPIO has denied or completely ignored this question under Section 8(1) exemptions.";
+                } else if (isPartial) {
+                  statusBadge = <span className="bg-amber-50 text-amber-800 text-[10px] font-black px-2.5 py-1 rounded-full uppercase">Partial Answer</span>;
+                  statusText = "General summary was provided, but specific files, timelines, or documents were omitted.";
+                }
 
-                <div className="mb-4">
-                  To,<br />
-                  Shri Harshit Sharma,<br />
-                  Alwar, Rajasthan.
-                </div>
-
-                <div className="font-bold mb-4">
-                  Subject: Information sought under Right to Information Act, 2005.
-                </div>
-
-                <p className="mb-3">
-                  Reference your RTI application dated {rti.submittedDate} seeking information under the RTI Act, 2005.
-                </p>
-
-                {rti.id === 'rti-passport-101' ? (
-                  <div className="space-y-3">
-                    <p>
-                      The item-wise reply to your query is provided below:
-                    </p>
-                    <p>
-                      <strong>Query 1 & 2:</strong> Police verification request was sent to local police station on 03/08/2026. The Police verification report was received in this office on 09/08/2026.
-                    </p>
-                    <p>
-                      <strong>Query 3:</strong> Copies of internal file sheets, remarks, and signatures of verification officers are third-party personal details and cannot be supplied as per exemptions under Section 8(1)(j) of the RTI Act.
-                    </p>
-                    <p>
-                      <strong>Query 4:</strong> The passport printing was placed on hold due to name spelling mismatches. The name in application is "Harshit Sharma" whereas in police verification it is spelled "Harsit Sharma". The applicant is requested to visit the Regional Passport Office with spelling rectification certificates.
-                    </p>
+                return (
+                  <div key={idx} className="border border-slate-200 rounded-xl p-4.5 space-y-3 bg-slate-50/30">
+                    <div className="flex justify-between items-center">
+                      <span className="font-extrabold text-xs text-slate-400">QUESTION {idx + 1}</span>
+                      {statusBadge}
+                    </div>
+                    <p className="text-xs font-bold text-slate-800 leading-relaxed">"{q}"</p>
+                    
+                    <div className="border-t border-slate-100 pt-3 text-xs">
+                      <span className="font-extrabold text-slate-500 block mb-1">CPIO Officer Response:</span>
+                      <p className="text-slate-650 leading-relaxed">{statusText}</p>
+                    </div>
                   </div>
-                ) : (
-                  <div className="space-y-3">
-                    <p>
-                      The item-wise reply to your queries regarding tender work is provided below:
-                    </p>
-                    <p>
-                      <strong>Query 1:</strong> Copies of tender notice and work order issued for escalators (No. JPR-ESC-2025) are enclosed as Annexure-A. The successful bidder was M/s Escalates India Ltd.
-                    </p>
-                    <p>
-                      <strong>Query 2:</strong> The total funds sanctioned for this project was ₹40,00,000. Out of this, ₹35,00,000 has been released and incurred till date.
-                    </p>
-                    <p>
-                      <strong>Query 3:</strong> The escalator completion inspection and safety auditor reports have not been finalized yet. Hence, no records are available.
-                    </p>
-                  </div>
-                )}
+                );
+              })}
+            </div>
+          </div>
+        )}
 
-                <div className="mt-8 pt-6 border-t border-slate-200">
-                  Yours sincerely,<br />
-                  <span className="font-bold">{auth?.cpioName}</span><br />
-                  {auth?.cpioDesignation}
-                </div>
-              </div>
+        {/* Tab 3: Evidence Mapping (Section 11) */}
+        {activeTab === 'evidence' && (
+          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:bg-slate-900 dark:border-slate-800 space-y-6">
+            <div>
+              <h3 className="font-extrabold text-sm text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-2">Response Evidence Mapping</h3>
+              <p className="text-xs text-slate-555">Map specific answers directly to the corresponding page numbers in the uploaded response document.</p>
             </div>
 
-            {/* Right side: AI Response Analyzer (Section 17) */}
-            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm flex flex-col h-[520px] dark:bg-slate-900 dark:border-slate-800">
-              <div className="flex items-center gap-2 text-primary-navy border-b border-slate-100 pb-4 mb-4 dark:text-white">
-                <Sparkles className="h-5 w-5 text-secondary-saffron animate-pulse" />
-                <h3 className="font-bold text-sm">AI Response Analysis</h3>
-              </div>
-
-              <div className="flex-1 overflow-y-auto space-y-4">
+            <div className="space-y-4">
+              {rti.questions.map((q, idx) => {
+                const isDenied = (rti.id === 'rti-passport-101' && idx === 2) || (rti.id === 'rti-railways-204' && idx === 2);
+                const pageNum = idx === 0 ? 1 : idx === 1 ? 1 : idx === 3 ? 2 : null;
                 
-                {/* Score Summary */}
-                <div className="bg-slate-50 rounded-xl p-3 border border-slate-150 flex justify-between items-center text-xs">
-                  <div>
-                    <span className="font-bold text-slate-800 block">Answer Resolution</span>
-                    <span className="text-[10px] text-slate-450 block">Comparing original questions vs reply</span>
-                    <button 
-                      onClick={() => setShowOnlyMissing(!showOnlyMissing)}
-                      className="text-primary-blue font-bold hover:underline mt-1 cursor-pointer block text-left"
-                    >
-                      {showOnlyMissing ? 'Show all questions' : 'Show me what is missing'}
-                    </button>
-                  </div>
-                  <span className="font-black text-sm bg-blue-100 text-secondary-saffron px-3 py-1 rounded-lg shrink-0">
-                    {rti.id === 'rti-passport-101' ? '3 of 4 Answered' : '2 of 3 Answered'}
-                  </span>
-                </div>
-
-                {/* Question Breakdown List */}
-                <div className="space-y-3">
-                  {rti.questions.map((q, idx) => {
-                    const isDenied = (rti.id === 'rti-passport-101' && idx === 2) || (rti.id === 'rti-railways-204' && idx === 2);
-                    if (showOnlyMissing && !isDenied) return null;
+                return (
+                  <div key={idx} className="border border-slate-200 rounded-xl p-4 bg-slate-50/20 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                    <div className="space-y-1">
+                      <span className="font-extrabold text-[10px] text-slate-400 block">QUESTION {idx + 1}</span>
+                      <p className="text-xs font-bold text-slate-800 line-clamp-1">{q}</p>
+                    </div>
                     
-                    return (
-                      <div key={idx} className="rounded-xl border border-slate-150 p-3 text-xs bg-slate-50/50 animate-in fade-in duration-200">
-                        <div className="flex items-center justify-between">
-                          <span className="font-bold text-[10px] text-slate-400 uppercase">Question {idx + 1}</span>
-                          <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full ${
-                            isDenied ? 'bg-red-50 text-red-705' : 'bg-emerald-50 text-success-green'
-                          }`}>
-                            {isDenied ? 'Omitted / Denied' : 'Addressed'}
-                          </span>
+                    <div className="shrink-0 flex items-center gap-2">
+                      {isDenied ? (
+                        <span className="text-[11px] font-bold text-red-700 bg-red-50 border border-red-200 px-3 py-1 rounded-xl">
+                          No page match (Denied)
+                        </span>
+                      ) : (
+                        <div className="flex items-center gap-1.5 text-[11px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-xl">
+                          <CheckCircle2 className="h-3.5 w-3.5" />
+                          <span>Mapped to Page {pageNum}</span>
                         </div>
-                        <p className="text-slate-755 font-medium mt-1 leading-snug">{q}</p>
-                        
-                        {isDenied && (
-                          <div className="mt-2 text-[10.5px] bg-red-50/50 text-red-800 p-2 rounded-lg border border-red-100">
-                            <span className="font-bold">AI Exemption check:</span>{' '}
-                            {rti.id === 'rti-passport-101' 
-                              ? 'CPIO cited Sec 8(1)(j) Privacy, but internal workflow logs on police verify concern public administrative delays and may be appealable.' 
-                              : 'CPIO claims report is not finalized. However, under Section 4, intermediate drafts or inspections should be disclosable once submitted.'}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Tab 4: Private Notes (Section 9) */}
+        {activeTab === 'notes' && (
+          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:bg-slate-900 dark:border-slate-800 space-y-6 animate-in fade-in duration-200">
+            <div className="flex justify-between items-center">
+              <div>
+                <h3 className="font-extrabold text-sm text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-1">Personal Case Notes</h3>
+                <p className="text-xs text-slate-555">Record private comments, evidence logs, or officer phone interactions. Saved in real time to the Neon DB.</p>
+              </div>
+              
+              <button
+                onClick={handleSaveNotes}
+                disabled={savingNotes}
+                className="rounded-xl bg-primary-navy hover:bg-primary-blue text-white px-5 py-2.5 text-xs font-bold shadow disabled:bg-slate-350 disabled:cursor-not-allowed cursor-pointer"
+              >
+                {savingNotes ? 'Saving...' : 'Save Notes'}
+              </button>
+            </div>
+
+            {notesSavedStatus === 'success' && (
+              <div className="bg-emerald-50 border border-emerald-250 text-emerald-800 text-xs font-bold p-3 rounded-xl flex items-center gap-1.5 animate-in fade-in duration-200">
+                <Check className="h-4 w-4 text-emerald-600 shrink-0" />
+                Notes saved successfully to Neon Database!
+              </div>
+            )}
+            
+            {notesSavedStatus === 'error' && (
+              <div className="bg-red-50 border border-red-200 text-red-800 text-xs font-bold p-3 rounded-xl flex items-center gap-1.5 animate-in fade-in duration-200">
+                <AlertTriangle className="h-4 w-4 text-red-600 shrink-0" />
+                Failed to save notes. Please check connection and try again.
+              </div>
+            )}
+
+            <textarea
+              rows={12}
+              value={notesText}
+              onChange={(e) => setNotesText(e.target.value)}
+              placeholder="Start drafting your notes for this case workspace here..."
+              className="w-full rounded-xl border border-slate-300 p-4 text-xs text-slate-800 outline-none focus:border-primary-blue bg-slate-50 leading-relaxed font-medium"
+            />
+          </div>
+        )}
+
+        {/* Tab 5: Appeal Assistant (Section 12) */}
+        {activeTab === 'appeal' && (
+          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:bg-slate-900 dark:border-slate-800 space-y-6">
+            <div>
+              <h3 className="font-extrabold text-sm text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-2">Appeal Assistant</h3>
+              <p className="text-xs text-slate-555">If CPIO response has gaps, check ground reasons and draft First Appeal grounds automatically.</p>
+            </div>
+
+            {rti.status === 'First Appeal Filed' ? (
+              <div className="bg-purple-50 rounded-xl p-5 border border-purple-200 text-xs text-purple-900 space-y-3 leading-relaxed">
+                <span className="font-extrabold block">First Appeal Already Filed</span>
+                <p>You have submitted a First Appeal regarding this case. The department has up to 30-45 days to issue their FAA decision order.</p>
+                <div className="bg-white p-3.5 rounded-xl border border-purple-300/50 font-mono text-[10.5px] whitespace-pre-wrap leading-relaxed text-slate-750">
+                  {rti.appealReason ? `Ground: ${rti.appealReason}` : 'Grounds: Information incomplete'}
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3">
+                  <span className="text-[10px] font-extrabold text-slate-400 block uppercase">Check Appeal Grounds</span>
+                  <div className="space-y-2 text-xs">
+                    <label className="flex items-center gap-2 font-bold text-slate-700 cursor-pointer">
+                      <input 
+                        type="checkbox" 
+                        defaultChecked={true}
+                        className="rounded text-primary-navy accent-primary-navy"
+                      />
+                      <span>CPIO reply is incomplete or critical files are missing</span>
+                    </label>
+                    <label className="flex items-center gap-2 font-bold text-slate-700 cursor-pointer">
+                      <input 
+                        type="checkbox" 
+                        defaultChecked={false}
+                        className="rounded text-primary-navy accent-primary-navy"
+                      />
+                      <span>Section 8 exemptions incorrectly applied without public interest weight</span>
+                    </label>
+                    <label className="flex items-center gap-2 font-bold text-slate-700 cursor-pointer">
+                      <input 
+                        type="checkbox" 
+                        defaultChecked={false}
+                        className="rounded text-primary-navy accent-primary-navy"
+                      />
+                      <span>Officer ignored statutory 30-day response limit window</span>
+                    </label>
+                  </div>
                 </div>
 
-              </div>
-
-              {/* Appeal Trigger (Section 19) */}
-              {rti.status !== 'First Appeal Filed' ? (
-                <div className="border-t border-slate-100 pt-4 mt-4">
-                  <div className="bg-purple-50 rounded-xl p-3 border border-purple-250 text-xs text-purple-800 mb-3 leading-relaxed">
-                    <span className="font-bold">First Appeal Available:</span> If you are dissatisfied because critical documents were omitted or denied, you can submit a first appeal to the FAA officer for resolution.
-                  </div>
-                  
+                <div className="flex justify-end">
                   <button
                     onClick={openAppealWizard}
-                    className="w-full bg-primary-navy hover:bg-primary-navy/90 text-white font-extrabold text-xs py-3 rounded-xl shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
+                    className="bg-primary-navy hover:bg-primary-blue text-white font-extrabold text-xs px-6 py-3 rounded-xl shadow-md flex items-center gap-1.5 cursor-pointer"
                   >
                     <Scale className="h-4 w-4 text-secondary-saffron" />
-                    One-Click First Appeal (Free)
+                    Open Appeal Draft Wizard
                   </button>
                 </div>
-              ) : (
-                <div className="border-t border-slate-100 pt-4 mt-4">
-                  <div className="bg-red-50 rounded-xl p-3 border border-red-200 text-xs text-red-800 mb-3 leading-relaxed animate-in fade-in duration-200">
-                    <span className="font-bold block mb-1">Unsatisfied with First Appeal?</span>
-                    If the First Appellate Authority (FAA) decision is unsatisfactory or you do not receive a reply within 30-45 days, you can file a **Second Appeal** or **Complaint** to the Central Information Commission (CIC) under Section 19(3) of the RTI Act.
-                  </div>
-                  
-                  <a
-                    href="https://cic.gov.in"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full bg-red-650 hover:bg-red-700 text-white font-extrabold text-xs py-3 rounded-xl shadow-md flex items-center justify-center gap-1.5 cursor-pointer text-center"
-                  >
-                    <Scale className="h-4 w-4 text-white" />
-                    Go to Official CIC Portal (cic.gov.in) ↗
-                  </a>
-                </div>
-              )}
-            </div>
-
+              </div>
+            )}
           </div>
         )}
 

@@ -41,6 +41,7 @@ export interface RTIApplication {
   totalQuestions: number;
   appealReason?: string;
   appealDate?: string;
+  notes?: string;
 }
 
 export const mockAuthorities: Authority[] = [
@@ -228,5 +229,193 @@ export const initialRTIs: RTIApplication[] = [
     responseSummary: 'The CPIO supplied the tender order copy and expenditure breakdown. However, the completion audit and inspection notes were declared unavailable due to audit delays.',
     answeredCount: 2,
     totalQuestions: 3
+  }
+];
+
+export interface PublicDisclosure {
+  id: string;
+  title: string;
+  category: string;
+  ministry: string;
+  source: string;
+  url: string;
+  snippet: string;
+  keywords: string[];
+}
+
+export interface RtiTemplate {
+  id: string;
+  title: string;
+  category: string;
+  description: string;
+  subject: string;
+  questions: string[];
+}
+
+export interface GeoLocalBody {
+  name: string;
+  authorityId: string;
+}
+
+export interface GeoDistrict {
+  name: string;
+  localBodies: GeoLocalBody[];
+}
+
+export interface GeoState {
+  name: string;
+  districts: GeoDistrict[];
+}
+
+export const mockDisclosures: PublicDisclosure[] = [
+  {
+    id: 'disc-passport',
+    title: 'Consular Visa and Passport Dispositions Summary Report — 2025',
+    category: 'Annual Reports',
+    ministry: 'Ministry of External Affairs',
+    source: 'MEA Publications Database (Official Source)',
+    url: 'https://passportindia.gov.in',
+    snippet: 'This annual report outlines the average processing time, police verification bottlenecks, and dispatch timelines across regional passport offices.',
+    keywords: ['passport', 'visa', 'dispatch', 'delay', 'consular']
+  },
+  {
+    id: 'disc-jaipur',
+    title: 'Jaipur Junction Escalator Sanctioned Funds & Timelines',
+    category: 'Tenders & Projects',
+    ministry: 'Ministry of Railways',
+    source: 'Indian Railways Portal (Official Source)',
+    url: 'https://indianrailways.gov.in',
+    snippet: 'Contains detailed project allocations, work orders for escalator upgrades, safety clearances, and contract details for JPR-ESC-2025.',
+    keywords: ['railway', 'jaipur', 'escalator', 'jaipur junction', 'station', 'tender']
+  },
+  {
+    id: 'disc-aadhaar',
+    title: 'Aadhaar Biometric Verification Audit Statement — 2025',
+    category: 'Circulars & Audits',
+    ministry: 'Ministry of Electronics and Information Technology',
+    source: 'UIDAI Documentation (Official Source)',
+    url: 'https://uidai.gov.in',
+    snippet: 'Audits the technical logs, error margins, updates rate, and security verification standards of biometric systems used for Aadhaar.',
+    keywords: ['aadhaar', 'biometric', 'uidai', 'fingerprint', 'enrolment']
+  },
+  {
+    id: 'disc-road',
+    title: 'Jaipur Division Road Construction & Pothole Audit Report',
+    category: 'Municipal Expenditures',
+    ministry: 'Ministry of Road Transport and Highways',
+    source: 'NHAI Project Registry (Official Source)',
+    url: 'https://morth.nic.in',
+    snippet: 'Public safety audit assessing pavement quality, maintenance budgets, contractor details, and repair logs for major division routes.',
+    keywords: ['road', 'construction', 'repair', 'pothole', 'highway', 'street', 'municipality']
+  }
+];
+
+export const mockTemplates: RtiTemplate[] = [
+  {
+    id: 'temp-exam',
+    title: 'Exam Marks & Recruitment Cut-offs Query',
+    category: 'Government Jobs & Exams',
+    description: 'Use this template when requesting your marked sheet, recruitment cut-off metrics, or exam selection delays.',
+    subject: 'Request for recruitment cut-off details and individual marks sheet',
+    questions: [
+      'Provide a copy of the official answer key and marked evaluation sheet for my candidate roll number.',
+      'Specify the category-wise cut-off marks (Gen, OBC, SC, ST) applied for selection in this examination.',
+      'State the total number of vacancies filled and those remaining vacant for each category in this recruitment cycle.',
+      'Provide copies of all internal notifications regarding the scheduling and delay of the final interview list.'
+    ]
+  },
+  {
+    id: 'temp-road',
+    title: 'Road Paving & Maintenance Works',
+    category: 'Municipal Services',
+    description: 'Use this template to request budgets, work orders, safety logs, and contractor agreements for local road repairs.',
+    subject: 'Request for sanctioned work orders and budgets for road maintenance',
+    questions: [
+      'Provide the copy of the approved work order and contractor agreement for the road project.',
+      'State the total funds sanctioned, funds released to date, and amount billed by the contractor for this project.',
+      'Provide the pavement quality check report and safety completion audit certificate issued for this road.',
+      'Specify the official defect liability period during which the contractor is legally liable to repair new damages.'
+    ]
+  },
+  {
+    id: 'temp-police',
+    title: 'Police Complaint & Investigation Progress',
+    category: 'Police & Security Records',
+    description: 'Request formal status logs, file notes, and official reports regarding registered FIRs or police complaints.',
+    subject: 'Request for investigation progress logs and notes for FIR file',
+    questions: [
+      'Provide copies of all daily case diary entries and progress reports recorded for this complaint file.',
+      'Specify the designations and names of the investigating officers assigned to this file from start to date.',
+      'State if any chargesheets or closure reports have been filed before the judicial magistrate. Provide copies if yes.',
+      'Provide copies of all disclosable communication sent to senior divisions regarding this case file.'
+    ]
+  },
+  {
+    id: 'temp-school',
+    title: 'Public School Expenditures & Grants',
+    category: 'Education',
+    description: 'Check how public schools or government colleges allocate funding, construct infrastructures, and employ staff.',
+    subject: 'Request for public fund allocations and structural audits of the school',
+    questions: [
+      'Provide the details of government grants and funding received by this school during the fiscal years.',
+      'Specify the total expenditures incurred on school infrastructure, student mid-day meals, and textbooks.',
+      'Provide the safety certificate and structure audit report issued for the school building.',
+      'Provide the category-wise list of sanctioned teaching and non-teaching posts, along with current vacancy figures.'
+    ]
+  }
+];
+
+export const geographicHierarchy: GeoState[] = [
+  {
+    name: 'Rajasthan',
+    districts: [
+      {
+        name: 'Jodhpur',
+        localBodies: [
+          { name: 'Jodhpur Municipal Corporation (North)', authorityId: 'morth' },
+          { name: 'Jodhpur Municipal Corporation (South)', authorityId: 'morth' },
+          { name: 'Jodhpur Development Authority (JDA)', authorityId: 'morth' }
+        ]
+      },
+      {
+        name: 'Jaipur',
+        localBodies: [
+          { name: 'Jaipur Greater Municipal Corporation', authorityId: 'morth' },
+          { name: 'Jaipur Heritage Municipal Corporation', authorityId: 'morth' },
+          { name: 'Jaipur Development Authority (JDA)', authorityId: 'morth' }
+        ]
+      }
+    ]
+  },
+  {
+    name: 'Maharashtra',
+    districts: [
+      {
+        name: 'Mumbai City',
+        localBodies: [
+          { name: 'Brihanmumbai Municipal Corporation (BMC)', authorityId: 'morth' },
+          { name: 'Mumbai Metropolitan Region Development Authority (MMRDA)', authorityId: 'morth' }
+        ]
+      },
+      {
+        name: 'Pune',
+        localBodies: [
+          { name: 'Pune Municipal Corporation (PMC)', authorityId: 'morth' },
+          { name: 'Pimpri Chinchwad Municipal Corporation (PCMC)', authorityId: 'morth' }
+        ]
+      }
+    ]
+  },
+  {
+    name: 'Delhi',
+    districts: [
+      {
+        name: 'New Delhi',
+        localBodies: [
+          { name: 'New Delhi Municipal Council (NDMC)', authorityId: 'morth' },
+          { name: 'Municipal Corporation of Delhi (MCD)', authorityId: 'morth' }
+        ]
+      }
+    ]
   }
 ];

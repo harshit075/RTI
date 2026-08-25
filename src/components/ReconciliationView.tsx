@@ -312,7 +312,7 @@ export default function ReconciliationView({
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-450 font-bold">{t.status}</span>
-                <span className="font-extrabold text-emerald-600">✓ Registered & Submitted</span>
+                <span className="font-extrabold text-emerald-600">Registered & Submitted</span>
               </div>
             </div>
 

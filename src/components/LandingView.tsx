@@ -5,7 +5,7 @@ import {
   FileText, Search, ShieldCheck, CreditCard, Clock, BellRing, 
   HelpCircle, Sparkles, BookOpen, Scale, ArrowRight, CornerDownRight, RefreshCw, AlertTriangle
 } from 'lucide-react';
-import { FAQ } from '../data/mockData';
+import { FAQ, mockDisclosures } from '../data/mockData';
 
 interface LandingViewProps {
   setActiveView: (view: string) => void;
@@ -25,32 +25,7 @@ export default function LandingView({ setActiveView, language }: LandingViewProp
       .catch(err => console.error('Failed to load FAQs:', err));
   }, []);
 
-  const mockPublicDisclosures = [
-    {
-      keywords: ['railway', 'jaipur', 'station', 'redevelopment', 'tender'],
-      title: 'Jaipur Junction Redevelopment Tender Awards & Phase 1 Execution Plan',
-      authority: 'Indian Railways / Ministry of Railways',
-      date: 'May 2026',
-      url: '#',
-      docType: 'Official Tender Document'
-    },
-    {
-      keywords: ['road', 'rampur', 'alwar', 'budget', 'construction', 'village'],
-      title: 'Rural Road Infrastructure Grants Allocation - Rampur Bypass Segment',
-      authority: 'Ministry of Road Transport and Highways (MoRTH)',
-      date: 'March 2025',
-      url: '#',
-      docType: 'Sanction Order & Expenditure Audit'
-    },
-    {
-      keywords: ['passport', 'delay', 'rules', 'verification', 'police'],
-      title: 'Standard Operating Procedure for Police Verification & Passport Processing Timelines',
-      authority: 'Consular, Passport & Visa (CPV) Division',
-      date: 'January 2026',
-      url: '#',
-      docType: 'Official Administrative Circular'
-    }
-  ];
+
 
   const t = {
     en: {
@@ -149,10 +124,11 @@ export default function LandingView({ setActiveView, language }: LandingViewProp
     const query = searchQuery.toLowerCase();
     
     // Search disclosures
-    const discResults = mockPublicDisclosures.filter(disc => 
+    const discResults = mockDisclosures.filter(disc => 
       disc.keywords.some(kw => query.includes(kw)) ||
       disc.title.toLowerCase().includes(query) ||
-      disc.authority.toLowerCase().includes(query)
+      disc.ministry.toLowerCase().includes(query) ||
+      disc.snippet.toLowerCase().includes(query)
     );
     setDisclosureResults(discResults);
 
@@ -390,36 +366,44 @@ export default function LandingView({ setActiveView, language }: LandingViewProp
 
           {/* Search Results Display */}
           {disclosureResults.length > 0 && (
-            <div className="mt-6 rounded-xl border border-success-green/20 bg-emerald-50/20 p-5 space-y-3 animate-in fade-in duration-200">
+            <div className="mt-6 rounded-2xl border border-blue-200 bg-blue-50/20 p-5 space-y-4 animate-in fade-in duration-200">
               <div className="flex items-start gap-2.5">
-                <span className="text-xl shrink-0 mt-0.5 text-success-green">✓</span>
+                <Sparkles className="h-5 w-5 text-primary-blue shrink-0 mt-0.5" />
                 <div>
-                  <h4 className="font-bold text-sm text-success-green">Information Already Public!</h4>
-                  <p className="text-xs text-text-secondary leading-snug">The government has proactively published records that match your request. You do not need to file a new RTI.</p>
+                  <h4 className="font-extrabold text-sm text-primary-navy">We found something that may answer your question:</h4>
+                  <p className="text-xs text-slate-500 leading-snug mt-0.5">The government has proactively published details related to this topic. Check this before filing to save time.</p>
                 </div>
               </div>
-              <div className="space-y-2 mt-3">
+              <div className="space-y-3">
                 {disclosureResults.map((disc, idx) => (
-                  <div key={idx} className="bg-white rounded-xl p-4 border border-border-slate flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                    <div>
-                      <span className="text-[9px] font-bold uppercase tracking-wider text-success-green bg-emerald-50 px-2 py-0.5 rounded">
-                        {disc.docType}
+                  <div key={idx} className="bg-white rounded-xl p-4 border border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-3xs">
+                    <div className="space-y-1">
+                      <span className="text-[9px] font-extrabold uppercase tracking-wider text-primary-blue bg-blue-50 px-2 py-0.5 rounded">
+                        {disc.category}
                       </span>
-                      <h5 className="font-bold text-slate-800 text-sm mt-1">{disc.title}</h5>
-                      <span className="text-[11px] text-slate-500 font-medium">{disc.authority} • {disc.date}</span>
+                      <h5 className="font-bold text-slate-800 text-sm">{disc.title}</h5>
+                      <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">{disc.snippet}</p>
+                      <span className="text-[10px] text-slate-400 font-bold block">{disc.ministry} • {disc.source}</span>
                     </div>
                     <a
                       href={disc.url}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        alert(`Opening proactive public document: ${disc.title} from official portal.`);
-                      }}
-                      className="bg-success-green hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2 rounded-lg shrink-0 shadow-sm cursor-pointer"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="bg-primary-navy hover:bg-primary-blue text-white font-bold text-xs px-4.5 py-2.5 rounded-xl shrink-0 shadow-sm cursor-pointer whitespace-nowrap text-center w-full sm:w-auto"
                     >
-                      Open official document
+                      View Information
                     </a>
                   </div>
                 ))}
+              </div>
+              <div className="border-t border-slate-250 pt-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 text-xs text-slate-500 leading-snug">
+                <span>Still need more information? You can proceed with drafting a new custom query.</span>
+                <button
+                  onClick={() => setActiveView('onboarding')}
+                  className="rounded-xl border border-primary-blue text-primary-blue hover:bg-primary-blue hover:text-white px-4.5 py-2.5 font-bold transition-all cursor-pointer whitespace-nowrap"
+                >
+                  Continue with RTI
+                </button>
               </div>
             </div>
           )}
