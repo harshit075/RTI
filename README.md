@@ -12,7 +12,7 @@
 [![Digital India](https://img.shields.io/badge/Digital_India-NeGD_Aligned-F59E0B?style=for-the-badge)](https://digitalindia.gov.in)
 [![RTI Act 2005](https://img.shields.io/badge/Statutory_Law-RTI_Act_2005-123B5D?style=for-the-badge)](https://dopt.gov.in)
 
-[Live Demo](#-quick-start--demo) • [Architecture](#-system-architecture) • [Government & Policy](#-for-government-officials--policymakers) • [For Developers](#-for-engineers--developers) • [Product & ROI](#-for-product-managers--sales-leaders) • [Statutory Matrix](#-statutory-compliance-matrix)
+[Live Architecture](#-end-to-end-citizen-journey-flow) • [Comparison Matrix](#-legacy-rti-portals-vs-rti-saathi) • [For Government & Policy](#-tailored-overview-by-stakeholder) • [For Developers](#-for-engineers--developers) • [Statutory Compliance](#-statutory-compliance-matrix)
 
 ---
 
@@ -27,6 +27,20 @@ The **Right to Information (RTI) Act, 2005** stands as the cornerstone of partic
 4. **Appellate Drop-off**: Citizens abandoning valid requests when Public Information Officers (CPIOs) miss the 30-day deadline (*Deemed Refusal under Section 7(2)*).
 
 **RTI Saathi** bridges these systemic gaps by pairing an **AI-Assisted Legal Drafting Copilot** with a **comprehensive 770+ District Geographic Directory**, **Bharatkosh payment simulation**, **30-day statutory timeline monitoring**, and **1-click First Appeal (FAA) & Second Appeal (CIC) escalation**.
+
+---
+
+## ⚡ Legacy RTI Portals vs. RTI Saathi
+
+| Capability / Flow | Traditional RTI Portals | RTI Saathi |
+|---|---|---|
+| **Question Formulation** | Unstructured plain text area (high rejection rate due to "Why" questions) | **Statutory AI Copilot** automatically translates citizen intent into disclosable Section 2(f) material records. |
+| **Department Discovery** | Static 2,000+ alphabetical dropdown list with no search | **Intelligent Authority Matcher** with 36 States/UTs & 770+ Districts geographic search. |
+| **Section 8 Compliance** | Discovered only upon CPIO formal rejection letter (30 days lost) | **Real-Time Pre-Submission Screening** against defense, commercial, and privacy exemptions. |
+| **Payment Failures** | Money deducted with no registration token; requires manual emails | **Integrated Payment Reconciliation Portal** with multi-step bank ledger synchronization. |
+| **Response Analysis** | Citizen receives dense PDF with no guidance on missing records | **Point-by-Point Discrepancy Breakdown** flagging unanswered items with legal appeal grounds. |
+| **First & Second Appeals** | Complex re-entry of entire case history from scratch | **1-Click Pre-Filled Appeal Wizards** for First Appellate Authority (FAA) and CIC under Sec 19(3). |
+| **Accessibility & Inclusion** | English-centric desktop UI; poor mobile responsiveness | **Bilingual (हिंदी / English)**, 120% Text Scaling, Low-Data Mode, and WCAG 2.2 AA compliant. |
 
 ---
 
@@ -76,54 +90,47 @@ The **Right to Information (RTI) Act, 2005** stands as the cornerstone of partic
 
 ---
 
-## 🔄 End-to-End Citizen Journey Architecture
+## 🔄 End-to-End Citizen Journey Flow
 
 ```mermaid
-sequenceDiagram
-    autonumber
-    actor Citizen as 🇮🇳 Citizen
-    participant Portal as 🌐 RTI Saathi UI
-    participant Copilot as 🤖 Statutory AI Engine
-    participant Geo as 🗺️ Geographic Directory
-    participant Gateway as 💳 Bharatkosh Gateway
-    participant CPIO as 🏛️ CPIO / FAA Authority
-    participant CIC as ⚖️ Central Info Commission
+flowchart TD
+    classDef startNode fill:#123B5D,stroke:#0A2540,color:#fff,stroke-width:2px;
+    classDef processNode fill:#ffffff,stroke:#D9E0E6,color:#17212B,stroke-width:1.5px;
+    classDef aiNode fill:#EFF6FF,stroke:#3B82F6,color:#1E3A8A,stroke-width:2px;
+    classDef alertNode fill:#FEF3C7,stroke:#F59E0B,color:#92400E,stroke-width:1.5px;
+    classDef successNode fill:#ECFDF5,stroke:#10B981,color:#065F46,stroke-width:2px;
 
-    Citizen->>Portal: Enters information need in plain language
-    Portal->>Geo: Matches Central / State / District Jurisdiction (770+ Districts)
-    Portal->>Copilot: Analyzes query specificity, timeframe & Section 8 exemptions
-    Copilot-->>Portal: Returns 5 material-record questions (Sec 2(f)) + Health Score
-    Citizen->>Portal: Reviews draft & confirms applicant details
-    Citizen->>Gateway: Submits ₹10 fee (or 100% BPL Waiver under Sec 7(5))
-    Gateway-->>Portal: Generates unique registration ID (RTI-2026-XXXXX)
-    Portal->>Portal: Starts 30-Day Statutory Countdown Clock (Sec 7(1))
+    A[🇮🇳 Citizen Enters Need in Plain Language]:::startNode --> B[🗺️ 770+ District Authority Finder]:::processNode
+    B --> C[🤖 AI Copilot Drafts 5 Section 2-f Questions]:::aiNode
+    C --> D[🛡️ Section 8 Exemption Screening & Scorecard]:::aiNode
+    D --> E[💳 Bharatkosh ₹10 Payment / BPL Fee Waiver]:::processNode
+    E --> F[📋 Confirmed Registration RTI-2026-XXXXX]:::successNode
     
-    alt CPIO Delivers Partial Response
-        CPIO-->>Portal: Response letter uploaded
-        Portal->>Copilot: Performs question-by-question response breakdown
-        Copilot-->>Citizen: Flags Question 5 as missing without Sec 8 justification
-        Citizen->>Portal: Clicks "File First Appeal"
-        Portal->>CPIO: Submits pre-filled First Appeal to FAA (Sec 19(1))
-    else 30 Days Elapse with No Response
-        Portal->>Citizen: Flags status as "Deemed Refusal" (Sec 7(2))
-        Citizen->>Portal: Launches immediate free First Appeal
-    end
-
-    alt FAA Rejects or Ignores Appeal
-        Citizen->>Portal: Escalates to Central Information Commission (Sec 19(3))
-        Portal->>CIC: Pre-fills 2nd Appeal dossier with full case history
-    end
+    F --> G[⏱️ 30-Day Statutory Countdown Clock Sec 7-1]:::processNode
+    
+    G --> H{CPIO Response Status}:::alertNode
+    
+    H -->|Partial / Withheld Records| I[🔍 Question-by-Question AI Analysis]:::aiNode
+    H -->|30 Days Expired Without Response| J[⚠️ Deemed Refusal Triggered Sec 7-2]:::alertNode
+    H -->|Complete Records Delivered| K[🎉 Case Resolved & Vault Storage]:::successNode
+    
+    I --> L[⚖️ 1-Click First Appeal to FAA Sec 19-1]:::startNode
+    J --> L
+    
+    L --> M{FAA Appellate Decision}:::alertNode
+    M -->|Relief Granted| K
+    M -->|Appeal Rejected / Ignored| N[🏛️ Second Appeal to Central Info Commission Sec 19-3]:::startNode
 ```
 
 ---
 
 ## 🏗️ System Architecture & Services Layer
 
-RTI Saathi employs a decoupled, modular domain-driven architecture:
+RTI Saathi is organized into clean, decoupled domain boundaries:
 
 ```
 src/
-├── app/                             # Next.js 16 App Router & API Endpoints
+├── app/                             # Next.js 16 App Router & REST Endpoints
 │   ├── api/
 │   │   ├── authorities/route.ts     # Public authorities & CPIO/FAA lookup
 │   │   ├── faqs/route.ts            # Categorized citizen statutory knowledge base
@@ -131,7 +138,7 @@ src/
 │   │   └── rtis/[id]/route.ts       # Single RTI lookup (GET) & Patch updates (PATCH)
 │   ├── globals.css                  # Government design tokens & 65s marquee keyframes
 │   ├── layout.tsx                   # Metadata, SEO tags & font hierarchy
-│   └── page.tsx                     # Top-level state coordinator & view switch
+│   └── page.tsx                     # Central application state coordinator
 ├── components/                      # High-Performance UI Components
 │   ├── Navbar.tsx                   # Top header with DEMO badge, language & preferences
 │   ├── NoticeBar.tsx                # Continuous running marquee ticker (65s loop)
@@ -145,7 +152,7 @@ src/
 │   ├── HelpView.tsx                 # Interactive 5-step guide, FAQ tabs & ticket desk
 │   ├── ProfileView.tsx              # Citizen settings & Central Certified Document Vault
 │   ├── ContextualHelp.tsx           # Floating help button & plain-language legal glossary
-│   └── Footer.tsx                   # 4-column statutory footer with deep linking
+│   └── Footer.tsx                   # 5-column statutory footer with high-contrast palette
 └── services/                        # Business Logic & Data Abstractions
     ├── types.ts                     # Universal TypeScript interfaces & models
     ├── seedData.ts                  # Production-realistic seed records
@@ -271,7 +278,8 @@ RTI Saathi adheres to the **Guidelines for Indian Government Websites (GIGW 3.0)
 
 ## 📢 Practice & Demonstration Notice
 
-> **Demonstration Environment Notice:** RTI Saathi is an educational and demonstration portal created to showcase modern, AI-assisted citizen service architecture under the RTI Act, 2005. In this environment, all application filing workflows, fee transactions, and CPIO responses are simulated for training, practice, and evaluation; no real banking charges are incurred and no actual government records are requested.
+> [!NOTE]
+> **Demonstration Environment Notice:** RTI Saathi is an educational and civic practice gateway built in compliance with statutory RTI Act 2005 workflows. In this demonstration environment, all filing and payment steps are simulated for training and public awareness with zero real banking charges.
 
 ---
 
