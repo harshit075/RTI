@@ -1,49 +1,29 @@
-export interface Authority {
-  id: string;
-  name: string;
-  department: string;
-  ministry: string;
-  level: 'Central' | 'State';
-  cpioName: string;
-  cpioDesignation: string;
-  cpioAddress: string;
-  faaName: string;
-  faaDesignation: string;
-  faaAddress: string;
-  website: string;
-  description: string;
+const fs = require('fs');
+const path = require('path');
+const { Pool } = require('@neondatabase/serverless');
+
+// Load environment variables from .env.local manually
+const envPath = path.join(__dirname, '..', '..', '.env.local');
+let databaseUrl = '';
+
+if (fs.existsSync(envPath)) {
+  const envContent = fs.readFileSync(envPath, 'utf8');
+  const match = envContent.match(/DATABASE_URL=["']?([^"'\r\n]+)["']?/);
+  if (match) {
+    databaseUrl = match[1];
+  }
 }
 
-export interface FAQ {
-  id: string;
-  question: string;
-  answer: string;
-  category: 'Basics' | 'Fees' | 'Process' | 'Appeals' | 'Exemptions';
-  citation: string;
+if (!databaseUrl) {
+  console.error('Error: DATABASE_URL not found in .env.local');
+  process.exit(1);
 }
 
-export interface RTIApplication {
-  id: string;
-  title: string;
-  authorityId: string;
-  subject: string;
-  questions: string[];
-  submittedDate: string;
-  expectedDate: string;
-  status: 'Draft' | 'Processing' | 'Submitted' | 'Response Pending' | 'Response Received' | 'First Appeal Filed' | 'FAA Decision Received';
-  paymentId?: string;
-  paymentStatus: 'Pending' | 'Success' | 'Failed';
-  registrationNumber?: string;
-  responseDocumentUrl?: string;
-  responseDate?: string;
-  responseSummary?: string;
-  answeredCount: number;
-  totalQuestions: number;
-  appealReason?: string;
-  appealDate?: string;
-}
+const pool = new Pool({
+  connectionString: databaseUrl,
+});
 
-export const mockAuthorities: Authority[] = [
+const mockAuthorities = [
   {
     id: 'uidai',
     name: 'Unique Identification Authority of India (UIDAI)',
@@ -136,7 +116,7 @@ export const mockAuthorities: Authority[] = [
   }
 ];
 
-export const mockFAQs: FAQ[] = [
+const mockFAQs = [
   {
     id: 'faq-1',
     question: 'Who is eligible to file an RTI?',
@@ -147,7 +127,7 @@ export const mockFAQs: FAQ[] = [
   {
     id: 'faq-2',
     question: 'What is the application fee for filing an RTI?',
-    answer: 'For Central Government departments, the fee is ₹10. For Below Poverty Line (BPL) citizens, the fee is completely waived, provided they upload a copy of their BPL card/certificate.',
+    answer: 'For Central Government departments, the fee is ₹10. For Below Poverty Line (BPL) citizens, the fee is completely waived, provided they upload a copy of your BPL card/certificate.',
     category: 'Fees',
     citation: 'RTI Rules 2012, Rule 3 & 4'
   },
@@ -188,7 +168,7 @@ export const mockFAQs: FAQ[] = [
   }
 ];
 
-export const initialRTIs: RTIApplication[] = [
+const initialRTIs = [
   {
     id: 'rti-passport-101',
     title: 'Passport Delay Inquiry',
@@ -230,3 +210,116 @@ export const initialRTIs: RTIApplication[] = [
     totalQuestions: 3
   }
 ];
+
+async function seed() {
+  try {
+    console.log('Seeding database tables...');
+    
+    // Create Authorities table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS authorities (
+        id TEXT PRIMARY KEY,
+        name TEXT,
+        department TEXT,
+        ministry TEXT,
+        level TEXT,
+        cpio_name TEXT,
+        cpio_designation TEXT,
+        cpio_address TEXT,
+        faa_name TEXT,
+        faa_designation TEXT,
+        faa_address TEXT,
+        website TEXT,
+        description TEXT
+      );
+    `);
+    console.log('Created table authorities.');
+
+    // Create FAQs table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS faqs (
+        id TEXT PRIMARY KEY,
+        question TEXT,
+        answer TEXT,
+        category TEXT,
+        citation TEXT
+      );
+    `);
+    console.log('Created table faqs.');
+
+    // Create RTIs table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS rtis (
+        id TEXT PRIMARY KEY,
+        title TEXT,
+        authority_id TEXT,
+        subject TEXT,
+        questions TEXT[],
+        submitted_date TEXT,
+        expected_date TEXT,
+        status TEXT,
+        payment_id TEXT,
+        payment_status TEXT,
+        registration_number TEXT,
+        response_document_url TEXT,
+        response_date TEXT,
+        response_summary TEXT,
+        answered_count INTEGER,
+        total_questions INTEGER,
+        appeal_reason TEXT,
+        appeal_date TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+    console.log('Created table rtis.');
+
+    // Clear old tables
+    await pool.query('TRUNCATE authorities, faqs, rtis CASCADE;');
+    console.log('Truncated existing tables.');
+
+    // Seed Authorities
+    for (const auth of mockAuthorities) {
+      await pool.query(`
+        INSERT INTO authorities (id, name, department, ministry, level, cpio_name, cpio_designation, cpio_address, faa_name, faa_designation, faa_address, website, description)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+      `, [
+        auth.id, auth.name, auth.department, auth.ministry, auth.level,
+        auth.cpioName, auth.cpioDesignation, auth.cpioAddress,
+        auth.faaName, auth.faaDesignation, auth.faaAddress,
+        auth.website, auth.description
+      ]);
+    }
+    console.log(`Seeded ${mockAuthorities.length} authorities.`);
+
+    // Seed FAQs
+    for (const faq of mockFAQs) {
+      await pool.query(`
+        INSERT INTO faqs (id, question, answer, category, citation)
+        VALUES ($1, $2, $3, $4, $5)
+      `, [faq.id, faq.question, faq.answer, faq.category, faq.citation]);
+    }
+    console.log(`Seeded ${mockFAQs.length} FAQs.`);
+
+    // Seed RTIs
+    for (const rti of initialRTIs) {
+      await pool.query(`
+        INSERT INTO rtis (id, title, authority_id, subject, questions, submitted_date, expected_date, status, payment_status, registration_number, response_document_url, response_date, response_summary, answered_count, total_questions)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+      `, [
+        rti.id, rti.title, rti.authorityId, rti.subject, rti.questions,
+        rti.submittedDate, rti.expectedDate, rti.status, rti.paymentStatus,
+        rti.registrationNumber, rti.responseDocumentUrl, rti.responseDate,
+        rti.responseSummary, rti.answeredCount, rti.totalQuestions
+      ]);
+    }
+    console.log(`Seeded ${initialRTIs.length} initial RTIs.`);
+
+    console.log('Database seeding completed successfully!');
+  } catch (error) {
+    console.error('Error seeding database:', error);
+  } finally {
+    await pool.end();
+  }
+}
+
+seed();

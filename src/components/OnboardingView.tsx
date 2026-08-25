@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Sparkles, HelpCircle, CheckCircle, AlertTriangle, ArrowRight, CornerDownRight, Landmark } from 'lucide-react';
-import { mockAuthorities, Authority } from '../data/mockData';
+import { Sparkles, HelpCircle, CheckCircle, AlertTriangle, ArrowRight, CornerDownRight, Landmark, Search } from 'lucide-react';
+import { Authority } from '../data/mockData';
 
 interface OnboardingViewProps {
   setActiveView: (view: string) => void;
@@ -15,6 +15,14 @@ export default function OnboardingView({ setActiveView, setDraftRti, language }:
   const [rawText, setRawText] = useState('');
   const [analyzing, setAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<any>(null);
+  const [authorities, setAuthorities] = useState<Authority[]>([]);
+
+  React.useEffect(() => {
+    fetch('/api/authorities')
+      .then(res => res.json())
+      .then(data => setAuthorities(data))
+      .catch(err => console.error('Failed to load authorities:', err));
+  }, []);
 
   const topics = [
     { id: 'passport', label: 'Passport Delay / Grievance', authorityId: 'passport' },
@@ -96,35 +104,59 @@ export default function OnboardingView({ setActiveView, setDraftRti, language }:
       // 4. Central vs State routing check
       let isStateDept = false;
       let routingWarning = null;
-      if (lowerText.includes('school') && (lowerText.includes('rajasthan') || lowerText.includes('state') || lowerText.includes('local'))) {
-        isStateDept = true;
-        routingWarning = 'This request concerns a local village school in Rajasthan, which falls under the State Government of Rajasthan. The Central RTI Online portal cannot process state-level applications. We recommend submitting this to the Rajasthan state RTI department.';
-      } else if (lowerText.includes('panchayat') || lowerText.includes('municipal') || lowerText.includes('state road') || lowerText.includes('rajasthan')) {
-        isStateDept = true;
-        routingWarning = 'This request concerns state/local government records, which fall under the State Government jurisdiction. The Central RTI Online portal cannot process state-level applications. We recommend submitting this to the state RTI department.';
+      let statePortalUrl = 'https://rtionline.gov.in'; // fallback
+      let stateName = 'the State Government';
+
+      const stateKeywords = [
+        { name: 'Delhi NCT', keywords: ['delhi', 'nct', 'mcd', 'dda', 'delhi jal board'], portal: 'https://rtionline.delhi.gov.in/' },
+        { name: 'Uttar Pradesh', keywords: ['uttar pradesh', 'up ', 'lucknow', 'up police', 'noida authority', 'kanpur'], portal: 'https://rtionline.up.gov.in/' },
+        { name: 'Maharashtra', keywords: ['maharashtra', 'mumbai', 'bmc', 'pune', 'mahaonline', 'thane'], portal: 'https://rtionline.maharashtra.gov.in/' },
+        { name: 'Karnataka', keywords: ['karnataka', 'bangalore', 'bengaluru', 'bbmp', 'ksp', 'mysore'], portal: 'https://rtionline.karnataka.gov.in/' },
+        { name: 'Rajasthan', keywords: ['rajasthan', 'jaipur', 'ajmer', 'sso rajasthan', 'gram panchayat', 'jodhpur'], portal: 'https://sso.rajasthan.gov.in/' }
+      ];
+
+      const localKeywords = ['panchayat', 'municipal', 'corporation', 'municipality', 'tahsildar', 'collectorate', 'state road', 'rto', 'state board', 'village road', 'police station', 'water board', 'local school', 'state university'];
+
+      const matchesState = stateKeywords.find(item => 
+        item.keywords.some(kw => lowerText.includes(kw))
+      );
+
+      const hasLocalTerm = localKeywords.some(kw => lowerText.includes(kw));
+
+      if (matchesState || hasLocalTerm) {
+        // Special Legal Edge Case: Delhi Police reports to the Central MHA (Ministry of Home Affairs), not State.
+        const isDelhiPoliceEdgeCase = lowerText.includes('delhi police') || lowerText.includes('delhi traffic police');
+        
+        if (!isDelhiPoliceEdgeCase) {
+          isStateDept = true;
+          stateName = matchesState ? matchesState.name : 'State Government';
+          statePortalUrl = matchesState ? matchesState.portal : 'https://rtionline.gov.in';
+          
+          routingWarning = `This request references state or local jurisdiction items (${stateName}). Filing state/local authorities through the Central RTI Online portal will result in rejection with NO REFUND. We recommend filing directly through the official ${stateName} RTI portal.`;
+        }
       }
 
       // 5. Find suitable authority
-      let suggestedAuth: Authority = mockAuthorities[0]; // default
+      let suggestedAuth = authorities[0] || {} as Authority; // default
       let matchWhy = 'This public authority regulates and manages records matching your inquiry categories.';
       
       if (lowerText.includes('passport')) {
-        suggestedAuth = mockAuthorities.find(a => a.id === 'passport')!;
+        suggestedAuth = authorities.find(a => a.id === 'passport') || suggestedAuth;
         matchWhy = 'Your request concerns delays in passport processing and status checks, which are handled by the CPV Division.';
       } else if (lowerText.includes('aadhaar') || lowerText.includes('uidai') || lowerText.includes('biometric')) {
-        suggestedAuth = mockAuthorities.find(a => a.id === 'uidai')!;
+        suggestedAuth = authorities.find(a => a.id === 'uidai') || suggestedAuth;
         matchWhy = 'Your request concerns Aadhaar correction requests and status updates, managed by UIDAI.';
       } else if (lowerText.includes('railway') || lowerText.includes('train') || lowerText.includes('station')) {
-        suggestedAuth = mockAuthorities.find(a => a.id === 'railways')!;
+        suggestedAuth = authorities.find(a => a.id === 'railways') || suggestedAuth;
         matchWhy = 'Your request concerns railway station tender awards and project files, managed by the Railway Board.';
       } else if (lowerText.includes('epf') || lowerText.includes('provident') || lowerText.includes('pf')) {
-        suggestedAuth = mockAuthorities.find(a => a.id === 'epfo')!;
+        suggestedAuth = authorities.find(a => a.id === 'epfo') || suggestedAuth;
         matchWhy = 'Your request concerns transfer of EPF balance and claim processing, managed by the EPFO.';
       } else if (lowerText.includes('road') || lowerText.includes('highway') || lowerText.includes('construction') || lowerText.includes('contractor') || lowerText.includes('road')) {
-        suggestedAuth = mockAuthorities.find(a => a.id === 'morth')!;
+        suggestedAuth = authorities.find(a => a.id === 'morth') || suggestedAuth;
         matchWhy = 'Your request concerns road construction and highway project expenditures, managed by the NHAI / MoRTH.';
       } else if (lowerText.includes('education') || lowerText.includes('college') || lowerText.includes('school') || lowerText.includes('ugc') || lowerText.includes('university')) {
-        suggestedAuth = mockAuthorities.find(a => a.id === 'ugc')!;
+        suggestedAuth = authorities.find(a => a.id === 'ugc') || suggestedAuth;
         matchWhy = 'Your request concerns university grants, college recognition, or higher education project files, managed by UGC.';
       }
 
@@ -135,6 +167,8 @@ export default function OnboardingView({ setActiveView, setDraftRti, language }:
         location,
         isStateDept,
         routingWarning,
+        stateName,
+        statePortalUrl,
         suggestedAuth,
         matchWhy,
         isIndicInput,
@@ -186,20 +220,20 @@ export default function OnboardingView({ setActiveView, setDraftRti, language }:
       </div>
 
       {/* Central-only Scope Warning */}
-      <div className="rounded-2xl border border-red-200 bg-red-50 text-red-805 p-4.5 mb-6 text-xs flex gap-3 items-start leading-relaxed">
-        <AlertTriangle className="h-5.5 w-5.5 text-red-600 shrink-0 mt-0.5" />
+      <div className="rounded-2xl border border-[#E5E2D9] bg-[#FAF9F5] text-slate-700 p-4.5 mb-6 text-xs flex gap-3 items-start leading-relaxed shadow-2xs">
+        <AlertTriangle className="h-5.5 w-5.5 text-[#B94A48] shrink-0 mt-0.5" />
         <div>
-          <span className="font-extrabold block text-sm uppercase text-red-900 mb-0.5">⚠️ Central Government Ministries Scope Only</span>
+          <span className="font-extrabold block text-sm uppercase text-[#B94A48] mb-0.5">Central Government Ministries Scope Only</span>
           RTI Online portal is ONLY for filing requests with **Central Government Ministries, Departments, and Public Authorities**. 
-          State Government authorities (e.g. Uttar Pradesh, Maharashtra, Karnataka, Delhi NCT) cannot be filed here. State applications will be returned with <span className="font-extrabold text-red-950">NO REFUND</span>. 
+          State Government authorities (e.g. Uttar Pradesh, Maharashtra, Karnataka, Delhi NCT) cannot be filed here. State applications will be returned with <span className="font-extrabold text-[#B94A48]">NO REFUND</span>. 
           <div className="mt-2.5">
             <a 
-              href="https://rtionline.gov.in/request/authorityList.php" 
+              href="https://rtionline.gov.in/request/allpa.php" 
               target="_blank" 
               rel="noopener noreferrer" 
-              className="text-primary-navy font-extrabold hover:underline mr-4 inline-flex items-center gap-1 bg-white/60 px-2 py-1 rounded border border-red-200"
+              className="text-[#123B5D] font-extrabold hover:underline mr-4 inline-flex items-center gap-1.5 bg-white/70 px-2.5 py-1.5 rounded-lg border border-[#E5E2D9] shadow-2xs"
             >
-              🔍 View Registered 2000+ Public Authorities List ↗
+              <Search className="h-3 w-3" /> View Registered 2000+ Public Authorities List ↗
             </a>
           </div>
         </div>
@@ -276,7 +310,6 @@ export default function OnboardingView({ setActiveView, setDraftRti, language }:
           {analysisResult.isIndicInput && (
             <div className="rounded-2xl border border-amber-250 bg-amber-50/20 text-amber-900 p-5 shadow-2xs">
               <div className="flex items-start gap-3">
-                <span className="text-xl shrink-0">🇮🇳</span>
                 <div>
                   <h4 className="font-bold text-sm text-amber-800">Indic Language Assistant (Hinglish/Hindi detected)</h4>
                   <p className="text-xs mt-1 leading-relaxed opacity-95">We formalized your request for optimal legal clarity:</p>
@@ -317,10 +350,10 @@ export default function OnboardingView({ setActiveView, setDraftRti, language }:
               <div className="flex items-start gap-3">
                 <AlertTriangle className="h-5.5 w-5.5 text-red-650 shrink-0 mt-0.5 animate-bounce" />
                 <div>
-                  <h4 className="font-bold text-sm">State Jurisdiction Detected</h4>
+                  <h4 className="font-bold text-sm">State Jurisdiction Detected ({analysisResult.stateName})</h4>
                   <p className="text-xs mt-1 leading-relaxed opacity-90">{analysisResult.routingWarning}</p>
                   <a 
-                    href="https://sso.rajasthan.gov.in" 
+                    href={analysisResult.statePortalUrl} 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="inline-block mt-3 bg-red-650 hover:bg-red-750 text-white font-bold text-[11px] px-3.5 py-1.5 rounded-lg shadow-sm"

@@ -13,8 +13,6 @@ interface ProfileViewProps {
   textSize: 'normal' | 'large';
   setTextSize: (val: 'normal' | 'large') => void;
   setLanguage: (lang: 'en' | 'hi') => void;
-  theme: 'light' | 'dark';
-  toggleTheme: (theme: 'light' | 'dark') => void;
 }
 
 export default function ProfileView({
@@ -23,9 +21,7 @@ export default function ProfileView({
   setLowBandwidth,
   textSize,
   setTextSize,
-  setLanguage,
-  theme,
-  toggleTheme
+  setLanguage
 }: ProfileViewProps) {
   const [notifyAppUpdates, setNotifyAppUpdates] = useState(true);
   const [notifyReplies, setNotifyReplies] = useState(true);
@@ -236,34 +232,7 @@ export default function ProfileView({
                   </div>
                 </div>
 
-                {/* Theme Selection */}
-                <div>
-                  <span className="text-slate-450 font-bold block text-[9.5px] uppercase mb-1">Theme / Appearance</span>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => toggleTheme('light')}
-                      className={`flex-1 rounded-lg border py-2 text-xs font-bold transition-colors cursor-pointer flex items-center justify-center gap-1.5 ${
-                        theme === 'light' 
-                          ? 'border-primary-blue bg-blue-50 text-primary-blue font-extrabold' 
-                          : 'border-slate-200 text-slate-650 hover:bg-slate-50 dark:border-slate-800'
-                      }`}
-                    >
-                      <Sun className="h-3.5 w-3.5" />
-                      Light Theme
-                    </button>
-                    <button
-                      onClick={() => toggleTheme('dark')}
-                      className={`flex-1 rounded-lg border py-2 text-xs font-bold transition-colors cursor-pointer flex items-center justify-center gap-1.5 ${
-                        theme === 'dark' 
-                          ? 'border-primary-blue bg-blue-50 text-primary-blue font-extrabold' 
-                          : 'border-slate-200 text-slate-650 hover:bg-slate-50 dark:border-slate-800'
-                      }`}
-                    >
-                      <Moon className="h-3.5 w-3.5" />
-                      Dark Theme
-                    </button>
-                  </div>
-                </div>
+
 
                 {/* Low Bandwidth */}
                 <div className="border-t border-slate-100 pt-3">

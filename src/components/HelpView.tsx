@@ -5,7 +5,7 @@ import {
   HelpCircle, Search, Sparkles, Send, Inbox, AlertCircle, 
   MessageSquare, Compass, ShieldQuestion, Landmark
 } from 'lucide-react';
-import { mockFAQs, FAQ } from '../data/mockData';
+import { FAQ } from '../data/mockData';
 
 interface HelpViewProps {
   language: 'en' | 'hi';
@@ -38,10 +38,18 @@ export default function HelpView({ language }: HelpViewProps) {
     }
   ]);
   const [submittedTicketId, setSubmittedTicketId] = useState('');
+  const [faqs, setFaqs] = useState<FAQ[]>([]);
+
+  React.useEffect(() => {
+    fetch('/api/faqs')
+      .then(res => res.json())
+      .then(data => setFaqs(data))
+      .catch(err => console.error('Failed to load FAQs:', err));
+  }, []);
 
   const categories = ['All', 'Basics', 'Fees', 'Process', 'Appeals', 'Exemptions'];
 
-  const filteredFAQs = mockFAQs.filter(faq => {
+  const filteredFAQs = faqs.filter(faq => {
     return activeCategory === 'All' || faq.category === activeCategory;
   });
 
@@ -177,6 +185,30 @@ export default function HelpView({ language }: HelpViewProps) {
               </div>
             </div>
 
+            {/* Official support desk contact info */}
+            <div className="rounded-2xl border border-slate-800 bg-slate-950 text-white p-5 shadow-sm">
+              <h3 className="font-extrabold text-sm border-b border-slate-850 pb-3 mb-3">
+                Official Help Desk (DoPT)
+              </h3>
+              <p className="text-[11px] text-slate-400 leading-relaxed mb-4">
+                For technical issues, payment sync issues, or enquiries on the official government portals, contact the Central Helpline:
+              </p>
+              <div className="space-y-2 text-[11px]">
+                <div className="flex justify-between border-b border-slate-850 pb-2">
+                  <span className="text-slate-400">Helpline Phone</span>
+                  <span className="font-extrabold text-slate-200 font-mono">011-24622461</span>
+                </div>
+                <div className="flex justify-between border-b border-slate-850 pb-2">
+                  <span className="text-slate-400">Working Hours</span>
+                  <span className="font-semibold text-slate-200">9:00 AM – 5:30 PM (Mon-Fri)</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-400">Support Email</span>
+                  <span className="font-extrabold text-secondary-saffron font-mono">rtionline-dopt@nic.in</span>
+                </div>
+              </div>
+            </div>
+
             {/* Support Ticket Submission */}
             <div className="rounded-2xl border border-slate-205 bg-white p-5 shadow-sm dark:bg-slate-900 dark:border-slate-850">
               <h3 className="font-extrabold text-sm text-primary-navy border-b border-slate-100 pb-3 mb-3 dark:text-white flex items-center gap-1.5">
@@ -256,10 +288,10 @@ export default function HelpView({ language }: HelpViewProps) {
                       </span>
                     </div>
                     <p className="font-semibold text-slate-700 mt-1 leading-snug">{tkt.issue}</p>
-                    <p className="text-slate-500 mt-1 line-clamp-2 italic">{tkt.details}</p>
+                    <p className="text-slate-600 mt-1 line-clamp-2 italic">{tkt.details}</p>
                     
                     {tkt.reply && (
-                      <div className="mt-2 bg-white border border-slate-200 p-2 rounded-lg text-[10.5px] text-slate-600 leading-snug">
+                      <div className="mt-2 bg-white border border-slate-200 p-2 rounded-lg text-[10.5px] text-slate-700 leading-snug">
                         <span className="font-bold text-primary-navy block mb-0.5">Admin Response:</span>
                         {tkt.reply}
                       </div>

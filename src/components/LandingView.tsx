@@ -3,9 +3,9 @@
 import React, { useState } from 'react';
 import { 
   FileText, Search, ShieldCheck, CreditCard, Clock, BellRing, 
-  HelpCircle, Sparkles, BookOpen, Scale, ArrowRight, CornerDownRight, RefreshCw 
+  HelpCircle, Sparkles, BookOpen, Scale, ArrowRight, CornerDownRight, RefreshCw, AlertTriangle
 } from 'lucide-react';
-import { mockFAQs, FAQ } from '../data/mockData';
+import { FAQ } from '../data/mockData';
 
 interface LandingViewProps {
   setActiveView: (view: string) => void;
@@ -16,6 +16,14 @@ export default function LandingView({ setActiveView, language }: LandingViewProp
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<FAQ[]>([]);
   const [disclosureResults, setDisclosureResults] = useState<any[]>([]);
+  const [faqs, setFaqs] = useState<FAQ[]>([]);
+
+  React.useEffect(() => {
+    fetch('/api/faqs')
+      .then(res => res.json())
+      .then(data => setFaqs(data))
+      .catch(err => console.error('Failed to load FAQs:', err));
+  }, []);
 
   const mockPublicDisclosures = [
     {
@@ -149,7 +157,7 @@ export default function LandingView({ setActiveView, language }: LandingViewProp
     setDisclosureResults(discResults);
 
     // Search FAQs
-    const results = mockFAQs.filter(faq => 
+    const results = faqs.filter(faq => 
       faq.question.toLowerCase().includes(query) || 
       faq.answer.toLowerCase().includes(query) || 
       faq.category.toLowerCase().includes(query)
@@ -196,6 +204,38 @@ export default function LandingView({ setActiveView, language }: LandingViewProp
               className="w-full sm:w-auto inline-flex items-center justify-center rounded-xl bg-blue-50/80 border border-blue-200 text-secondary-saffron px-6 py-4 text-sm font-bold hover:bg-blue-100/50 transition-all focus-ring cursor-pointer"
             >
               {t.ctaNotSure}
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Central Government Scope Warning Banner */}
+      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 -mt-6 mb-8 animate-in fade-in duration-300">
+        <div className="rounded-2xl border border-[#E5E2D9] bg-[#FAF9F5] p-5 text-xs text-slate-700 leading-relaxed flex flex-col md:flex-row items-center justify-between gap-4 shadow-2xs">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="h-5 w-5 text-[#B94A48] shrink-0 mt-0.5" />
+            <div>
+              <span className="font-extrabold text-xs block uppercase tracking-wider text-[#B94A48]">
+                CRITICAL COMPLIANCE NOTICE: CENTRAL GOVERNMENT ONLY
+              </span>
+              This portal is strictly for filing requests with **Central Government Ministries, Departments, and Central Public Authorities** (such as Railways, UIDAI, EPFO, Passport Office, Income Tax). 
+              State Government authorities (e.g. Uttar Pradesh, Maharashtra, Karnataka, Delhi NCT, local municipalities, state police) **cannot** be filed here. Submitting state-level applications will result in rejection with <span className="font-extrabold text-[#B94A48]">NO REFUND</span>.
+            </div>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-2 shrink-0 w-full md:w-auto">
+            <a 
+              href="https://rtionline.gov.in/request/allpa.php" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="bg-[#123B5D] hover:bg-[#1e5885] text-white text-center font-bold px-4 py-2.5 rounded-xl text-[10.5px] shadow-sm transition-colors cursor-pointer flex items-center justify-center gap-1.5"
+            >
+              <Search className="h-3.5 w-3.5 text-white" /> Public Authorities List (2,000+) ↗
+            </a>
+            <button
+              onClick={() => setActiveView('authorities')}
+              className="bg-white hover:bg-red-50/20 border border-[#B94A48] text-[#B94A48] text-center font-bold px-4 py-2.5 rounded-xl text-[10.5px] shadow-sm transition-colors cursor-pointer"
+            >
+              Explore Database
             </button>
           </div>
         </div>
@@ -308,9 +348,7 @@ export default function LandingView({ setActiveView, language }: LandingViewProp
 
           {/* Action 6: Reconcile Payment */}
           <div 
-            onClick={() => {
-              alert("Payment Reconciliation: If fee was deducted from your bank but your RTI status is showing pending, enter transaction details or contact rtionline-dopt@nic.in. Statuses sync with NIC within 24 hours. (Official Helpline: 011-24622461)");
-            }}
+            onClick={() => setActiveView('reconciliation')}
             className="group rounded-2xl bg-white border border-slate-200 p-6 hover:shadow-md hover:border-slate-350 hover:-translate-y-0.5 transition-all cursor-pointer dark:bg-slate-900 dark:border-slate-850"
           >
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-50 text-emerald-500 group-hover:bg-emerald-500 group-hover:text-white transition-colors mb-4 animate-pulse">
@@ -428,48 +466,98 @@ export default function LandingView({ setActiveView, language }: LandingViewProp
           <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-8 relative z-10">
             
             {/* Step 1 */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm dark:bg-slate-900 dark:border-slate-800">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-navy text-white text-sm font-bold mb-4 shadow">
-                01
+            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm dark:bg-slate-900 dark:border-slate-800 flex flex-col justify-between h-full">
+              <div>
+                <div className="flex justify-between items-center mb-4">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-navy text-white text-sm font-bold shadow">
+                    01
+                  </div>
+                  <span className="text-[9px] font-bold bg-blue-50 text-primary-blue px-2 py-0.5 rounded">
+                    Sec 6(1)
+                  </span>
+                </div>
+                <h4 className="font-bold text-slate-900 text-sm dark:text-white">{t.step1}</h4>
+                <p className="text-xs text-slate-500 mt-2 leading-relaxed dark:text-slate-400">{t.step1Desc}</p>
               </div>
-              <h4 className="font-bold text-slate-900 text-sm dark:text-white">{t.step1}</h4>
-              <p className="text-xs text-slate-500 mt-2 leading-relaxed dark:text-slate-400">{t.step1Desc}</p>
+              <div className="text-[10px] font-bold text-slate-400 mt-4 pt-2 border-t border-slate-100 dark:border-slate-800">
+                Action: Draft & File
+              </div>
             </div>
 
             {/* Step 2 */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm dark:bg-slate-900 dark:border-slate-800">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-navy text-white text-sm font-bold mb-4 shadow">
-                02
+            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm dark:bg-slate-900 dark:border-slate-800 flex flex-col justify-between h-full">
+              <div>
+                <div className="flex justify-between items-center mb-4">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-navy text-white text-sm font-bold shadow">
+                    02
+                  </div>
+                  <span className="text-[9px] font-bold bg-amber-50 text-amber-600 px-2 py-0.5 rounded">
+                    Sec 7(1)
+                  </span>
+                </div>
+                <h4 className="font-bold text-slate-900 text-sm dark:text-white">{t.step2}</h4>
+                <p className="text-xs text-slate-500 mt-2 leading-relaxed dark:text-slate-400">{t.step2Desc}</p>
               </div>
-              <h4 className="font-bold text-slate-900 text-sm dark:text-white">{t.step2}</h4>
-              <p className="text-xs text-slate-500 mt-2 leading-relaxed dark:text-slate-400">{t.step2Desc}</p>
+              <div className="text-[10px] font-bold text-amber-600 mt-4 pt-2 border-t border-slate-100 dark:border-slate-800">
+                Limit: 30 Days
+              </div>
             </div>
 
             {/* Step 3 */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm dark:bg-slate-900 dark:border-slate-800">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-navy text-white text-sm font-bold mb-4 shadow">
-                03
+            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm dark:bg-slate-900 dark:border-slate-800 flex flex-col justify-between h-full">
+              <div>
+                <div className="flex justify-between items-center mb-4">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-navy text-white text-sm font-bold shadow">
+                    03
+                  </div>
+                  <span className="text-[9px] font-bold bg-purple-50 text-purple-700 px-2 py-0.5 rounded">
+                    Sec 19(1)
+                  </span>
+                </div>
+                <h4 className="font-bold text-slate-900 text-sm dark:text-white">{t.step3}</h4>
+                <p className="text-xs text-slate-500 mt-2 leading-relaxed dark:text-slate-400">{t.step3Desc}</p>
               </div>
-              <h4 className="font-bold text-slate-900 text-sm dark:text-white">{t.step3}</h4>
-              <p className="text-xs text-slate-500 mt-2 leading-relaxed dark:text-slate-400">{t.step3Desc}</p>
+              <div className="text-[10px] font-bold text-purple-700 mt-4 pt-2 border-t border-slate-100 dark:border-slate-800">
+                Limit: 30 Days
+              </div>
             </div>
 
             {/* Step 4 */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm dark:bg-slate-900 dark:border-slate-800">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-navy text-white text-sm font-bold mb-4 shadow">
-                04
+            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm dark:bg-slate-900 dark:border-slate-800 flex flex-col justify-between h-full">
+              <div>
+                <div className="flex justify-between items-center mb-4">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-navy text-white text-sm font-bold shadow">
+                    04
+                  </div>
+                  <span className="text-[9px] font-bold bg-purple-50 text-purple-700 px-2 py-0.5 rounded">
+                    Sec 19(6)
+                  </span>
+                </div>
+                <h4 className="font-bold text-slate-900 text-sm dark:text-white">{t.step4}</h4>
+                <p className="text-xs text-slate-500 mt-2 leading-relaxed dark:text-slate-400">{t.step4Desc}</p>
               </div>
-              <h4 className="font-bold text-slate-900 text-sm dark:text-white">{t.step4}</h4>
-              <p className="text-xs text-slate-500 mt-2 leading-relaxed dark:text-slate-400">{t.step4Desc}</p>
+              <div className="text-[10px] font-bold text-purple-700 mt-4 pt-2 border-t border-slate-100 dark:border-slate-800">
+                Limit: 30-45 Days
+              </div>
             </div>
 
             {/* Step 5 */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm dark:bg-slate-900 dark:border-slate-800">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary-saffron text-white text-sm font-bold mb-4 shadow">
-                05
+            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm dark:bg-slate-900 dark:border-slate-800 flex flex-col justify-between h-full">
+              <div>
+                <div className="flex justify-between items-center mb-4">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-secondary-saffron text-white text-sm font-bold shadow animate-pulse">
+                    05
+                  </div>
+                  <span className="text-[9px] font-bold bg-red-50 text-red-705 px-2 py-0.5 rounded">
+                    Sec 19(3)
+                  </span>
+                </div>
+                <h4 className="font-bold text-slate-900 text-sm dark:text-white">{t.step5}</h4>
+                <p className="text-xs text-slate-500 mt-2 leading-relaxed dark:text-slate-400">{t.step5Desc}</p>
               </div>
-              <h4 className="font-bold text-slate-900 text-sm dark:text-white">{t.step5}</h4>
-              <p className="text-xs text-slate-500 mt-2 leading-relaxed dark:text-slate-400">{t.step5Desc}</p>
+              <div className="text-[10px] font-bold text-red-700 mt-4 pt-2 border-t border-slate-100 dark:border-slate-800">
+                External Appeal
+              </div>
             </div>
 
           </div>
@@ -482,7 +570,7 @@ export default function LandingView({ setActiveView, language }: LandingViewProp
           <h3 className="text-xl font-bold text-primary-navy text-center mb-8 dark:text-white">{t.faqTitle}</h3>
           
           <div className="space-y-4">
-            {mockFAQs.slice(0, 3).map(faq => (
+            {faqs.slice(0, 3).map(faq => (
               <div key={faq.id} className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:bg-slate-900 dark:border-slate-800">
                 <div className="flex justify-between items-start gap-2">
                   <h4 className="font-bold text-slate-800 text-sm flex items-start gap-1.5 dark:text-slate-200">

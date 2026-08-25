@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { Landmark, Search, Globe, User, MapPin } from 'lucide-react';
-import { mockAuthorities, Authority } from '../data/mockData';
+import { Authority } from '../data/mockData';
 
 interface AuthoritiesViewProps {
   language: 'en' | 'hi';
@@ -11,13 +11,21 @@ interface AuthoritiesViewProps {
 export default function AuthoritiesView({ language }: AuthoritiesViewProps) {
   const [search, setSearch] = useState('');
   const [filterMinistry, setFilterMinistry] = useState('All');
+  const [authorities, setAuthorities] = useState<Authority[]>([]);
 
-  const ministries = ['All', ...new Set(mockAuthorities.map(a => a.ministry))];
+  React.useEffect(() => {
+    fetch('/api/authorities')
+      .then(res => res.json())
+      .then(data => setAuthorities(data))
+      .catch(err => console.error('Failed to load authorities:', err));
+  }, []);
 
-  const filteredAuthorities = mockAuthorities.filter(auth => {
-    const matchesSearch = auth.name.toLowerCase().includes(search.toLowerCase()) || 
-                          auth.description.toLowerCase().includes(search.toLowerCase()) ||
-                          auth.cpioName.toLowerCase().includes(search.toLowerCase());
+  const ministries = ['All', ...new Set(authorities.map(a => a.ministry))];
+
+  const filteredAuthorities = authorities.filter(auth => {
+    const matchesSearch = (auth.name?.toLowerCase().includes(search.toLowerCase()) || 
+                          auth.description?.toLowerCase().includes(search.toLowerCase()) ||
+                          auth.cpioName?.toLowerCase().includes(search.toLowerCase()));
     const matchesMinistry = filterMinistry === 'All' || auth.ministry === filterMinistry;
     return matchesSearch && matchesMinistry;
   });
@@ -39,13 +47,13 @@ export default function AuthoritiesView({ language }: AuthoritiesViewProps) {
         </div>
 
         {/* Scope warning and link */}
-        <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 text-red-805 p-4 text-xs flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+        <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 text-red-800 p-4.5 text-xs flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 dark:bg-red-950/20 dark:border-red-900/30 dark:text-red-200">
           <div>
-            <span className="font-extrabold block text-sm uppercase text-red-900 mb-0.5">⚠️ Central Scope Alert</span>
-            This lookup contains registered Central Ministries only. Filing for state-level entities will result in application rejection.
+            <span className="font-extrabold block text-sm uppercase text-red-900 mb-0.5 dark:text-red-300">Central Government Scope Only</span>
+            This lookup is curated from the registered database of Central ministries and departments. Submitting applications for state-level entities (e.g. state schools, state police, local water boards) through Central portals will result in application rejection with <span className="font-extrabold text-red-950 dark:text-red-100">NO REFUND</span>.
           </div>
           <a
-            href="https://rtionline.gov.in/request/authorityList.php"
+            href="https://rtionline.gov.in/request/allpa.php"
             target="_blank"
             rel="noopener noreferrer"
             className="bg-primary-navy hover:bg-primary-blue text-white font-bold px-4 py-2 rounded-lg text-[10.5px] whitespace-nowrap shadow cursor-pointer text-center w-full sm:w-auto"

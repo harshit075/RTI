@@ -55,20 +55,20 @@ export default function DashboardView({
   const getStatusText = (status: string) => {
     const texts = {
       en: {
-        'Submitted': '✓ Submitted',
-        'Processing': '→ Processing',
-        'Response Pending': '🟠 Response Pending',
-        'Response Received': '🟢 Response Received',
-        'First Appeal Filed': '🔴 First Appeal Filed',
-        'FAA Decision Received': '✓ Appeal Final Decision'
+        'Submitted': 'Submitted',
+        'Processing': 'Processing',
+        'Response Pending': 'Response Pending',
+        'Response Received': 'Response Received',
+        'First Appeal Filed': 'First Appeal Filed',
+        'FAA Decision Received': 'Appeal Final Decision'
       },
       hi: {
-        'Submitted': '✓ जमा किया गया',
-        'Processing': '→ प्रोसेसिंग में',
-        'Response Pending': '🟠 उत्तर लंबित',
-        'Response Received': '🟢 उत्तर प्राप्त हुआ',
-        'First Appeal Filed': '🔴 प्रथम अपील दायर',
-        'FAA Decision Received': '✓ अपील अंतिम निर्णय'
+        'Submitted': 'जमा किया गया',
+        'Processing': 'प्रोसेसिंग में',
+        'Response Pending': 'उत्तर लंबित',
+        'Response Received': 'उत्तर प्राप्त हुआ',
+        'First Appeal Filed': 'प्रथम अपील दायर',
+        'FAA Decision Received': 'अपील अंतिम निर्णय'
       }
     }[language];
     return (texts as any)[status] || status;
@@ -95,29 +95,21 @@ export default function DashboardView({
     <div className="flex-1 bg-slate-50 dark:bg-slate-950 px-4 py-8 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-5xl">
         
-        {/* Header (Section 13) */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+        {/* Top Welcome & CTA Actions */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
           <div>
             <h2 className="text-2xl font-black text-primary-navy tracking-tight dark:text-white">
               {language === 'en' ? 'Good morning, Harshit' : 'शुभ प्रभात, हर्षित'}
             </h2>
-            <div className="mt-2 flex flex-wrap gap-2 text-xs font-bold">
-              <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full">
-                {activeRTIs.length} Active RTIs
-              </span>
-              <span className="bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full">
-                {receivedRTIs.length} Responses Received
-              </span>
-              <span className="bg-red-100 text-red-800 px-3 py-1 rounded-full">
-                {actionRequiredRTIs.length} Action Required
-              </span>
-            </div>
+            <p className="text-xs text-slate-500 mt-1">
+              {language === 'en' ? 'Track your active requests and official correspondence in real time.' : 'वास्तविक समय में अपने सक्रिय अनुरोधों और आधिकारिक पत्राचार को ट्रैक करें।'}
+            </p>
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex gap-2 w-full sm:w-auto">
             <button
               onClick={() => setActiveView('onboarding')}
-              className="rounded-xl bg-primary-navy hover:bg-primary-blue text-white px-5 py-3 text-xs font-bold shadow transition-all cursor-pointer"
+              className="flex-1 sm:flex-initial rounded-xl bg-primary-navy hover:bg-primary-blue text-white px-5 py-3 text-xs font-bold shadow transition-all cursor-pointer text-center"
             >
               + File New RTI
             </button>
@@ -126,13 +118,44 @@ export default function DashboardView({
             {hasDemoRtiPending && (
               <button
                 onClick={triggerMockResponse}
-                className="rounded-xl border border-secondary-saffron bg-blue-50 hover:bg-blue-100 text-secondary-saffron px-4 py-3 text-xs font-bold flex items-center gap-1.5 animate-pulse cursor-pointer"
+                className="flex-1 sm:flex-initial rounded-xl border border-secondary-saffron bg-blue-50 hover:bg-blue-100 text-secondary-saffron px-4 py-3 text-xs font-bold flex items-center justify-center gap-1.5 animate-pulse cursor-pointer"
                 title="Simulates CPIO officer sending a response back to this portal for testing"
               >
                 <RefreshCw className="h-4 w-4 animate-spin-slow" />
-                Simulate Response Arrival
+                Simulate Response
               </button>
             )}
+          </div>
+        </div>
+
+        {/* Analytics Summary Cards Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+          <div className="rounded-2xl border border-blue-100 bg-blue-50/20 p-5 hover:shadow-xs transition-shadow flex items-center justify-between shadow-2xs">
+            <div>
+              <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider block">Active Requests</span>
+              <span className="text-2xl font-black text-blue-900 block mt-1">{activeRTIs.length}</span>
+            </div>
+            <div className="h-10 w-10 rounded-xl bg-blue-100/50 flex items-center justify-center text-blue-800 shrink-0">
+              <FileText className="h-5 w-5" />
+            </div>
+          </div>
+          <div className="rounded-2xl border border-emerald-100 bg-emerald-50/15 p-5 hover:shadow-xs transition-shadow flex items-center justify-between shadow-2xs">
+            <div>
+              <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider block">Responses Received</span>
+              <span className="text-2xl font-black text-emerald-955 block mt-1">{receivedRTIs.length}</span>
+            </div>
+            <div className="h-10 w-10 rounded-xl bg-emerald-100/40 flex items-center justify-center text-emerald-800 shrink-0">
+              <CheckCircle2 className="h-5 w-5" />
+            </div>
+          </div>
+          <div className="rounded-2xl border border-red-100 bg-red-50/20 p-5 hover:shadow-xs transition-shadow flex items-center justify-between shadow-2xs">
+            <div>
+              <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider block">Action Required</span>
+              <span className="text-2xl font-black text-red-955 block mt-1">{actionRequiredRTIs.length}</span>
+            </div>
+            <div className="h-10 w-10 rounded-xl bg-red-100/40 flex items-center justify-center text-red-800 shrink-0">
+              <AlertCircle className="h-5 w-5" />
+            </div>
           </div>
         </div>
 
@@ -226,7 +249,7 @@ export default function DashboardView({
 
                     <div>
                       <h4 className="font-extrabold text-base text-slate-850 dark:text-slate-100">{rti.title}</h4>
-                      <p className="text-xs text-slate-450 mt-1 leading-snug">{getAuthorityName(rti.authorityId)}</p>
+                      <p className="text-xs text-slate-600 mt-1 leading-snug">{getAuthorityName(rti.authorityId)}</p>
                       <p className="text-xs text-slate-600 mt-1.5 italic line-clamp-1">Subject: {rti.subject}</p>
                     </div>
                   </div>
@@ -237,9 +260,9 @@ export default function DashboardView({
                     {/* Countdown clock (Section 16) */}
                     {isPending && (
                       <div className="text-left md:text-right">
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Expected Response</span>
+                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Expected Response</span>
                         <div className="flex items-center gap-1 mt-0.5">
-                          <Clock className={`h-4 w-4 ${daysLeft <= 7 ? 'text-red-500 animate-pulse' : 'text-slate-400'}`} />
+                          <Clock className={`h-4 w-4 ${daysLeft <= 7 ? 'text-red-500 animate-pulse' : 'text-slate-500'}`} />
                           <span className={`text-xs font-bold ${daysLeft <= 7 ? 'text-red-650' : 'text-slate-700'}`}>
                             {daysLeft > 0 ? `${daysLeft} Days Remaining` : 'Deadline Expired'}
                           </span>
@@ -249,7 +272,7 @@ export default function DashboardView({
 
                     {!isPending && rti.responseDate && (
                       <div className="text-left md:text-right">
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Closed Date</span>
+                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Closed Date</span>
                         <span className="text-xs font-semibold text-slate-700 block mt-0.5">{rti.responseDate}</span>
                       </div>
                     )}

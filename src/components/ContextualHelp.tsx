@@ -76,7 +76,7 @@ export default function ContextualHelp({ activeView, language }: ContextualHelpP
     ],
     dashboard: [
       { q: 'Why is my RTI status not updating?', a: 'For demo purposes, you can simulate a CPIO response. Go to your dashboard and look for the RTI labeled "Road Construction Inquiry" with a pending status. Click the "Simulate Response" banner to receive a mock official reply.' },
-      { q: 'What do the status colors mean?', a: '🟠 Response Pending: Awaiting CPIO reply. 🟢 Completed: Response received. 🔴 Action Required: CPIO reply received, which you should review to see if answers are missing.' },
+      { q: 'What do the status colors mean?', a: 'Response Pending: Awaiting CPIO reply. Completed: Response received. Action Required: CPIO reply received, which you should review to see if answers are missing.' },
       { q: 'Where are my submitted files?', a: 'Every RTI has its own record folder. Click on "View Details" to open the Document Vault where you can preview and download applications, receipts, and reply letters.' }
     ],
     detail: [
@@ -123,10 +123,10 @@ export default function ContextualHelp({ activeView, language }: ContextualHelpP
           setIsOpen(true);
           setSelectedTopic(null);
         }}
-        className="fixed bottom-6 right-6 z-40 bg-error-red text-white font-extrabold text-xs px-4.5 py-3 rounded-full shadow-2xl hover:scale-105 transition-transform flex items-center gap-1.5 focus-ring cursor-pointer"
+        className="fixed bottom-6 right-6 z-40 bg-error-red text-white font-extrabold text-xs px-4.5 py-3 rounded-full shadow-2xl hover:scale-105 transition-transform flex items-center gap-1.5 focus-ring cursor-pointer animate-in fade-in"
         aria-label="Get Help / Stuck"
       >
-        <span className="animate-bounce font-sans text-sm">🆘</span>
+        <HelpCircle className="h-4 w-4" />
         <span>{t.btnLabel}</span>
       </button>
 

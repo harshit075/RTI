@@ -132,7 +132,7 @@ Mob: 9876543210`;
             <ArrowLeft className="h-4 w-4" />
           </button>
           <div>
-            <span className="text-[10px] text-slate-400 font-mono font-bold">{rti.registrationNumber}</span>
+            <span className="text-[10px] text-slate-600 font-mono font-bold">{rti.registrationNumber}</span>
             <h2 className="text-xl font-black text-primary-navy dark:text-white">{rti.title}</h2>
           </div>
         </div>
@@ -202,7 +202,7 @@ Mob: 9876543210`;
                   </span>
                   <div>
                     <h4 className="font-bold text-slate-800 dark:text-slate-200">APPLICATION SUBMITTED & REGISTERED</h4>
-                    <p className="text-slate-500 mt-1">Submitted on {rti.submittedDate} via NIC Payment Gateway.</p>
+                    <p className="text-slate-600 mt-1">Submitted on {rti.submittedDate} via NIC Payment Gateway.</p>
                   </div>
                 </div>
 
@@ -213,7 +213,7 @@ Mob: 9876543210`;
                   </span>
                   <div>
                     <h4 className="font-bold text-slate-800 dark:text-slate-200">RECEIVED BY PUBLIC AUTHORITY</h4>
-                    <p className="text-slate-500 mt-1">Routed to CPIO Office: {auth?.cpioName} ({auth?.cpioDesignation}).</p>
+                    <p className="text-slate-600 mt-1">Routed to CPIO Office: {auth?.cpioName} ({auth?.cpioDesignation}).</p>
                   </div>
                 </div>
 
@@ -222,31 +222,53 @@ Mob: 9876543210`;
                   <span className={`absolute -left-[31px] top-0 flex h-4.5 w-4.5 items-center justify-center rounded-full text-white font-bold text-[9px] shadow-sm ${
                     hasResponse ? 'bg-emerald-500' : 'bg-amber-500 animate-pulse'
                   }`}>
-                    {hasResponse ? '✓' : '⌛'}
+                    {hasResponse ? '✓' : <Clock className="h-2.5 w-2.5 text-white" />}
                   </span>
                   <div>
                     <h4 className="font-bold text-slate-800 dark:text-slate-200">CPIO OFFICIAL REPLY</h4>
                     {hasResponse ? (
-                      <p className="text-slate-500 mt-1">Response letter received on {rti.responseDate}.</p>
+                      <p className="text-slate-600 mt-1">Response letter received on {rti.responseDate}.</p>
                     ) : (
-                      <p className="text-slate-500 mt-1">Statutory answer period in progress. Deadline: {rti.expectedDate}.</p>
+                      <p className="text-slate-600 mt-1">Statutory answer period in progress. Deadline: {rti.expectedDate}.</p>
                     )}
                   </div>
                 </div>
 
                 {/* Milestone 4: First Appeal */}
                 {rti.status === 'First Appeal Filed' && (
-                  <div className="relative">
-                    <span className="absolute -left-[31px] top-0 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-purple-500 text-white font-bold text-[9px] shadow-sm">
-                      ✓
-                    </span>
-                    <div>
-                      <h4 className="font-bold text-slate-800 dark:text-slate-200">FIRST APPEAL FILED</h4>
-                      <p className="text-slate-500 mt-1">
-                        Appeal filed to First Appellate Authority: {auth?.faaName} ({auth?.faaDesignation}) on {rti.appealDate || '2026-08-25'}. Ground: {rti.appealReason}.
-                      </p>
+                  <>
+                    <div className="relative">
+                      <span className="absolute -left-[31px] top-0 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-purple-500 text-white font-bold text-[9px] shadow-sm">
+                        ✓
+                      </span>
+                      <div>
+                        <h4 className="font-bold text-slate-800 dark:text-slate-200">FIRST APPEAL FILED</h4>
+                        <p className="text-slate-800 mt-1">
+                          Appeal filed to First Appellate Authority: {auth?.faaName} ({auth?.faaDesignation}) on {rti.appealDate || '2026-08-25'}. Ground: {rti.appealReason}.
+                        </p>
+                      </div>
                     </div>
-                  </div>
+
+                    <div className="relative">
+                      <span className="absolute -left-[31px] top-2.5 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-red-50 shadow-xs border border-red-200 animate-pulse">
+                        <Scale className="h-2.5 w-2.5 text-red-700" />
+                      </span>
+                      <div className="pt-2">
+                        <h4 className="font-bold text-red-800 dark:text-red-300">NEXT STEP: SECOND APPEAL TO CIC</h4>
+                        <p className="text-slate-500 mt-1">
+                          If the FAA does not issue an order within 30-45 days, or if you are unsatisfied with their decision, you can escalate the matter by filing a **Second Appeal** under Section 19(3) of the RTI Act directly with the Central Information Commission (CIC).
+                        </p>
+                        <a 
+                          href="https://cic.gov.in" 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="inline-flex items-center gap-1 mt-2 bg-red-650 hover:bg-red-700 text-white font-bold text-[10px] px-3.5 py-1.5 rounded-lg shadow-sm cursor-pointer"
+                        >
+                          Escalate to CIC (cic.gov.in) ↗
+                        </a>
+                      </div>
+                    </div>
+                  </>
                 )}
 
               </div>
@@ -388,7 +410,7 @@ Mob: 9876543210`;
                           <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full ${
                             isDenied ? 'bg-red-50 text-red-705' : 'bg-emerald-50 text-success-green'
                           }`}>
-                            {isDenied ? '⚠ Omitted / Denied' : '✓ Addressed'}
+                            {isDenied ? 'Omitted / Denied' : 'Addressed'}
                           </span>
                         </div>
                         <p className="text-slate-755 font-medium mt-1 leading-snug">{q}</p>
@@ -426,7 +448,7 @@ Mob: 9876543210`;
               ) : (
                 <div className="border-t border-slate-100 pt-4 mt-4">
                   <div className="bg-red-50 rounded-xl p-3 border border-red-200 text-xs text-red-800 mb-3 leading-relaxed animate-in fade-in duration-200">
-                    <span className="font-bold block mb-1">⚖️ Unsatisfied with First Appeal?</span>
+                    <span className="font-bold block mb-1">Unsatisfied with First Appeal?</span>
                     If the First Appellate Authority (FAA) decision is unsatisfactory or you do not receive a reply within 30-45 days, you can file a **Second Appeal** or **Complaint** to the Central Information Commission (CIC) under Section 19(3) of the RTI Act.
                   </div>
                   

@@ -96,6 +96,11 @@ export default function Footer({ language, setActiveView }: FooterProps) {
           <span className="text-[10px] bg-slate-800 text-slate-400 border border-slate-700 rounded px-2 py-0.5 font-medium inline-block">
             {t.tagline}
           </span>
+          <div className="mt-4 text-[10.5px] text-slate-400 space-y-1 bg-slate-800/25 border border-slate-800 rounded-lg p-2.5 max-w-sm font-sans">
+            <span className="font-bold text-slate-300 block mb-0.5">Official RTI Support Desk (DoPT):</span>
+            <p>Phone: 011-24622461 (9:00 AM - 5:30 PM, Mon-Fri)</p>
+            <p>Email: rtionline-dopt@nic.in</p>
+          </div>
         </div>
 
         {/* Column 1 */}
@@ -153,14 +158,14 @@ export default function Footer({ language, setActiveView }: FooterProps) {
       </div>
 
       {/* Disclaimer Section */}
-      <div className="max-w-7xl mx-auto pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-[11px] text-slate-500">
+      <div className="max-w-7xl mx-auto pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-[11px] text-slate-400">
         <div className="flex items-start gap-2 bg-slate-800/40 border border-slate-800 rounded-lg p-3 max-w-3xl">
           <ShieldAlert className="h-5 w-5 text-amber-500/80 shrink-0 mt-0.5" />
           <p className="leading-relaxed">{t.disclaimer}</p>
         </div>
         <div className="text-center md:text-right shrink-0">
           <p className="font-bold text-slate-400">© 2026 {t.brand}.</p>
-          <p className="text-[10px] mt-1 text-slate-600">Built for Citizens of India</p>
+          <p className="text-[10px] mt-1 text-slate-500">Built for Citizens of India</p>
         </div>
       </div>
     </footer>

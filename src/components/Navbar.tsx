@@ -20,8 +20,6 @@ interface NavbarProps {
     read: boolean;
   }>;
   markNotificationsRead: () => void;
-  theme: 'light' | 'dark';
-  toggleTheme: (theme: 'light' | 'dark') => void;
 }
 
 export default function Navbar({
@@ -34,9 +32,7 @@ export default function Navbar({
   textSize,
   setTextSize,
   notifications,
-  markNotificationsRead,
-  theme,
-  toggleTheme
+  markNotificationsRead
 }: NavbarProps) {
   const [showNotifications, setShowNotifications] = useState(false);
   const unreadCount = notifications.filter(n => !n.read).length;
@@ -142,9 +138,7 @@ export default function Navbar({
             {t.help}
           </button>
           <button
-            onClick={() => {
-              alert("Payment Reconciliation: If fee was deducted from your bank but your RTI status is showing pending, enter transaction details or contact rtionline-dopt@nic.in. Statuses sync with NIC within 24 hours. (Official Helpline: 011-24622461)");
-            }}
+            onClick={() => setActiveView('reconciliation')}
             className="rounded-md px-3.5 py-2 text-xs font-bold text-secondary-saffron hover:bg-slate-50 animate-pulse border border-dashed border-secondary-saffron focus-ring cursor-pointer"
           >
             Reconcile Payment
@@ -177,19 +171,7 @@ export default function Navbar({
             A<span className="text-[10px] font-extrabold">+</span>
           </button>
 
-          {/* Theme Toggle Button */}
-          <button
-            onClick={() => toggleTheme(theme === 'light' ? 'dark' : 'light')}
-            className="rounded-full border p-2 text-slate-600 border-slate-200 bg-slate-50 hover:bg-slate-100 transition-colors focus-ring"
-            title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
-            aria-label="Toggle Theme"
-          >
-            {theme === 'light' ? (
-              <Moon className="h-4 w-4 text-slate-650" />
-            ) : (
-              <Sun className="h-4 w-4 text-amber-500 animate-pulse" />
-            )}
-          </button>
+
 
           {/* Low Bandwidth Toggle */}
           <button
@@ -201,7 +183,7 @@ export default function Navbar({
             }`}
             title="Optimizes site by removing animation, shadows and graphics"
           >
-            ⚡ {t.lowData}: {lowBandwidth ? 'ON' : 'OFF'}
+            {t.lowData}: {lowBandwidth ? 'ON' : 'OFF'}
           </button>
 
           {/* Notifications Bell Dropdown */}
