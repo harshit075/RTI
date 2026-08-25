@@ -2,6 +2,64 @@ import { NextResponse } from 'next/server';
 import { query } from '../../../../lib/db';
 import { inMemoryRtis } from '../../../../data/mockData';
 
+export async function GET(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+
+    if (!process.env.DATABASE_URL) {
+      const rti = inMemoryRtis.find(r => r.id === id || r.registrationNumber === id);
+      if (!rti) {
+        return NextResponse.json({ error: 'RTI not found' }, { status: 404 });
+      }
+      return NextResponse.json(rti);
+    }
+
+    const sql = `
+      SELECT * FROM rtis 
+      WHERE id = $1 OR registration_number = $1
+      LIMIT 1
+    `;
+    const { rows } = await query(sql, [id]);
+    if (rows.length === 0) {
+      return NextResponse.json({ error: 'RTI not found' }, { status: 404 });
+    }
+
+    const r = rows[0];
+    const item = {
+      id: r.id,
+      title: r.title,
+      authorityId: r.authority_id,
+      subject: r.subject,
+      questions: r.questions,
+      submittedDate: r.submitted_date,
+      expectedDate: r.expected_date,
+      status: r.status,
+      paymentId: r.payment_id,
+      paymentStatus: r.payment_status,
+      registrationNumber: r.registration_number,
+      responseDocumentUrl: r.response_document_url,
+      responseDate: r.response_date,
+      responseSummary: r.response_summary,
+      answeredCount: r.answered_count,
+      totalQuestions: r.total_questions,
+      appealReason: r.appeal_reason,
+      appealDate: r.appeal_date,
+      notes: r.notes,
+      secondAppealReason: r.second_appeal_reason,
+      secondAppealDate: r.second_appeal_date,
+      secondAppealText: r.second_appeal_text,
+      secondAppealRegNo: r.second_appeal_reg_no
+    };
+
+    return NextResponse.json(item);
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message }, { status: 500 });
+  }
+}
+
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -11,7 +69,7 @@ export async function PATCH(
     const body = await request.json();
     
     if (!process.env.DATABASE_URL) {
-      const idx = inMemoryRtis.findIndex(r => r.id === id);
+      const idx = inMemoryRtis.findIndex(r => r.id === id || r.registrationNumber === id);
       if (idx === -1) {
         return NextResponse.json({ error: 'RTI not found' }, { status: 404 });
       }
@@ -71,7 +129,7 @@ export async function PATCH(
     const sql = `
       UPDATE rtis
       SET ${fields.join(', ')}
-      WHERE id = $${index}
+      WHERE id = $${index} OR registration_number = $${index}
       RETURNING *
     `;
 

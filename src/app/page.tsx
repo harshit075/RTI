@@ -201,7 +201,9 @@ export default function Home() {
 
         {activeView === 'authorities' && (
           <AuthoritiesView 
-            language={language} 
+            language={language}
+            setActiveView={setActiveView}
+            setDraftRti={setDraftRti}
           />
         )}
 
