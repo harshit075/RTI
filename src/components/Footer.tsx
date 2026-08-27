@@ -1,7 +1,10 @@
 'use client';
 
 import React from 'react';
-import { ShieldCheck, ExternalLink, Globe, Phone, Mail, FileText, CheckCircle2 } from 'lucide-react';
+import { 
+  ShieldCheck, ExternalLink, Globe, Phone, Mail, FileText, 
+  CheckCircle2, ArrowUp
+} from 'lucide-react';
 
 interface FooterProps {
   setActiveView: (view: string) => void;
@@ -13,85 +16,60 @@ export default function Footer({ setActiveView, language, setHelpCategory }: Foo
   const t = {
     en: {
       brand: 'RTI Saathi',
-      tagline: 'Citizen Right to Information Gateway',
-      desc: 'RTI Saathi is a digital citizen platform designed to facilitate transparent RTI drafting, 30-day statutory tracking, and appellate redressal in accordance with the Right to Information Act, 2005.',
+      tagline: 'Right to Information Act, 2005',
+      desc: 'Empowering citizens to access information and promoting transparency and accountability in governance.',
+      servicesTitle: 'RTI Services',
+      learnTitle: 'Learn',
+      supportTitle: 'Support',
+      contactTitle: 'Contact Us',
+      rights: '© 2026 RTI Saathi. All rights reserved.',
       disclaimer: 'Practice & Demonstration Notice: RTI Saathi is an educational and civic practice gateway built in compliance with statutory RTI Act 2005 workflows. In this demonstration environment, all filing and payment steps are simulated for training and public awareness with zero real banking charges.',
-      col1Title: 'RTI Actions',
-      col1Items: [
-        { label: 'File an RTI Request', view: 'onboarding' },
-        { label: 'Track Application', view: 'status-lookup' },
-        { label: 'File First Appeal', view: 'appeal-lookup' },
-        { label: 'Help & Knowledge Center', view: 'help' }
-      ],
-      col2Title: 'Statutory Guidance',
-      col2Items: [
-        { label: 'RTI Act Basics', view: 'help', category: 'Basics' as const },
-        { label: 'Exempted Items (Section 8)', view: 'help', category: 'Exemptions' as const },
-        { label: 'Fee Schedule & Waiver', view: 'help', category: 'Fees' as const },
-        { label: 'Appeals Process (FAA & CIC)', view: 'help', category: 'Appeals' as const }
-      ],
-      col3Title: 'Official Portals',
-      col3Links: [
-        { label: 'Central RTI Online Portal', url: 'https://rtionline.gov.in' },
-        { label: 'Central Information Commission', url: 'https://cic.gov.in' },
-        { label: 'DoPT Official Portal', url: 'https://dopt.gov.in' },
-        { label: 'National Portal of India', url: 'https://india.gov.in' }
-      ],
-      col4Title: 'Tools & Utilities',
-      col4Items: [
-        { label: 'Payment Reconciliation', view: 'reconciliation' },
-        { label: 'Public Authorities Directory', view: 'authorities' },
-        { label: 'Certified Document Vault', view: 'profile' },
-        { label: 'Citizen Support Desk', view: 'help' }
+      links: [
+        { label: 'Privacy Policy', view: 'help' },
+        { label: 'Terms of Use', view: 'help' },
+        { label: 'Sitemap', view: 'help' }
       ]
     },
     hi: {
       brand: 'आरटीआई साथी',
-      tagline: 'नागरिक सूचना का अधिकार पोर्टल',
-      desc: 'आरटीआई साथी एक नागरिक डिजिटल पोर्टल है जो सूचना का अधिकार (RTI) दाखिल करने, समयसीमा ट्रैक करने और प्रथम अपील समाधान को सुगम और नागरिक-अनुकूल बनाता है।',
+      tagline: 'सूचना का अधिकार अधिनियम, 2005',
+      desc: 'नागरिकों को सूचना तक पहुँच प्रदान कर सशक्त बनाना और शासन में पारदर्शिता व जवाबदेही को बढ़ावा देना।',
+      servicesTitle: 'आरटीआई सेवाएं',
+      learnTitle: 'जानकारी',
+      supportTitle: 'सहायता',
+      contactTitle: 'हमसे संपर्क करें',
+      rights: '© 2026 आरटीआई साथी। सर्वाधिकार सुरक्षित।',
       disclaimer: 'अभ्यास व प्रदर्शन सूचना: आरटीआई साथी आरटीआई अधिनियम 2005 के सांविधिक नियमों के अनुपालन में बनाया गया एक शैक्षिक व अभ्यास पोर्टल है। इस प्रदर्शन वातावरण में सभी भुगतान और फाइलिंग सिमुलेटेड हैं; कोई वास्तविक बैंक कटौती नहीं होती है।',
-      col1Title: 'आरटीआई कार्य',
-      col1Items: [
-        { label: 'आरटीआई दाखिल करें', view: 'onboarding' },
-        { label: 'आवेदन ट्रैक करें', view: 'status-lookup' },
-        { label: 'प्रथम अपील दायर करें', view: 'appeal-lookup' },
-        { label: 'सहायता केंद्र', view: 'help' }
-      ],
-      col2Title: 'कानूनी मार्गदर्शन',
-      col2Items: [
-        { label: 'आरटीआई कानून मूल बातें', view: 'help', category: 'Basics' as const },
-        { label: 'छूट प्राप्त वस्तुएं (धारा 8)', view: 'help', category: 'Exemptions' as const },
-        { label: 'शुल्क सूची व छूट', view: 'help', category: 'Fees' as const },
-        { label: 'अपील प्रक्रिया (FAA व CIC)', view: 'help', category: 'Appeals' as const }
-      ],
-      col3Title: 'आधिकारिक पोर्टल',
-      col3Links: [
-        { label: 'केंद्रीय आरटीआई ऑनलाइन पोर्टल', url: 'https://rtionline.gov.in' },
-        { label: 'केंद्रीय सूचना आयोग', url: 'https://cic.gov.in' },
-        { label: 'डीओपीटी आधिकारिक वेबसाइट', url: 'https://dopt.gov.in' },
-        { label: 'भारत का राष्ट्रीय पोर्टल', url: 'https://india.gov.in' }
-      ],
-      col4Title: 'उपकरण व सेवाएं',
-      col4Items: [
-        { label: 'भुगतान मिलान (Reconciliation)', view: 'reconciliation' },
-        { label: 'लोक प्राधिकारी निर्देशिका', view: 'authorities' },
-        { label: 'प्रमाणित दस्तावेज़ वॉल्ट', view: 'profile' },
-        { label: 'नागरिक सहायता डेस्क', view: 'help' }
+      links: [
+        { label: 'गोपनीयता नीति', view: 'help' },
+        { label: 'उपयोग की शर्तें', view: 'help' },
+        { label: 'साइटमैप', view: 'help' }
       ]
     }
   }[language];
 
+  const handleLearnClick = (category: 'All' | 'Basics' | 'Fees' | 'Process' | 'Appeals' | 'Exemptions') => {
+    if (setHelpCategory) {
+      setHelpCategory(category);
+    }
+    setActiveView('help');
+  };
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
-    <footer className="bg-slate-900 text-slate-200 border-t border-slate-800 relative z-20 pb-16">
+    <footer className="bg-[#0f172a] text-slate-300 border-t border-slate-800 relative z-20">
+      
+      {/* 1. Main Footer Grid */}
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        
-        {/* Main Grid: 5 Clean Columns */}
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-12">
           
-          {/* Column 1: Brand Info & Support Box (4 cols on lg) */}
+          {/* Column 1: Brand details and Social links (4 cols) */}
           <div className="lg:col-span-4 space-y-4">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white p-1 shadow-md shrink-0">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white p-1 shrink-0">
                 <img 
                   src="https://upload.wikimedia.org/wikipedia/commons/5/55/Emblem_of_India.svg" 
                   alt="State Emblem of India" 
@@ -99,134 +77,208 @@ export default function Footer({ setActiveView, language, setHelpCategory }: Foo
                 />
               </div>
               <div>
-                <span className="font-black text-white text-lg tracking-tight block">{t.brand}</span>
-                <span className="text-[11px] text-amber-400 font-extrabold tracking-wide block">{t.tagline}</span>
+                <span className="font-extrabold text-white text-base tracking-tight block">{t.brand}</span>
+                <span className="text-[10px] text-slate-400 font-medium block">{t.tagline}</span>
               </div>
             </div>
 
-            <p className="text-xs text-slate-300 leading-relaxed max-w-sm font-normal">
+            <p className="text-xs text-slate-400 leading-relaxed max-w-sm">
               {t.desc}
             </p>
 
-            {/* Official Support Info Card */}
-            <div className="text-[11px] text-slate-300 space-y-1.5 bg-[#122B48] border border-blue-400/30 rounded-xl p-3.5 max-w-sm shadow-3xs">
-              <span className="font-black text-white text-xs block mb-1 flex items-center gap-1.5">
-                <Phone className="h-3.5 w-3.5 text-amber-400" />
-                Official RTI Support Desk (DoPT):
-              </span>
-              <p className="text-slate-200">Helpline: <strong className="text-white">011-24622461</strong> (9:00 AM - 5:30 PM, Mon-Fri)</p>
-              <p className="text-slate-200">Email: <strong className="text-white">rtionline-dopt@nic.in</strong></p>
+            {/* Social Icons */}
+            <div className="flex items-center gap-3.5 pt-2">
+              <a href="#" className="text-slate-450 hover:text-white transition-colors" aria-label="Twitter">
+                <svg className="h-4.5 w-4.5 fill-current" viewBox="0 0 24 24">
+                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                </svg>
+              </a>
+              <a href="#" className="text-slate-450 hover:text-white transition-colors" aria-label="Facebook">
+                <svg className="h-4.5 w-4.5 fill-current" viewBox="0 0 24 24">
+                  <path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c4.56-.93 8-4.96 8-9.75z"/>
+                </svg>
+              </a>
+              <a href="#" className="text-slate-450 hover:text-white transition-colors" aria-label="YouTube">
+                <svg className="h-4.5 w-4.5 fill-current" viewBox="0 0 24 24">
+                  <path d="M23.498 6.163a3.003 3.003 0 0 0-2.11-2.107C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.388.511a3.003 3.003 0 0 0-2.11 2.107C0 8.046 0 12 0 12s0 3.954.502 5.837a3.003 3.003 0 0 0 2.11 2.107c1.883.511 9.388.511 9.388.511s7.505 0 9.388-.511a3.003 3.003 0 0 0 2.11-2.107C24 15.954 24 12 24 12s0-3.954-.502-5.837zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                </svg>
+              </a>
+              <a href="#" className="text-slate-450 hover:text-white transition-colors" aria-label="LinkedIn">
+                <svg className="h-4.5 w-4.5 fill-current" viewBox="0 0 24 24">
+                  <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                </svg>
+              </a>
+              <a href="#" className="text-slate-450 hover:text-white transition-colors" aria-label="Instagram">
+                <svg className="h-4.5 w-4.5 fill-none stroke-current" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                  <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+                  <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+                  <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+                </svg>
+              </a>
             </div>
           </div>
 
-          {/* Column 2: RTI Actions (2 cols on lg) */}
+          {/* Column 2: RTI Services (2 cols) */}
           <div className="lg:col-span-2 space-y-3">
-            <h4 className="text-xs font-black uppercase tracking-wider text-amber-400 border-b border-slate-700/80 pb-2">
-              {t.col1Title}
+            <h4 className="text-xs font-bold uppercase tracking-wider text-white">
+              {t.servicesTitle}
             </h4>
-            <ul className="space-y-2.5 text-xs">
-              {t.col1Items.map((item, idx) => (
-                <li key={idx}>
-                  <button
-                    onClick={() => setActiveView(item.view)}
-                    className="hover:text-amber-400 text-slate-200 text-left transition-colors cursor-pointer font-medium hover:translate-x-0.5 transform inline-block"
-                  >
-                    {item.label}
-                  </button>
-                </li>
-              ))}
+            <ul className="space-y-2 text-xs">
+              <li>
+                <button onClick={() => setActiveView('onboarding')} className="hover:text-white text-slate-400 text-left transition-colors cursor-pointer font-medium">
+                  {language === 'en' ? 'File an RTI' : 'आरटीआई दाखिल करें'}
+                </button>
+              </li>
+              <li>
+                <button onClick={() => setActiveView('status-lookup')} className="hover:text-white text-slate-400 text-left transition-colors cursor-pointer font-medium">
+                  {language === 'en' ? 'Track Application' : 'आवेदन ट्रैक करें'}
+                </button>
+              </li>
+              <li>
+                <button onClick={() => setActiveView('authorities')} className="hover:text-white text-slate-400 text-left transition-colors cursor-pointer font-medium">
+                  {language === 'en' ? 'Find Authority' : 'विभाग खोजें'}
+                </button>
+              </li>
+              <li>
+                <button onClick={() => setActiveView('appeal-lookup')} className="hover:text-white text-slate-400 text-left transition-colors cursor-pointer font-medium">
+                  {language === 'en' ? 'File First Appeal' : 'प्रथम अपील दायर करें'}
+                </button>
+              </li>
+              <li>
+                <button onClick={() => setActiveView('dashboard')} className="hover:text-white text-slate-400 text-left transition-colors cursor-pointer font-medium">
+                  {language === 'en' ? 'My RTIs' : 'मेरे आरटीआई'}
+                </button>
+              </li>
             </ul>
           </div>
 
-          {/* Column 3: Statutory Guidance (2 cols on lg) */}
+          {/* Column 3: Learn (2 cols) */}
           <div className="lg:col-span-2 space-y-3">
-            <h4 className="text-xs font-black uppercase tracking-wider text-amber-400 border-b border-slate-700/80 pb-2">
-              {t.col2Title}
+            <h4 className="text-xs font-bold uppercase tracking-wider text-white">
+              {t.learnTitle}
             </h4>
-            <ul className="space-y-2.5 text-xs">
-              {t.col2Items.map((item, idx) => (
-                <li key={idx}>
-                  <button
-                    onClick={() => {
-                      if (setHelpCategory && item.category) {
-                        setHelpCategory(item.category);
-                      }
-                      setActiveView(item.view);
-                    }}
-                    className="hover:text-amber-400 text-slate-200 text-left transition-colors cursor-pointer font-medium hover:translate-x-0.5 transform inline-block"
-                  >
-                    {item.label}
-                  </button>
-                </li>
-              ))}
+            <ul className="space-y-2 text-xs">
+              <li>
+                <button onClick={() => handleLearnClick('Basics')} className="hover:text-white text-slate-400 text-left transition-colors cursor-pointer font-medium">
+                  {language === 'en' ? 'RTI Act, 2005' : 'आरटीआई अधिनियम, 2005'}
+                </button>
+              </li>
+              <li>
+                <button onClick={() => handleLearnClick('Fees')} className="hover:text-white text-slate-400 text-left transition-colors cursor-pointer font-medium">
+                  {language === 'en' ? 'Rules & Fees' : 'नियम व शुल्क'}
+                </button>
+              </li>
+              <li>
+                <button onClick={() => handleLearnClick('Appeals')} className="hover:text-white text-slate-400 text-left transition-colors cursor-pointer font-medium">
+                  {language === 'en' ? 'Appeals Process' : 'अपील प्रक्रिया'}
+                </button>
+              </li>
+              <li>
+                <button onClick={() => handleLearnClick('Exemptions')} className="hover:text-white text-slate-400 text-left transition-colors cursor-pointer font-medium">
+                  {language === 'en' ? 'Exempted Items (Sec 8)' : 'छूट प्राप्त वस्तुएं (Sec 8)'}
+                </button>
+              </li>
+              <li>
+                <button onClick={() => handleLearnClick('All')} className="hover:text-white text-slate-400 text-left transition-colors cursor-pointer font-medium">
+                  {language === 'en' ? 'FAQs' : 'अक्सर पूछे जाने वाले प्रश्न'}
+                </button>
+              </li>
             </ul>
           </div>
 
-          {/* Column 4: Official Portals (2 cols on lg) */}
+          {/* Column 4: Support (2 cols) */}
           <div className="lg:col-span-2 space-y-3">
-            <h4 className="text-xs font-black uppercase tracking-wider text-amber-400 border-b border-slate-700/80 pb-2">
-              {t.col3Title}
+            <h4 className="text-xs font-bold uppercase tracking-wider text-white">
+              {t.supportTitle}
             </h4>
-            <ul className="space-y-2.5 text-xs">
-              {t.col3Links.map((link, idx) => (
-                <li key={idx}>
-                  <a
-                    href={link.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:text-amber-400 text-slate-200 text-left transition-colors flex items-center gap-1 font-medium"
-                  >
-                    <span>{link.label}</span>
-                    <ExternalLink className="h-3 w-3 text-slate-400 shrink-0" />
-                  </a>
-                </li>
-              ))}
+            <ul className="space-y-2 text-xs">
+              <li>
+                <button onClick={() => setActiveView('help')} className="hover:text-white text-slate-400 text-left transition-colors cursor-pointer font-medium">
+                  {language === 'en' ? 'Help Center' : 'सहायता केंद्र'}
+                </button>
+              </li>
+              <li>
+                <button onClick={() => setActiveView('help')} className="hover:text-white text-slate-400 text-left transition-colors cursor-pointer font-medium">
+                  {language === 'en' ? 'Contact Us' : 'हमसे संपर्क करें'}
+                </button>
+              </li>
+              <li>
+                <button onClick={() => setActiveView('help')} className="hover:text-white text-slate-400 text-left transition-colors cursor-pointer font-medium">
+                  {language === 'en' ? 'RTI Assistance' : 'आरटीआई सहायता'}
+                </button>
+              </li>
+              <li>
+                <button onClick={() => setActiveView('help')} className="hover:text-white text-slate-400 text-left transition-colors cursor-pointer font-medium">
+                  {language === 'en' ? 'Feedback' : 'प्रतिक्रिया'}
+                </button>
+              </li>
+              <li>
+                <button onClick={() => setActiveView('profile')} className="hover:text-white text-slate-400 text-left transition-colors cursor-pointer font-medium">
+                  {language === 'en' ? 'Accessibility' : 'अभिगम्यता'}
+                </button>
+              </li>
             </ul>
           </div>
 
-          {/* Column 5: Tools & Utilities (2 cols on lg) */}
+          {/* Column 5: Contact Us (2 cols) */}
           <div className="lg:col-span-2 space-y-3">
-            <h4 className="text-xs font-black uppercase tracking-wider text-amber-400 border-b border-slate-700/80 pb-2">
-              {t.col4Title}
+            <h4 className="text-xs font-bold uppercase tracking-wider text-white">
+              {t.contactTitle}
             </h4>
-            <ul className="space-y-2.5 text-xs">
-              {t.col4Items.map((item, idx) => (
-                <li key={idx}>
-                  <button
-                    onClick={() => setActiveView(item.view)}
-                    className="hover:text-amber-400 text-slate-200 text-left transition-colors cursor-pointer font-medium hover:translate-x-0.5 transform inline-block"
-                  >
-                    {item.label}
-                  </button>
-                </li>
-              ))}
-            </ul>
+            <div className="space-y-3 text-xs text-slate-400">
+              <div className="flex items-start gap-2">
+                <Phone className="h-4 w-4 text-slate-500 shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-semibold text-slate-300">011-24622461</p>
+                  <p className="text-[10px] text-slate-500">9:00 AM - 5:30 PM, Mon-Fri</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-2">
+                <Mail className="h-4 w-4 text-slate-500 shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-semibold text-slate-300 break-all">rtionline-dopt@nic.in</p>
+                </div>
+              </div>
+            </div>
           </div>
 
         </div>
 
-        {/* Practice & Demonstration Disclaimer Banner */}
-        <div className="mt-10 border-t border-slate-700 pt-6">
-          <div className="rounded-2xl border border-amber-400/30 bg-[#122B48]/80 p-4.5 text-xs text-slate-200 leading-relaxed shadow-3xs">
-            <p className="font-normal">
-              <strong className="text-amber-400 font-extrabold mr-1">Statutory Practice & Demonstration Portal:</strong>
-              {t.disclaimer}
-            </p>
-          </div>
+        {/* 2. Practice/Demo Banner */}
+        <div className="mt-8 border-t border-slate-800 pt-6">
+          <p className="text-[11px] text-slate-500 leading-relaxed font-normal">
+            <strong className="text-slate-400 font-semibold mr-1">Statutory Practice & Demonstration Portal:</strong>
+            {t.disclaimer}
+          </p>
+        </div>
 
-          {/* Bottom Copyright & Compliance Bar */}
-          <div className="mt-6 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 gap-3 border-t border-slate-800/80 pt-4">
-            <span className="font-medium text-slate-300">© 2026 RTI Saathi • Right to Information Citizen Gateway</span>
-            <div className="flex flex-wrap items-center gap-3 text-slate-300">
-              <span className="flex items-center gap-1 text-emerald-400 font-bold">
-                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
-                NIC Standards
-              </span>
-              <span>•</span>
-              <span className="text-slate-300 font-medium">GIGW 3.0 Aligned</span>
-              <span>•</span>
-              <span className="text-slate-300 font-medium">WCAG 2.2 AA</span>
+        {/* 3. Bottom Bar */}
+        <div className="mt-6 border-t border-slate-800 pt-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-6 text-xs text-slate-550">
+            <span>{t.rights}</span>
+            <div className="flex items-center gap-3">
+              {t.links.map((link, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setActiveView(link.view)}
+                  className="hover:text-white transition-colors cursor-pointer font-medium text-slate-500"
+                >
+                  {link.label}
+                </button>
+              ))}
             </div>
+          </div>
+          <div className="flex items-center gap-4 text-xs text-slate-500 shrink-0">
+            <span className="text-slate-400 font-medium">GIGW 3.0 Aligned</span>
+            <span>|</span>
+            <span className="text-slate-400 font-medium">WCAG 2.2 AA</span>
+            <button 
+              onClick={scrollToTop} 
+              className="p-1.5 rounded bg-slate-800 hover:bg-slate-700 text-white transition-colors cursor-pointer ml-2"
+              title="Scroll to top"
+            >
+              <ArrowUp className="h-3.5 w-3.5" />
+            </button>
           </div>
         </div>
 

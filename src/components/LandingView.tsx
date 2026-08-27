@@ -4,18 +4,20 @@ import React, { useState } from 'react';
 import { 
   FileText, Search, ShieldCheck, Clock, CheckCircle2, 
   ArrowRight, Sparkles, BookOpen, Scale, HelpCircle, 
-  Landmark, ChevronRight, CornerDownRight, FileQuestion, AlertTriangle, RefreshCw 
+  Landmark, ChevronRight, CornerDownRight, FileQuestion, AlertTriangle, RefreshCw,
+  User, CheckCircle, HelpCircle as HelpIcon
 } from 'lucide-react';
 import { authorityService } from '../services/authorityService';
-import { AuthoritySuggestionResult, Authority } from '../services/types';
+import { AuthoritySuggestionResult } from '../services/types';
 import { seedSearchResults } from '../services/seedData';
 
 interface LandingViewProps {
   setActiveView: (view: string) => void;
   language: 'en' | 'hi';
+  setHelpCategory?: (category: 'All' | 'Basics' | 'Fees' | 'Process' | 'Appeals' | 'Exemptions') => void;
 }
 
-export default function LandingView({ setActiveView, language }: LandingViewProps) {
+export default function LandingView({ setActiveView, language, setHelpCategory }: LandingViewProps) {
   // Authority Finder interactive query state
   const [authorityQuery, setAuthorityQuery] = useState('');
   const [authorityResult, setAuthorityResult] = useState<AuthoritySuggestionResult | null>(null);
@@ -49,492 +51,846 @@ export default function LandingView({ setActiveView, language }: LandingViewProp
     setSearchResults(filtered);
   };
 
-  const homepageFaqs = [
-    {
-      q: language === 'hi' ? 'यदि 30 दिनों के भीतर उत्तर न मिले तो क्या होगा?' : 'What happens if there is no response after 30 days?',
-      a: language === 'hi'
-        ? 'आरटीआई अधिनियम की धारा 7(2) के तहत, 30 दिनों में उत्तर न देना "डीम्ड रिफ्यूजल" (माना गया अस्वीकरण) माना जाता है। आप धारा 19(1) के तहत बिना किसी शुल्क के तुरंत प्रथम अपील दायर कर सकते हैं।'
-        : 'Under Section 7(2) of the RTI Act, failure to respond within 30 days is legally treated as a "Deemed Refusal". You are entitled to file a First Appeal immediately under Section 19(1) completely free of charge.',
-      citation: 'Section 7(2) & 19(1)'
-    },
-    {
-      q: language === 'hi' ? 'सीआईसी (CIC) में द्वितीय अपील कब दायर की जा सकती है?' : 'When can a Second Appeal be filed with the CIC?',
-      a: language === 'hi'
-        ? 'यदि प्रथम अपीलीय अधिकारी (FAA) 45 दिनों में निर्णय नहीं देता है या अपूर्ण जानकारी देता है, तो धारा 19(3) के तहत केंद्रीय सूचना आयोग (CIC) में 90 दिनों के भीतर द्वितीय अपील की जा सकती है।'
-        : 'If the First Appellate Authority (FAA) fails to issue an order within 45 days or upholds an improper denial, you can file a Second Appeal under Section 19(3) to the Central Information Commission (CIC) within 90 days.',
-      citation: 'Section 19(3)'
-    },
-    {
-      q: language === 'hi' ? 'आरटीआई आवेदन शुल्क कितना है और क्या यह पोर्टल वास्तविक है?' : 'What is the RTI application fee, and how does payment work here?',
-      a: language === 'hi'
-        ? 'वास्तविक कानून में केंद्र सरकार के लिए ₹10 का सांविधिक शुल्क है (BPL कार्डधारकों के लिए निःशुल्क)। इस पोर्टल पर सभी फाइलिंग और भुगतान अभ्यास/प्रशिक्षण के लिए सिमुलेटेड हैं (कोई वास्तविक बैंक कटौती नहीं होती)।'
-        : 'Statutory Rule & Practice Notice: Under Rule 3 of the RTI Rules 2012, Central requests require a ₹10 fee (waived for BPL cardholders under Section 7(5)). In this demonstration environment, all filing and payment workflows are simulated for learning with no real banking charges.',
-      citation: 'Rule 3, RTI Rules 2012'
-    },
-    {
-      q: language === 'hi' ? 'कौन आरटीआई दायर कर सकता है और क्या हिंदी में लिख सकते हैं?' : 'Who is eligible to file, and can RTI requests be filed in Hindi?',
-      a: language === 'hi'
-        ? 'धारा 3 के तहत भारत का कोई भी नागरिक आरटीआई दायर कर सकता है। धारा 6(1) के अनुसार आवेदन हिंदी, अंग्रेजी या क्षेत्रीय राजभाषा में प्रस्तुत किया जा सकता है।'
-        : 'Under Section 3, any citizen of India is eligible to file an RTI. Under Section 6(1), applications can be drafted in Hindi, English, or the official language of the area.',
-      citation: 'Section 3 & 6(1)'
+  const handlePopularSearch = (term: string) => {
+    setInfoQuery(term);
+    const q = term.toLowerCase();
+    const filtered = seedSearchResults.filter(item => 
+      item.title.toLowerCase().includes(q) || 
+      item.snippet.toLowerCase().includes(q) ||
+      item.category.toLowerCase().includes(q)
+    );
+    setSearchResults(filtered);
+  };
+
+  const handleLearnClick = (category: 'All' | 'Basics' | 'Fees' | 'Process' | 'Appeals' | 'Exemptions') => {
+    if (setHelpCategory) {
+      setHelpCategory(category);
     }
-  ];
+    setActiveView('help');
+  };
 
   const t = {
     en: {
+      heroBadge: 'RIGHT TO INFORMATION ACT, 2005',
       heroTitle: 'Get the information you have a right to know.',
-      heroSub: 'File, track, and manage your Right to Information requests through one clear, guided citizen journey.',
-      startRti: 'Start an RTI →',
-      trackRti: 'Track an RTI',
-      notSureBtn: 'Not sure where to begin? Find the right authority ➔',
-      quickStartTitle: 'What would you like to do?',
-      quickStartFile: 'File an RTI',
-      quickStartFileDesc: 'Draft and submit a new request with adaptive AI guidance',
-      quickStartTrack: 'Track an Application',
-      quickStartTrackDesc: 'Check 30-day deadlines, CPIO status, and updates',
-      quickStartAuth: 'Find an Authority',
-      quickStartAuthDesc: 'Locate central ministries and local government bodies',
-      quickStartReconcile: 'Payment Reconciliation',
-      quickStartReconcileDesc: 'Sync failed or pending ₹10 fee transactions',
-      howTitle: 'How RTI Saathi helps',
-      howSub: 'Navigating public records made simple, legally precise, and fully transparent.',
-      authFinderTitle: 'Not sure where to send your request?',
-      authFinderSub: 'Describe what you need in plain language. We will match the designated Public Information Officer (CPIO).',
-      authFinderPlaceholder: 'e.g. I want information about road construction expenditure in my area...',
-      findBtn: 'Find the right authority',
-      searchTitle: 'Search RTI information',
-      searchSub: 'Explore statutory rules, published records, proactive disclosures, and FAQs.',
-      searchPlaceholder: 'Search by keyword (e.g. 30 days limit, Section 8, tender expenditure)...',
-      scopeNoticeTitle: 'Central Government Scope Notice',
-      scopeNotice: 'RTI Saathi is designed for filing inquiries with Central Ministries, Departments, and Central Public Authorities (Railways, Passports, NHAI, EPFO, UIDAI, etc.). Inquiries for State-level bodies (state police, local municipalities, land revenue) must be submitted through their designated State RTI Portals.'
+      heroSub: 'File an RTI request, find the right authority, track your application, and exercise your rights under the RTI Act, 2005.',
+      startRti: 'File an RTI →',
+      trackRti: 'Track an Application',
+      
+      authFinderHeading: 'Not sure where to send your RTI?',
+      authFinderSub: 'Describe what information you need and we\'ll help identify the appropriate authority.',
+      authFinderPlaceholder: 'e.g. Road construction expenditure in my area...',
+      authFinderBtn: 'Find the right authority',
+      authFinderLabel: 'Smart Authority Finder',
+      authFinderLabelDesc: 'Assisted matching across public authorities',
+      authStep1: 'Describe your need',
+      authStep2: 'We find the right authority',
+      authStep3: 'You file your RTI with ease',
+      
+      quickActionsHeading: 'What can you do?',
+      quickActionFile: 'File an RTI',
+      quickActionFileDesc: 'Draft and submit a new RTI request.',
+      quickActionTrack: 'Track an Application',
+      quickActionTrackDesc: 'Check status, deadlines and responses.',
+      quickActionAuth: 'Find an Authority',
+      quickActionAuthDesc: 'Identify the correct public authority or CPIO.',
+      quickActionAppeal: 'File a First Appeal',
+      quickActionAppealDesc: 'Challenge delayed, incomplete or unsatisfactory information.',
+      quickActionMyRtis: 'My RTIs',
+      quickActionMyRtisDesc: 'View and manage your submitted RTI requests.',
+      quickActionPayment: 'Payment & Receipts',
+      quickActionPaymentDesc: 'Make payments and access your receipts.',
+      
+      howHeading: 'How RTI Saathi works',
+      howStep1Title: 'Find the authority',
+      howStep1Desc: 'Identify the appropriate Public Information Officer.',
+      howStep2Title: 'Build your request',
+      howStep2Desc: 'Answer guided questions and prepare your RTI application.',
+      howStep3Title: 'Submit & track',
+      howStep3Desc: 'Submit the request and track the statutory timeline.',
+      howStep4Title: 'Receive the response',
+      howStep4Desc: 'Review the response and file an appeal when necessary.',
+      
+      trackPreviewHeading: 'Track your RTI application',
+      trackPreviewSub: 'Know where your application stands and keep track of important deadlines.',
+      trackPreviewBtn: 'Track Application',
+      trackPreviewApp: 'Application',
+      trackPreviewStatus: 'Under Review',
+      trackPreviewSubmitted: 'Submitted on 12 May 2024',
+      trackPreviewStep1: 'Submitted',
+      trackPreviewStep1Date: '12 May 2024',
+      trackPreviewStep2: 'Received by CPIO',
+      trackPreviewStep2Date: '14 May 2024',
+      trackPreviewStep3: 'Under Review',
+      trackPreviewStep3Date: '16 May 2024',
+      trackPreviewStep4: 'Response',
+      trackPreviewStep4Date: 'by 11 Jun 2024',
+      trackPreviewExpected: 'Expected response by: 11 Jun 2024',
+      trackPreviewViewDetails: 'View details',
+      
+      rightsHeading: 'Know your RTI rights',
+      rights30Days: '30 Days',
+      rights30DaysDesc: 'Typical statutory response period under Section 7(1).',
+      rightsFee: '₹10 Fee',
+      rightsFeeDesc: 'Standard application fee (waived for BPL cards).',
+      rightsAppeal: 'First Appeal',
+      rightsAppealDesc: 'Available if CPIO response is delayed or incomplete.',
+      rightsSecondAppeal: 'Second Appeal',
+      rightsSecondAppealDesc: 'Escalation to the Information Commission (CIC/SIC).',
+      rightsSec8: 'Section 8',
+      rightsSec8Desc: 'Exemptions: Categories of info protected from disclosure.',
+      rightsLearnMore: 'Learn more about RTI rules →',
+      
+      knowledgeHeading: 'RTI Knowledge Center',
+      knowledgeSub: 'Find guidance on RTI rules, applications, appeals, fees, exemptions and deadlines.',
+      knowledgePlaceholder: 'Search RTI information...',
+      knowledgeBtn: 'Search',
+      knowledgePopular: 'Popular links',
+      knowledgePopular1: '30-day response time',
+      knowledgePopular2: 'How to file first appeal',
+      knowledgePopular3: 'RTI application fee',
+      knowledgePopular4: 'Section 8 exemptions',
+      knowledgeAllGuides: 'Browse all guides & FAQs ➔',
+      
+      resourcesHeading: 'Important RTI Resources',
+      resourcesBtn: 'Explore all resources ➔',
+      trustHeading: 'An initiative aligned with:',
+      
+      dopt: 'Department of Personnel and Training',
+      cic: 'Central Information Commission',
+      nationalPortal: 'National Portal of India',
+      indiaGovIn: 'india.gov.in',
+      gigw: 'Good Governance through Information'
     },
     hi: {
+      heroBadge: 'सूचना का अधिकार अधिनियम, 2005',
       heroTitle: 'वह जानकारी प्राप्त करें जिसे जानने का आपको अधिकार है।',
-      heroSub: 'सूचना का अधिकार (RTI) के तहत आवेदन दर्ज करें, ट्रैक करें और अपने अनुरोधों को एक स्पष्ट व निर्देशित यात्रा में प्रबंधित करें।',
-      startRti: 'आरटीआई शुरू करें →',
-      trackRti: 'आरटीआई ट्रैक करें',
-      notSureBtn: 'शुरुआत कहाँ से करें? सही विभाग खोजें ➔',
-      quickStartTitle: 'आज आप क्या करना चाहते हैं?',
-      quickStartFile: 'आरटीआई दाखिल करें',
-      quickStartFileDesc: 'सरल मार्गदर्शन के साथ नया आवेदन तैयार करें',
-      quickStartTrack: 'आवेदन ट्रैक करें',
-      quickStartTrackDesc: '30-दिवसीय समयसीमा और स्थिति देखें',
-      quickStartAuth: 'विभाग खोजें',
-      quickStartAuthDesc: 'केंद्रीय मंत्रालयों और स्थानीय निकायों को खोजें',
-      quickStartReconcile: 'भुगतान मिलान (Reconciliation)',
-      quickStartReconcileDesc: 'लंबित या विफल लेनदेन का सत्यापन करें',
-      howTitle: 'आरटीआई साथी कैसे सहायता करता है',
-      howSub: 'सरकारी सूचना प्राप्त करने की प्रक्रिया को सरल और स्पष्ट बनाएं।',
-      authFinderTitle: 'समझ नहीं आ रहा आवेदन कहाँ भेजें?',
+      heroSub: 'आरटीआई आवेदन दर्ज करें, सही विभाग खोजें, अपने आवेदन को ट्रैक करें और आरटीआई अधिनियम, 2005 के तहत अपने अधिकारों का उपयोग करें।',
+      startRti: 'आरटीआई दाखिल करें →',
+      trackRti: 'आवेदन ट्रैक करें',
+      
+      authFinderHeading: 'समझ नहीं आ रहा आवेदन कहाँ भेजें?',
       authFinderSub: 'सरल भाषा में लिखें कि आपको क्या जानकारी चाहिए। हम सही लोक सूचना अधिकारी (CPIO) का सुझाव देंगे।',
       authFinderPlaceholder: 'उदा. मुझे अपने क्षेत्र में सड़क निर्माण के खर्च की जानकारी चाहिए...',
-      findBtn: 'सही विभाग खोजें',
-      searchTitle: 'आरटीआई जानकारी खोजें',
-      searchSub: 'कानूनी नियम, प्रकाशित दस्तावेज और अक्सर पूछे जाने वाले प्रश्नों में खोजें।',
-      searchPlaceholder: 'सर्च करें (उदा. 30 दिन की सीमा, धारा 8, टेंडर खर्च)...',
-      scopeNoticeTitle: 'केंद्रीय सरकार क्षेत्राधिकार सूचना',
-      scopeNotice: 'आरटीआई साथी केंद्र सरकार के मंत्रालयों और केंद्रीय लोक प्राधिकरणों के लिए है। राज्य स्तर के विभागों (राज्य पुलिस, नगर पालिका) के लिए उनके आधिकारिक राज्य आरटीआई पोर्टल पर आवेदन करें।'
+      authFinderBtn: 'सही विभाग खोजें',
+      authFinderLabel: 'स्मार्ट विभाग खोजक',
+      authFinderLabelDesc: 'सार्वजनिक प्राधिकरणों में सहायता प्राप्त मिलान',
+      authStep1: 'अपनी आवश्यकता लिखें',
+      authStep2: 'हम विभाग खोजेंगे',
+      authStep3: 'आप आसानी से आरटीआई फाइल करें',
+      
+      quickActionsHeading: 'आप क्या कर सकते हैं?',
+      quickActionFile: 'आरटीआई दाखिल करें',
+      quickActionFileDesc: 'नया आरटीआई आवेदन तैयार करें और जमा करें।',
+      quickActionTrack: 'आवेदन ट्रैक करें',
+      quickActionTrackDesc: 'स्थिति, समयसीमा और उत्तरों की जांच करें।',
+      quickActionAuth: 'विभाग खोजें',
+      quickActionAuthDesc: 'सही लोक सूचना अधिकारी या विभाग की पहचान करें।',
+      quickActionAppeal: 'प्रथम अपील दायर करें',
+      quickActionAppealDesc: 'असंतोषजनक या विलंबित सूचना को चुनौती दें।',
+      quickActionMyRtis: 'मेरे आरटीआई',
+      quickActionMyRtisDesc: 'अपने सभी आरटीआई आवेदनों को प्रबंधित करें।',
+      quickActionPayment: 'भुगतान व रसीदें',
+      quickActionPaymentDesc: 'भुगतान करें और रसीदें डाउनलोड करें।',
+      
+      howHeading: 'आरटीआई साथी कैसे काम करता है',
+      howStep1Title: 'विभाग खोजें',
+      howStep1Desc: 'सही लोक सूचना अधिकारी की पहचान करने के लिए खोजें।',
+      howStep2Title: 'आवेदन तैयार करें',
+      howStep2Desc: 'निर्देशित प्रश्नों के उत्तर दें और आवेदन का मसौदा तैयार करें।',
+      howStep3Title: 'जमा करें और ट्रैक करें',
+      howStep3Desc: 'आवेदन जमा करें और वैधानिक समयसीमा पर नजर रखें।',
+      howStep4Title: 'उत्तर प्राप्त करें',
+      howStep4Desc: 'उत्तर की समीक्षा करें और आवश्यक होने पर अपील दायर करें।',
+      
+      trackPreviewHeading: 'अपना आरटीआई आवेदन ट्रैक करें',
+      trackPreviewSub: 'जानें आपका आवेदन कहां है और वैधानिक समयसीमा का ट्रैक रखें।',
+      trackPreviewBtn: 'आवेदन ट्रैक करें',
+      trackPreviewApp: 'आवेदन',
+      trackPreviewStatus: 'समीक्षा के अधीन',
+      trackPreviewSubmitted: '12 मई 2024 को जमा किया गया',
+      trackPreviewStep1: 'जमा किया गया',
+      trackPreviewStep1Date: '12 मई 2024',
+      trackPreviewStep2: 'CPIO द्वारा प्राप्त',
+      trackPreviewStep2Date: '14 मई 2024',
+      trackPreviewStep3: 'समीक्षा के अधीन',
+      trackPreviewStep3Date: '16 मई 2024',
+      trackPreviewStep4: 'उत्तर नियत',
+      trackPreviewStep4Date: '11 जून 2024 तक',
+      trackPreviewExpected: 'अनुमानित उत्तर तिथि: 11 जून 2024',
+      trackPreviewViewDetails: 'विवरण देखें',
+      
+      rightsHeading: 'अपने आरटीआई अधिकार जानें',
+      rights30Days: '30 दिन',
+      rights30DaysDesc: 'धारा 7(1) के तहत उत्तर देने की वैधानिक अवधि।',
+      rightsFee: '₹10 शुल्क',
+      rightsFeeDesc: 'सांविधिक आवेदन शुल्क (गरीबी रेखा के नीचे के आवेदकों के लिए निःशुल्क)।',
+      rightsAppeal: 'प्रथम अपील',
+      rightsAppealDesc: 'उत्तर न मिलने या असंतोषजनक उत्तर पर उपलब्ध विकल्प।',
+      rightsSecondAppeal: 'द्वितीय अपील',
+      rightsSecondAppealDesc: 'सूचना आयोग (CIC/SIC) में अपील करने का सर्वोच्च अधिकार।',
+      rightsSec8: 'धारा 8 छूट',
+      rightsSec8Desc: 'वे श्रेणियां जिन्हें राष्ट्रीय सुरक्षा/हित में प्रकट नहीं किया जा सकता।',
+      rightsLearnMore: 'आरटीआई नियमों के बारे में और जानें →',
+      
+      knowledgeHeading: 'आरटीआई सेवाएं और सूचना निर्देशिका',
+      knowledgeSub: 'आरटीआई नियमों, आवेदनों, अपीलों, शुल्कों और छूटों पर आधिकारिक मार्गदर्शन प्राप्त करें।',
+      knowledgePlaceholder: 'आरटीआई नियम, समयसीमा खोजें...',
+      knowledgeBtn: 'खोजें',
+      knowledgePopular: 'लोकप्रिय खोजें',
+      knowledgePopular1: '30-दिन की उत्तर सीमा',
+      knowledgePopular2: 'प्रथम अपील कैसे दायर करें',
+      knowledgePopular3: 'आरटीआई आवेदन शुल्क',
+      knowledgePopular4: 'धारा 8 के तहत छूट',
+      knowledgeAllGuides: 'सभी गाइड्स और प्रश्न देखें ➔',
+      
+      resourcesHeading: 'महत्वपूर्ण आरटीआई संसाधन',
+      resourcesBtn: 'सभी संसाधन देखें ➔',
+      trustHeading: 'एक संरेखित पहल:',
+      
+      dopt: 'कार्मिक और प्रशिक्षण विभाग',
+      cic: 'केंद्रीय सूचना आयोग',
+      nationalPortal: 'भारत का राष्ट्रीय पोर्टल',
+      indiaGovIn: 'india.gov.in',
+      gigw: 'सूचना के माध्यम से सुशासन'
     }
   }[language];
 
   return (
-    <div className="flex-1 bg-[#f8fafc] grid-pattern relative overflow-hidden">
-      
-      {/* Background blurred decorative spheres */}
-      <div className="absolute top-24 left-1/10 w-96 h-96 rounded-full bg-blue-300/10 ambient-glow blur-3xl" />
-      <div className="absolute top-60 right-1/10 w-80 h-80 rounded-full bg-amber-350/10 ambient-glow blur-3xl" />
+    <div className="flex-1 bg-white overflow-x-hidden relative">
       
       {/* ========================================================================= */}
-      {/* CENTRAL-VS-STATE JURISDICTION SCOPE NOTICE BANNER */}
+      {/* 1. HERO SECTION (GOV.UK Inspired Full Image cover) */}
       {/* ========================================================================= */}
-      <section className="bg-amber-50/80 backdrop-blur-md border-b border-amber-200/60 px-4 py-3.5 text-xs relative z-10">
-        <div className="mx-auto max-w-7xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-          <div className="flex items-start gap-2.5">
-            <AlertTriangle className="h-4 w-4 text-amber-800 shrink-0 mt-0.5" />
-            <p className="text-slate-800 leading-relaxed font-semibold">
-              <strong className="text-amber-900 font-black mr-1">{t.scopeNoticeTitle}:</strong>
-              {t.scopeNotice}
-            </p>
-          </div>
-          <button
-            onClick={() => setActiveView('authorities')}
-            className="text-[11px] font-extrabold text-[#1e3a8a] hover:underline shrink-0 cursor-pointer bg-white px-3.5 py-1.5 rounded-xl border border-amber-200 shadow-3xs transition-transform hover:scale-102"
-          >
-            Explore 2,000+ Public Authorities Directory ➔
-          </button>
+      <section className="relative overflow-hidden z-10 mx-auto max-w-7xl my-6 rounded-xl shadow-xs border border-[#D9E1EA]">
+        {/* Background Image */}
+        <div className="absolute inset-0 w-full h-full">
+          <img 
+            src="/government-building.png" 
+            alt="Indian Parliament" 
+            className="w-full h-full object-cover object-[center_35%]" 
+          />
+          {/* Gradient Overlay: dark navy blue on the left to transparent on the right */}
+          <div className="absolute inset-0 bg-gradient-to-r from-[#172B5B]/95 via-[#172B5B]/80 to-transparent lg:w-2/3 md:w-3/4" />
+          <div className="absolute inset-0 bg-[#172B5B]/90 lg:hidden" /> {/* Solid overlay on mobile */}
         </div>
-      </section>
 
-      {/* ========================================================================= */}
-      {/* 1. HERO SECTION (Balanced 2-Column Citizen Layout) */}
-      {/* ========================================================================= */}
-      <section className="relative py-14 lg:py-20">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
-            
-            {/* Left Column: Heading & CTAs (7 cols) */}
-            <div className="lg:col-span-7 space-y-6 relative z-10">
-              
-              <div className="inline-flex items-center gap-1.5 rounded-full bg-blue-50/80 backdrop-blur-xs px-3.5 py-1.5 text-xs font-black text-[#1e3a8a] border border-blue-200/50">
-                <ShieldCheck className="h-3.5 w-3.5 text-[#1e3a8a]" />
-                <span>RTI Act 2005 Citizen Portal</span>
-              </div>
-
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-[#0f172a] leading-[1.12] bg-clip-text text-transparent bg-gradient-to-r from-slate-900 via-[#1e3a8a] to-[#0f172a]">
-                {t.heroTitle}
-              </h1>
-
-              <p className="text-base sm:text-lg text-slate-500 font-medium leading-relaxed max-w-2xl">
-                {t.heroSub}
-              </p>
-
-              {/* Primary & Secondary CTAs */}
-              <div className="pt-2 flex flex-col sm:flex-row items-center gap-3">
-                <button
-                  onClick={() => setActiveView('onboarding')}
-                  className="w-full sm:w-auto inline-flex items-center justify-center rounded-xl bg-[#1e3a8a] hover:bg-blue-900 text-white px-7 py-4 text-xs font-black shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:scale-95 transition-all duration-300 shrink-0 cursor-pointer"
-                >
-                  {t.startRti}
-                </button>
-
-                <button
-                  onClick={() => setActiveView('status-lookup')}
-                  className="w-full sm:w-auto inline-flex items-center justify-center rounded-xl bg-white/70 backdrop-blur-sm border border-slate-200 hover:bg-slate-50 text-[#0f172a] px-6 py-4 text-xs font-bold shadow-2xs hover:shadow-xs hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 shrink-0 cursor-pointer"
-                >
-                  {t.trackRti}
-                </button>
-              </div>
-
-              {/* Distinct Secondary Button: Find Right Authority */}
-              <div className="pt-1">
-                <button
-                  onClick={() => setActiveView('authorities')}
-                  className="inline-flex items-center gap-1.5 text-xs font-extrabold text-[#1e3a8a] bg-blue-50/80 hover:bg-blue-100 border border-blue-200 px-4 py-2.5 rounded-xl transition-all cursor-pointer shadow-3xs"
-                >
-                  <Landmark className="h-3.5 w-3.5 text-[#1e3a8a]" />
-                  <span>{t.notSureBtn}</span>
-                </button>
-              </div>
-
-            </div>
-
-            {/* Right Column: Functional Quick Start Panel (5 cols) */}
-            <div className="lg:col-span-5 relative z-10">
-              <div className="glass-card rounded-2xl p-6 shadow-md border border-slate-200/60 space-y-4 hover-lift">
-                <div className="border-b border-slate-100 pb-3">
-                  <h2 className="text-xs font-black text-[#0f172a] uppercase tracking-wider">
-                    {t.quickStartTitle}
-                  </h2>
-                </div>
-
-                <div className="space-y-3">
-                  <button
-                    onClick={() => setActiveView('onboarding')}
-                    className="w-full p-4 rounded-xl bg-white/90 hover:bg-blue-50/20 border border-slate-200/70 hover:border-blue-400/40 text-left transition-all flex items-center justify-between cursor-pointer group shadow-3xs"
-                  >
-                    <div className="space-y-0.5">
-                      <div className="font-extrabold text-xs text-[#1e3a8a] flex items-center gap-1.5">
-                        <FileText className="h-4.5 w-4.5" />
-                        <span>{t.quickStartFile}</span>
-                      </div>
-                      <div className="text-[11px] text-slate-500 font-medium">{t.quickStartFileDesc}</div>
-                    </div>
-                    <ChevronRight className="h-4 w-4 text-slate-400 group-hover:text-[#1e3a8a] group-hover:translate-x-0.5 transition-all shrink-0" />
-                  </button>
-
-                  <button
-                    onClick={() => setActiveView('status-lookup')}
-                    className="w-full p-4 rounded-xl bg-white/90 hover:bg-blue-50/20 border border-slate-200/70 hover:border-blue-400/40 text-left transition-all flex items-center justify-between cursor-pointer group shadow-3xs"
-                  >
-                    <div className="space-y-0.5">
-                      <div className="font-extrabold text-xs text-[#1e3a8a] flex items-center gap-1.5">
-                        <Clock className="h-4.5 w-4.5" />
-                        <span>{t.quickStartTrack}</span>
-                      </div>
-                      <div className="text-[11px] text-slate-500 font-medium">{t.quickStartTrackDesc}</div>
-                    </div>
-                    <ChevronRight className="h-4 w-4 text-slate-400 group-hover:text-[#1e3a8a] group-hover:translate-x-0.5 transition-all shrink-0" />
-                  </button>
-
-                  <button
-                    onClick={() => setActiveView('authorities')}
-                    className="w-full p-4 rounded-xl bg-white/90 hover:bg-blue-50/20 border border-slate-200/70 hover:border-blue-400/40 text-left transition-all flex items-center justify-between cursor-pointer group shadow-3xs"
-                  >
-                    <div className="space-y-0.5">
-                      <div className="font-extrabold text-xs text-[#1e3a8a] flex items-center gap-1.5">
-                        <Landmark className="h-4.5 w-4.5" />
-                        <span>{t.quickStartAuth}</span>
-                      </div>
-                      <div className="text-[11px] text-slate-500 font-medium">{t.quickStartAuthDesc}</div>
-                    </div>
-                    <ChevronRight className="h-4 w-4 text-slate-400 group-hover:text-[#1e3a8a] group-hover:translate-x-0.5 transition-all shrink-0" />
-                  </button>
-
-                  <button
-                    onClick={() => setActiveView('reconciliation')}
-                    className="w-full p-4 rounded-xl bg-white/90 hover:bg-blue-50/20 border border-slate-200/70 hover:border-blue-400/40 text-left transition-all flex items-center justify-between cursor-pointer group shadow-3xs"
-                  >
-                    <div className="space-y-0.5">
-                      <div className="font-extrabold text-xs text-[#1e3a8a] flex items-center gap-1.5">
-                        <RefreshCw className="h-4.5 w-4.5 animate-pulse-slow" />
-                        <span>{t.quickStartReconcile}</span>
-                      </div>
-                      <div className="text-[11px] text-slate-500 font-medium">{t.quickStartReconcileDesc}</div>
-                    </div>
-                    <ChevronRight className="h-4 w-4 text-slate-400 group-hover:text-[#1e3a8a] group-hover:translate-x-0.5 transition-all shrink-0" />
-                  </button>
-                </div>
-              </div>
-            </div>
-
+        {/* Hero Content */}
+        <div className="relative z-10 px-6 py-12 sm:px-10 sm:py-16 md:py-20 lg:py-24 max-w-2xl text-white space-y-5 lg:min-h-[460px] flex flex-col justify-center">
+          <span className="text-[11px] font-black tracking-wider uppercase text-amber-400">
+            {t.heroBadge}
+          </span>
+          <h1 className="text-3xl sm:text-4xl lg:text-[44px] font-black tracking-tight leading-[1.15]">
+            {t.heroTitle}
+          </h1>
+          <p className="text-sm sm:text-base text-slate-200 leading-relaxed font-normal">
+            {t.heroSub}
+          </p>
+          <div className="pt-4 flex flex-col sm:flex-row gap-3">
+            <button
+              onClick={() => setActiveView('onboarding')}
+              className="w-full sm:w-auto inline-flex items-center justify-center rounded-lg bg-[#2563EB] hover:bg-blue-600 text-white px-7 py-3 text-xs font-bold transition-all cursor-pointer shadow-sm"
+            >
+              {t.startRti}
+            </button>
+            <button
+              onClick={() => setActiveView('status-lookup')}
+              className="w-full sm:w-auto inline-flex items-center justify-center rounded-lg bg-transparent border border-white/40 hover:bg-white/10 text-white px-6 py-3 text-xs font-bold transition-all cursor-pointer"
+            >
+              {t.trackRti}
+            </button>
           </div>
         </div>
       </section>
 
       {/* ========================================================================= */}
-      {/* 2. HOW RTI SAATHI HELPS (4 Steps with Card Layout) */}
+      {/* 2. WHAT CAN YOU DO? (Service Directory Directory Layout) */}
       {/* ========================================================================= */}
-      <section className="py-16 bg-white/40 backdrop-blur-xs relative z-10">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          
-          <div className="max-w-2xl mb-12">
-            <h2 className="text-2xl font-black text-[#0f172a] tracking-tight">
-              {t.howTitle}
+      <section className="py-12 bg-white relative z-10">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-8">
+          <div className="border-b border-[#D9E1EA] pb-3">
+            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[#111827] uppercase">
+              {t.quickActionsHeading}
             </h2>
-            <p className="text-xs sm:text-sm text-slate-500 mt-1 font-medium">
-              {t.howSub}
-            </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
               {
-                step: 'Step 01',
-                title: 'Find the right authority',
-                desc: 'Describe what you need. We match the designated Central Ministry or Public Information Officer (CPIO) across 2,000+ public authorities.'
+                title: t.quickActionFile,
+                desc: t.quickActionFileDesc,
+                view: 'onboarding',
+                icon: <FileText className="h-5 w-5 text-[#2563EB]" />
               },
               {
-                step: 'Step 02',
-                title: 'Build your request',
-                desc: 'Formulate adaptive, legally disclosable questions under Section 6(1) with automated Section 8 exemption screening.'
+                title: t.quickActionTrack,
+                desc: t.quickActionTrackDesc,
+                view: 'status-lookup',
+                icon: <Clock className="h-5 w-5 text-[#2563EB]" />
               },
               {
-                step: 'Step 03',
-                title: 'Track your application',
-                desc: 'Monitor the 30-day statutory countdown from registration and fee confirmation to CPIO response delivery.'
+                title: t.quickActionAuth,
+                desc: t.quickActionAuthDesc,
+                view: 'authorities',
+                icon: <Landmark className="h-5 w-5 text-[#2563EB]" />
               },
               {
-                step: 'Step 04',
-                title: 'Understand response & appeal',
-                desc: 'Review disclosures point-by-point. If records are withheld, escalate with pre-filled First Appeal (FAA) and Second Appeal (CIC) petitions.'
+                title: t.quickActionAppeal,
+                desc: t.quickActionAppealDesc,
+                view: 'appeal-lookup',
+                icon: <Scale className="h-5 w-5 text-[#2563EB]" />
+              },
+              {
+                title: t.quickActionMyRtis,
+                desc: t.quickActionMyRtisDesc,
+                view: 'dashboard',
+                icon: <CheckCircle2 className="h-5 w-5 text-[#2563EB]" />
+              },
+              {
+                title: t.quickActionPayment,
+                desc: t.quickActionPaymentDesc,
+                view: 'reconciliation',
+                icon: <RefreshCw className="h-5 w-5 text-[#2563EB]" />
               }
-            ].map((s, idx) => (
-              <div key={idx} className="bg-white/80 border border-slate-200/50 hover:border-blue-300/40 p-5 rounded-2xl shadow-3xs hover-lift flex flex-col justify-between">
+            ].map((service, idx) => (
+              <button
+                key={idx}
+                onClick={() => setActiveView(service.view)}
+                className="bg-white border border-[#D9E1EA] hover:border-[#2563EB]/60 p-5 rounded-lg text-left transition-all hover:shadow-xs cursor-pointer flex flex-col justify-between h-40 group"
+              >
                 <div className="space-y-3">
-                  <span className="text-[10px] font-black text-[#1e3a8a] bg-blue-50/80 px-2 py-0.5 rounded-md border border-blue-200/30 uppercase tracking-widest inline-block">{s.step}</span>
-                  <h3 className="font-extrabold text-sm text-[#0f172a]">{s.title}</h3>
-                  <p className="text-xs text-slate-500 leading-relaxed font-normal">{s.desc}</p>
+                  <div className="flex items-center gap-2">
+                    {service.icon}
+                    <h3 className="font-extrabold text-sm text-[#111827] group-hover:text-[#2563EB] group-hover:underline transition-colors">
+                      {service.title}
+                    </h3>
+                  </div>
+                  <p className="text-xs text-[#64748B] leading-relaxed font-normal">
+                    {service.desc}
+                  </p>
                 </div>
-              </div>
+                <div className="text-[#2563EB] font-bold text-xs flex items-center gap-1 mt-4">
+                  <span>{language === 'hi' ? 'शुरू करें' : 'Get started'}</span>
+                  <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
+                </div>
+              </button>
             ))}
           </div>
-
         </div>
       </section>
 
       {/* ========================================================================= */}
-      {/* 3. INTELLIGENT AUTHORITY FINDER SECTION (Dark Dashboard Theme) */}
+      {/* 3. SMART AUTHORITY FINDER (Directly Below Services) */}
       {/* ========================================================================= */}
-      <section className="py-10 relative z-10">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          
-          <div className="bg-gradient-to-br from-slate-900 via-[#0f172a] to-blue-950 text-white rounded-3xl p-6 sm:p-10 shadow-lg border border-slate-800/80 overflow-hidden relative">
-            <div className="absolute -right-20 -bottom-20 w-80 h-80 rounded-full bg-blue-500/10 blur-3xl pointer-events-none" />
-            <div className="absolute -left-20 -top-20 w-80 h-80 rounded-full bg-amber-500/5 blur-3xl pointer-events-none" />
+      <section className="py-12 bg-[#F5F7FA] border-y border-[#D9E1EA] relative z-10">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-6">
+          <div className="border-b border-[#D9E1EA] pb-3">
+            <span className="text-[10px] font-black text-[#2563EB] uppercase tracking-wider block">
+              {t.authFinderLabel}
+            </span>
+            <h2 className="text-xl sm:text-2xl font-bold text-[#111827] mt-1">
+              {t.authFinderHeading}
+            </h2>
+            <p className="text-xs sm:text-sm text-[#64748B] mt-1">
+              {t.authFinderSub}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             
-            <div className="max-w-3xl space-y-2 mb-8 relative z-10">
-              <span className="text-[10px] font-black uppercase tracking-wider bg-blue-500/20 text-blue-300 border border-blue-500/30 px-2.5 py-1 rounded-full">
-                💡 Smart Matching System
-              </span>
-              <h2 className="text-2xl font-black tracking-tight text-white mt-3">
-                {t.authFinderTitle}
-              </h2>
-              <p className="text-xs sm:text-sm text-slate-400 font-normal leading-relaxed">
-                {t.authFinderSub}
-              </p>
-            </div>
-
-            <form onSubmit={handleFindAuthority} className="max-w-3xl space-y-4 relative z-10">
-              <div className="flex flex-col sm:flex-row gap-2">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3.5 top-3.5 h-4.5 w-4.5 text-slate-400" />
-                  <input
-                    type="text"
-                    value={authorityQuery}
-                    onChange={(e) => setAuthorityQuery(e.target.value)}
-                    placeholder={t.authFinderPlaceholder}
-                    className="w-full rounded-xl border border-slate-700 bg-slate-800/40 pl-11 pr-4 py-3.5 text-xs font-semibold text-white outline-none focus:border-blue-400 focus:bg-slate-900/80 transition-all shadow-3xs"
-                  />
+            {/* Finder form (7 cols) */}
+            <div className="lg:col-span-7 space-y-4">
+              <form onSubmit={handleFindAuthority} className="space-y-3">
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3.5 top-3.5 h-4 w-4 text-[#64748B]" />
+                    <input
+                      type="text"
+                      value={authorityQuery}
+                      onChange={(e) => setAuthorityQuery(e.target.value)}
+                      placeholder={t.authFinderPlaceholder}
+                      className="w-full rounded-lg border border-[#D9E1EA] bg-white pl-10 pr-4 py-3.5 text-xs font-semibold text-[#111827] outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]/25 transition-all shadow-3xs"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={isSearchingAuth || !authorityQuery.trim()}
+                    className="rounded-lg bg-[#2563EB] hover:bg-blue-600 text-white px-6 py-3.5 text-xs font-bold transition-all disabled:opacity-50 cursor-pointer shadow-sm"
+                  >
+                    {isSearchingAuth ? (language === 'en' ? 'Searching...' : 'खोज रहे हैं...') : t.authFinderBtn}
+                  </button>
                 </div>
+                <div className="text-[10px] text-[#64748B] flex items-center gap-1.5 font-medium">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                  <span>{t.authFinderLabelDesc}</span>
+                </div>
+              </form>
 
-                <button
-                  type="submit"
-                  disabled={isSearchingAuth || !authorityQuery.trim()}
-                  className="rounded-xl bg-blue-600 hover:bg-blue-700 text-white px-7 py-3 text-xs font-black shadow-md cursor-pointer transition-all disabled:opacity-50 hover-lift"
-                >
-                  {isSearchingAuth ? 'Searching...' : t.findBtn}
-                </button>
-              </div>
-
-              {/* Suggestion Result Output */}
+              {/* Suggestions output details */}
               {authorityResult && authorityResult.suggestedAuthority && (
-                <div className="mt-4 rounded-2xl border border-blue-500/30 bg-blue-950/40 p-5 space-y-3.5 animate-in fade-in duration-300">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-black uppercase tracking-wider bg-blue-600 text-white px-2.5 py-0.5 rounded-md">
-                      Suggested Public Authority ({authorityResult.confidence}% Match)
+                <div className="rounded-lg border border-blue-200 bg-white p-5 space-y-3 shadow-xs animate-in fade-in duration-200">
+                  <div className="flex items-center justify-between border-b border-[#D9E1EA] pb-2">
+                    <span className="text-[9px] font-black uppercase tracking-wider bg-[#2563EB] text-white px-2 py-0.5 rounded">
+                      {language === 'en' ? 'Suggested Public Authority' : 'सुझाया गया लोक प्राधिकरण'} ({authorityResult.confidence}% {language === 'en' ? 'Match' : 'मिलान'})
                     </span>
-                    <span className="text-[11px] font-bold text-slate-400">
-                      Jurisdiction: {authorityResult.jurisdictionLevel}
+                    <span className="text-[10px] font-semibold text-[#64748B]">
+                      {language === 'en' ? 'Level' : 'स्तर'}: {authorityResult.jurisdictionLevel}
                     </span>
                   </div>
 
-                  <div className="space-y-1">
-                    <h4 className="font-extrabold text-sm text-blue-300">
+                  <div className="space-y-1.5">
+                    <h4 className="font-bold text-sm text-[#172B5B]">
                       {authorityResult.suggestedAuthority.name}
                     </h4>
-                    <p className="text-xs text-slate-300 leading-relaxed font-medium">
+                    <p className="text-xs text-[#64748B] leading-relaxed">
                       {authorityResult.reason}
                     </p>
                   </div>
 
-                  <div className="pt-3 flex flex-col sm:flex-row sm:items-center justify-between border-t border-slate-800 gap-2">
-                    <span className="text-[11px] text-slate-400">
-                      CPIO: <strong className="text-white font-bold">{authorityResult.suggestedAuthority.cpioName}</strong> ({authorityResult.suggestedAuthority.department})
+                  <div className="pt-3 flex flex-col sm:flex-row sm:items-center justify-between border-t border-[#D9E1EA] gap-2 text-[11px] text-[#64748B]">
+                    <span>
+                      CPIO: <strong className="text-[#111827] font-bold">{authorityResult.suggestedAuthority.cpioName}</strong> ({authorityResult.suggestedAuthority.department})
                     </span>
                     <button
                       type="button"
                       onClick={() => setActiveView('onboarding')}
-                      className="text-xs font-black text-blue-450 hover:text-blue-300 transition-colors inline-flex items-center gap-1 cursor-pointer self-end"
+                      className="text-xs font-bold text-[#2563EB] hover:underline transition-all inline-flex items-center gap-0.5 cursor-pointer"
                     >
-                      Draft Request for this Authority ➔
+                      <span>{language === 'en' ? 'Draft Request' : 'आवेदन तैयार करें'} ➔</span>
                     </button>
                   </div>
                 </div>
               )}
-            </form>
-          </div>
-
-        </div>
-      </section>
-
-      {/* ========================================================================= */}
-      {/* 4. COMPREHENSIVE FAQS & 30-DAY STATUTORY TIMELINE RULES */}
-      {/* ========================================================================= */}
-      <section className="py-16 relative z-10">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-8">
-          
-          <div className="max-w-3xl space-y-2">
-            <h2 className="text-2xl font-black text-[#0f172a] tracking-tight">
-              {language === 'en' ? 'Key Statutory Rules & FAQs' : 'महत्वपूर्ण कानूनी नियम व प्रश्न'}
-            </h2>
-            <p className="text-xs sm:text-sm text-slate-550 font-medium leading-relaxed">
-              {language === 'en' 
-                ? 'Everything citizens need to know about timelines, deemed refusals, and appeals under the RTI Act 2005.'
-                : 'आरटीआई अधिनियम 2005 के तहत समयसीमा, डीम्ड रिफ्यूजल और अपीलों के बारे में आवश्यक जानकारी।'}
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {homepageFaqs.map((faq, idx) => (
-              <div key={idx} className="glass-card rounded-2xl p-5 hover-lift shadow-3xs space-y-2.5">
-                <div className="flex justify-between items-center">
-                  <span className="text-[10px] font-black uppercase text-[#1e3a8a] bg-blue-50 border border-blue-200/50 px-2 py-0.5 rounded-md">
-                    {faq.citation}
-                  </span>
-                </div>
-                <h3 className="font-extrabold text-sm text-[#0f172a]">
-                  {faq.q}
-                </h3>
-                <p className="text-xs text-slate-500 leading-relaxed font-normal">
-                  {faq.a}
-                </p>
-              </div>
-            ))}
-          </div>
-
-        </div>
-      </section>
-
-      {/* ========================================================================= */}
-      {/* 5. SEARCH RTI INFORMATION (Official vs Guidance vs Statutory) */}
-      {/* ========================================================================= */}
-      <section className="py-14 bg-white">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-6">
-          
-          <div className="max-w-3xl space-y-2">
-            <h2 className="text-2xl font-black text-[#17212B] tracking-tight">
-              {t.searchTitle}
-            </h2>
-            <p className="text-xs sm:text-sm text-[#52606D] font-normal leading-relaxed">
-              {t.searchSub}
-            </p>
-          </div>
-
-          <form onSubmit={handleInfoSearch} className="max-w-2xl">
-            <div className="relative">
-              <Search className="absolute left-3.5 top-3.5 h-4 w-4 text-slate-400" />
-              <input
-                type="text"
-                value={infoQuery}
-                onChange={(e) => setInfoQuery(e.target.value)}
-                placeholder={t.searchPlaceholder}
-                className="w-full rounded-xl border border-[#D9E0E6] bg-slate-50 pl-10 pr-4 py-3 text-xs font-medium text-slate-800 outline-none focus:border-[#123B5D] focus:bg-white shadow-3xs"
-              />
             </div>
-          </form>
 
-          {/* Search Result Items */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-            {searchResults.map((item) => (
-              <div 
-                key={item.id}
-                className="rounded-2xl border border-[#D9E0E6] bg-white p-5 shadow-3xs space-y-2 hover:border-slate-300 transition-colors"
-              >
-                <div className="flex items-center justify-between">
-                  <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-md ${
-                    item.sourceType === 'Official Source' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' :
-                    item.sourceType === 'Statutory Rule' ? 'bg-purple-50 text-purple-800 border border-purple-200' :
-                    'bg-blue-50 text-blue-800 border border-blue-200'
-                  }`}>
-                    {item.sourceType}
-                  </span>
-                  <span className="text-[11px] text-slate-400 font-semibold">{item.category}</span>
+            {/* Steps on Right (5 cols) */}
+            <div className="lg:col-span-5 border-t lg:border-t-0 lg:border-l border-[#D9E1EA] pt-6 lg:pt-0 lg:pl-8 space-y-4">
+              <div className="space-y-4">
+                {[
+                  { num: '01', title: t.authStep1, desc: language === 'en' ? 'Describe your query details.' : 'अपने प्रश्न का विवरण दर्ज करें।' },
+                  { num: '02', title: t.authStep2, desc: language === 'en' ? 'AI suggests matching CPIO authority.' : 'एआई संबंधित सीपीआईओ प्राधिकरण का सुझाव देता है।' },
+                  { num: '03', title: t.authStep3, desc: language === 'en' ? 'File application with fee waiver.' : 'शुल्क छूट के साथ आवेदन दाखिल करें।' }
+                ].map((step, idx) => (
+                  <div key={idx} className="flex items-start gap-3">
+                    <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white border border-[#D9E1EA] text-[10px] font-bold text-[#64748B]">
+                      {step.num}
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold text-[#111827]">{step.title}</h4>
+                      <p className="text-[11px] text-[#64748B] font-normal">{step.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* ========================================================================= */}
+      {/* 4. HOW IT WORKS */}
+      {/* ========================================================================= */}
+      <section className="py-12 bg-white relative z-10">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-10">
+          <div className="border-b border-[#D9E1EA] pb-3">
+            <h2 className="text-xl sm:text-2xl font-bold text-[#111827] uppercase">
+              {t.howHeading}
+            </h2>
+          </div>
+
+          <div className="relative">
+            {/* Desktop Connecting Line */}
+            <div className="absolute top-6 left-16 right-16 h-0.5 border-t border-dashed border-[#D9E1EA] hidden lg:block" />
+
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 relative z-10">
+              {[
+                {
+                  step: '01',
+                  title: t.howStep1Title,
+                  desc: t.howStep1Desc,
+                },
+                {
+                  step: '02',
+                  title: t.howStep2Title,
+                  desc: t.howStep2Desc,
+                },
+                {
+                  step: '03',
+                  title: t.howStep3Title,
+                  desc: t.howStep3Desc,
+                },
+                {
+                  step: '04',
+                  title: t.howStep4Title,
+                  desc: t.howStep4Desc,
+                }
+              ].map((item, idx) => (
+                <div key={idx} className="flex flex-col items-center lg:items-start text-center lg:text-left space-y-3">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#172B5B] text-white text-sm font-black shadow-xs ring-4 ring-white">
+                    {item.step}
+                  </div>
+                  <div className="space-y-1.5">
+                    <h3 className="font-extrabold text-sm text-[#111827]">{item.title}</h3>
+                    <p className="text-[11px] text-[#64748B] leading-relaxed max-w-xs font-normal">
+                      {item.desc}
+                    </p>
+                  </div>
                 </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
 
-                <h3 className="font-extrabold text-xs sm:text-sm text-[#17212B]">
+      {/* ========================================================================= */}
+      {/* 5. TRACK YOUR RTI APPLICATION */}
+      {/* ========================================================================= */}
+      <section className="py-12 bg-[#F5F7FA] border-y border-[#D9E1EA] relative z-10">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            
+            {/* Left Column: Form (5 cols) */}
+            <div className="lg:col-span-5 space-y-4">
+              <span className="text-[10px] font-black text-[#2563EB] uppercase tracking-wider block">
+                {language === 'hi' ? 'रियल-टाइम ट्रैकिंग' : 'Real-time Tracking'}
+              </span>
+              <h2 className="text-xl sm:text-2xl font-bold text-[#111827]">
+                {t.trackPreviewHeading}
+              </h2>
+              <p className="text-xs sm:text-sm text-[#64748B] leading-relaxed font-normal">
+                {t.trackPreviewSub}
+              </p>
+              
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="e.g. RTI-2024-000123"
+                  className="rounded-lg border border-[#D9E1EA] bg-white px-3.5 py-2.5 text-xs font-semibold text-[#111827] outline-none focus:border-[#2563EB] flex-1"
+                />
+                <button
+                  onClick={() => setActiveView('status-lookup')}
+                  className="rounded-lg bg-[#2563EB] hover:bg-blue-600 text-white px-5 py-2.5 text-xs font-bold transition-all cursor-pointer shadow-sm shrink-0"
+                >
+                  {t.trackPreviewBtn}
+                </button>
+              </div>
+            </div>
+
+            {/* Right Column: Timeline Card (7 cols) */}
+            <div className="lg:col-span-7 bg-white border border-[#D9E1EA] rounded-lg p-5 shadow-xs space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#D9E1EA] pb-3 gap-2">
+                <div className="flex items-center gap-2">
+                  <span className="font-extrabold text-xs text-[#111827]">{t.trackPreviewApp}-2024-000123</span>
+                  <span className="inline-flex items-center text-[9px] font-bold text-[#16A34A] bg-[#DCFCE7] border border-[#BBF7D0] px-1.5 py-0.5 rounded-full">
+                    {t.trackPreviewStatus}
+                  </span>
+                </div>
+                <span className="text-[10px] text-[#64748B] font-medium">{t.trackPreviewSubmitted}</span>
+              </div>
+
+              {/* Status steps */}
+              <div className="grid grid-cols-4 gap-2 pt-1 relative">
+                {/* Connecting lines */}
+                <div className="absolute top-2 left-6 right-6 h-0.5 bg-[#E2E8F0] -translate-y-0.5" />
+                <div className="absolute top-2 left-6 w-2/3 h-0.5 bg-emerald-500 -translate-y-0.5" />
+
+                {[
+                  { label: t.trackPreviewStep1, date: t.trackPreviewStep1Date, state: 'done' },
+                  { label: t.trackPreviewStep2, date: t.trackPreviewStep2Date, state: 'done' },
+                  { label: t.trackPreviewStep3, date: t.trackPreviewStep3Date, state: 'active' },
+                  { label: t.trackPreviewStep4, date: t.trackPreviewStep4Date, state: 'upcoming' }
+                ].map((step, idx) => (
+                  <div key={idx} className="flex flex-col items-center text-center space-y-1 relative z-10">
+                    <div className={`h-4 w-4 rounded-full flex items-center justify-center ring-4 ring-white ${
+                      step.state === 'done' ? 'bg-emerald-500 text-white' :
+                      step.state === 'active' ? 'bg-blue-600 text-white' : 'bg-slate-200'
+                    }`}>
+                      {step.state === 'done' && <CheckCircle2 className="h-2.5 w-2.5" />}
+                      {step.state === 'active' && <div className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />}
+                    </div>
+                    <div className="space-y-0.5">
+                      <p className="text-[9px] font-bold text-[#111827] leading-tight">{step.label}</p>
+                      <p className="text-[8px] text-[#64748B] font-semibold">{step.date}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between border-t border-[#D9E1EA] pt-3.5 text-xs text-[#64748B] gap-2">
+                <span className="italic text-[10px] text-amber-600 bg-amber-50 px-2 py-0.5 rounded border border-amber-100 font-medium">
+                  {language === 'hi' ? 'प्रदर्शन सूचना: यह केवल एक उदाहरण / अभ्यास डेटा है।' : 'Practice Note: This is simulated sample data for demonstration.'}
+                </span>
+                <button
+                  onClick={() => setActiveView('status-lookup')}
+                  className="font-bold text-[#2563EB] hover:underline transition-all inline-flex items-center gap-0.5 cursor-pointer"
+                >
+                  <span>{t.trackPreviewViewDetails} ➔</span>
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* ========================================================================= */}
+      {/* 6. KNOW YOUR RTI RIGHTS */}
+      {/* ========================================================================= */}
+      <section className="py-12 bg-white relative z-10">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between border-b border-[#D9E1EA] pb-3 gap-3">
+            <h2 className="text-xl sm:text-2xl font-bold text-[#111827] uppercase">
+              {t.rightsHeading}
+            </h2>
+            <button
+              onClick={() => handleLearnClick('All')}
+              className="text-xs font-bold text-[#2563EB] hover:underline transition-all cursor-pointer inline-flex items-center gap-0.5"
+            >
+              <span>{t.rightsLearnMore}</span>
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            {[
+              { title: t.rights30Days, desc: t.rights30DaysDesc },
+              { title: t.rightsFee, desc: t.rightsFeeDesc },
+              { title: t.rightsAppeal, desc: t.rightsAppealDesc },
+              { title: t.rightsSecondAppeal, desc: t.rightsSecondAppealDesc },
+              { title: t.rightsSec8, desc: t.rightsSec8Desc }
+            ].map((item, idx) => (
+              <div
+                key={idx}
+                className="bg-white border border-[#D9E1EA] p-5 rounded-lg flex flex-col justify-between h-36 hover:border-[#2563EB]/40 transition-colors"
+              >
+                <h3 className="font-extrabold text-sm text-[#111827]">
                   {item.title}
                 </h3>
-
-                <p className="text-xs text-[#52606D] leading-relaxed font-normal">
-                  {item.snippet}
+                <p className="text-[11px] text-[#64748B] leading-relaxed font-normal mt-2">
+                  {item.desc}
                 </p>
-
-                <div className="pt-2 text-[11px] text-slate-400 font-medium border-t border-slate-100 flex justify-between items-center">
-                  <span>Source: {item.sourceName}</span>
-                  <button 
-                    onClick={() => setActiveView('help')}
-                    className="text-[#123B5D] font-bold hover:underline cursor-pointer"
-                  >
-                    Read Guide ➔
-                  </button>
-                </div>
               </div>
             ))}
           </div>
+        </div>
+      </section>
 
+      {/* ========================================================================= */}
+      {/* 7. KNOWLEDGE CENTER (Search & Sidebar Resources) */}
+      {/* ========================================================================= */}
+      <section className="py-12 bg-[#F5F7FA] border-y border-[#D9E1EA] relative z-10">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-6">
+          <div className="border-b border-[#D9E1EA] pb-3">
+            <h2 className="text-xl sm:text-2xl font-bold text-[#111827] uppercase">
+              {t.knowledgeHeading}
+            </h2>
+            <p className="text-xs sm:text-sm text-[#64748B] mt-1 font-normal">
+              {t.knowledgeSub}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            
+            {/* Left Search and Results (8 cols) */}
+            <div className="lg:col-span-8 space-y-6">
+              <form onSubmit={handleInfoSearch} className="flex gap-2">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3.5 top-3.5 h-4 w-4 text-[#64748B]" />
+                  <input
+                    type="text"
+                    value={infoQuery}
+                    onChange={(e) => setInfoQuery(e.target.value)}
+                    placeholder={t.knowledgePlaceholder}
+                    className="w-full rounded-lg border border-[#D9E1EA] bg-white pl-10 pr-4 py-3.5 text-xs font-semibold text-[#111827] outline-none focus:border-[#2563EB]"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="rounded-lg bg-[#2563EB] hover:bg-blue-600 text-white px-6 py-3.5 text-xs font-bold transition-all cursor-pointer shadow-sm"
+                >
+                  {t.knowledgeBtn}
+                </button>
+              </form>
+
+              {/* Popular links */}
+              <div className="flex flex-wrap items-center gap-2 text-xs text-[#64748B]">
+                <span className="font-semibold">{t.knowledgePopular}:</span>
+                {[
+                  { label: t.knowledgePopular1, term: '30-day response time' },
+                  { label: t.knowledgePopular2, term: 'How to file first appeal' },
+                  { label: t.knowledgePopular3, term: 'RTI application fee' },
+                  { label: t.knowledgePopular4, term: 'Section 8 exemptions' }
+                ].map((item, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => handlePopularSearch(item.term)}
+                    className="px-2.5 py-1 rounded border border-[#D9E1EA] bg-white text-[#2563EB] hover:bg-[#F5F7FA] transition-colors font-semibold cursor-pointer text-[11px]"
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Grid of Results */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                {searchResults.map((item) => (
+                  <div
+                    key={item.id}
+                    className="bg-white border border-[#D9E1EA] p-5 rounded-lg flex flex-col justify-between hover:border-[#2563EB]/40 transition-colors"
+                  >
+                    <div className="space-y-2.5">
+                      <div className="flex items-center justify-between text-[10px] font-bold">
+                        <span className={`px-2 py-0.5 rounded ${
+                          item.sourceType === 'Official Source' ? 'bg-[#DCFCE7] text-[#16A34A] border border-[#BBF7D0]' :
+                          item.sourceType === 'Statutory Rule' ? 'bg-[#FAF5FF] text-[#7E22CE] border border-[#E9D5FF]' :
+                          'bg-[#EFF6FF] text-[#1D4ED8] border border-[#DBEAFE]'
+                        }`}>
+                          {item.sourceType}
+                        </span>
+                        <span className="text-[#64748B]">{item.category}</span>
+                      </div>
+                      <h3 className="font-extrabold text-xs sm:text-sm text-[#111827]">
+                        {item.title}
+                      </h3>
+                      <p className="text-xs text-[#64748B] leading-relaxed font-normal">
+                        {item.snippet}
+                      </p>
+                    </div>
+
+                    <div className="pt-3 border-t border-[#D9E1EA] mt-4 flex justify-between items-center text-[10px] text-[#64748B] font-semibold">
+                      <span>Source: {item.sourceName}</span>
+                      <button
+                        onClick={() => handleLearnClick('All')}
+                        className="text-[#2563EB] hover:underline cursor-pointer"
+                      >
+                        Read Guide ➔
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="pt-2">
+                <button
+                  onClick={() => handleLearnClick('All')}
+                  className="text-xs font-bold text-[#2563EB] hover:underline cursor-pointer"
+                >
+                  {t.knowledgeAllGuides}
+                </button>
+              </div>
+            </div>
+
+            {/* Right: Important resources sidebar (4 cols) */}
+            <div className="lg:col-span-4 bg-white border border-[#D9E1EA] rounded-lg p-5 space-y-4 shadow-3xs">
+              <h3 className="font-black text-xs text-[#111827] uppercase tracking-wider border-b border-[#D9E1EA] pb-2">
+                {language === 'hi' ? 'महत्वपूर्ण आरटीआई संसाधन' : 'Important RTI resources'}
+              </h3>
+              
+              <div className="space-y-3.5 text-xs">
+                {[
+                  { label: 'RTI Act, 2005 (Full Text)', view: 'help', category: 'Basics' as const },
+                  { label: 'RTI Rules, 2012', url: 'https://rtionline.gov.in/RTI_Rules_2012.pdf' },
+                  { label: 'DoPT RTI Manual', url: 'https://dopt.gov.in/RTI_Manual' },
+                  { label: 'Central Information Commission', url: 'https://cic.gov.in' },
+                  { label: 'Public Authorities Directory', view: 'authorities' },
+                  { label: 'State RTI Portals', view: 'authorities' }
+                ].map((res, idx) => (
+                  <div key={idx} className="flex items-center justify-between">
+                    {res.url ? (
+                      <a
+                        href={res.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-semibold text-slate-700 hover:text-[#2563EB] transition-colors flex items-center justify-between w-full"
+                      >
+                        <span>{res.label}</span>
+                        <ExternalLinkIcon />
+                      </a>
+                    ) : (
+                      <button
+                        onClick={() => {
+                          if (res.category) handleLearnClick(res.category);
+                          else if (res.view === 'authorities') setActiveView('authorities');
+                          else setActiveView('help');
+                        }}
+                        className="font-semibold text-slate-700 hover:text-[#2563EB] transition-colors text-left flex items-center justify-between w-full cursor-pointer"
+                      >
+                        <span>{res.label}</span>
+                        <ExternalLinkIcon />
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              <div className="pt-2 border-t border-[#D9E1EA]">
+                <button
+                  onClick={() => handleLearnClick('All')}
+                  className="w-full rounded-lg bg-[#2563EB] hover:bg-blue-600 text-white text-center py-2.5 text-xs font-bold transition-all cursor-pointer shadow-sm"
+                >
+                  {t.resourcesBtn}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ========================================================================= */}
+      {/* 8. ALIGNED INITIATIVES TRUST ROW */}
+      {/* ========================================================================= */}
+      <section className="py-6.5 bg-slate-50 border-t border-[#D9E1EA] z-10 relative">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
+          <span className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider block">
+            {t.trustHeading}
+          </span>
+          <div className="flex flex-wrap items-center justify-center gap-6 md:gap-10">
+            {/* DoPT */}
+            <div className="flex items-center gap-2 grayscale hover:grayscale-0 transition-all opacity-85 hover:opacity-100 duration-200">
+              <img src="https://upload.wikimedia.org/wikipedia/commons/5/55/Emblem_of_India.svg" alt="DoPT Emblem" className="h-6 w-auto object-contain" />
+              <div className="text-[9px] font-bold leading-none text-[#172B5B]">
+                <p>DoPT</p>
+                <p className="text-[7px] text-[#64748B] font-medium uppercase mt-0.5">{language === 'hi' ? 'कार्मिक और प्रशिक्षण विभाग' : 'Dept of Personnel & Training'}</p>
+              </div>
+            </div>
+            {/* CIC */}
+            <div className="flex items-center gap-2 grayscale hover:grayscale-0 transition-all opacity-85 hover:opacity-100 duration-200">
+              <img src="https://upload.wikimedia.org/wikipedia/commons/5/55/Emblem_of_India.svg" alt="CIC Emblem" className="h-6 w-auto object-contain" />
+              <div className="text-[9px] font-bold leading-none text-[#172B5B]">
+                <p>CIC</p>
+                <p className="text-[7px] text-[#64748B] font-medium uppercase mt-0.5">{language === 'hi' ? 'केंद्रीय सूचना आयोग' : 'Central Info Commission'}</p>
+              </div>
+            </div>
+            {/* india.gov.in */}
+            <div className="flex items-center gap-1.5 grayscale hover:grayscale-0 transition-all opacity-85 hover:opacity-100 duration-200">
+              <div className="h-5 w-5 rounded bg-blue-900 flex items-center justify-center text-white text-[9px] font-black">IN</div>
+              <div className="text-[9px] font-black text-slate-800 tracking-tight leading-none">
+                <span>india.</span><span className="text-orange-500">gov.in</span>
+                <p className="text-[6px] text-[#64748B] font-semibold uppercase mt-0.5">{t.nationalPortal}</p>
+              </div>
+            </div>
+            {/* GIGW */}
+            <div className="flex items-center gap-1.5 grayscale hover:grayscale-0 transition-all opacity-85 hover:opacity-100 duration-200">
+              <div className="h-5 w-5 rounded bg-emerald-600 flex items-center justify-center text-white text-[9px] font-black">Q</div>
+              <div className="text-[9px] font-bold leading-none text-slate-800">
+                <p className="font-extrabold">GIGW 3.0</p>
+                <p className="text-[6px] text-[#64748B] font-semibold uppercase mt-0.5">Good Governance Web Standards</p>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
     </div>
+  );
+}
+
+// Helpers
+function ExternalLinkIcon() {
+  return (
+    <svg className="h-3 w-3 text-slate-400 shrink-0 ml-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+    </svg>
   );
 }

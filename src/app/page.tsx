@@ -135,6 +135,7 @@ export default function Home() {
         markNotificationsRead={markNotificationsRead}
         currentUser={currentUser}
         onLogout={handleLogout}
+        setHelpCategory={setHelpCategory}
       />
 
       {/* Dismissible Official Notice Bar */}
@@ -150,6 +151,7 @@ export default function Home() {
           <LandingView 
             setActiveView={setActiveView} 
             language={language} 
+            setHelpCategory={setHelpCategory}
           />
         )}
 
