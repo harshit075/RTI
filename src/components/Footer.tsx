@@ -19,8 +19,8 @@ export default function Footer({ setActiveView, language, setHelpCategory }: Foo
       col1Title: 'RTI Actions',
       col1Items: [
         { label: 'File an RTI Request', view: 'onboarding' },
-        { label: 'Track Application', view: 'dashboard' },
-        { label: 'File First Appeal', view: 'dashboard' },
+        { label: 'Track Application', view: 'status-lookup' },
+        { label: 'File First Appeal', view: 'appeal-lookup' },
         { label: 'Help & Knowledge Center', view: 'help' }
       ],
       col2Title: 'Statutory Guidance',
@@ -49,12 +49,12 @@ export default function Footer({ setActiveView, language, setHelpCategory }: Foo
       brand: 'आरटीआई साथी',
       tagline: 'नागरिक सूचना का अधिकार पोर्टल',
       desc: 'आरटीआई साथी एक नागरिक डिजिटल पोर्टल है जो सूचना का अधिकार (RTI) दाखिल करने, समयसीमा ट्रैक करने और प्रथम अपील समाधान को सुगम और नागरिक-अनुकूल बनाता है।',
-      disclaimer: 'अभ्यास व प्रदर्शन सूचना: आरटीआई साथी आरटीआई अधिनियम 2005 के सांविधिक नियमों के अनुपालन में बनाया गया एक शैक्षिक व अभ्यास पोर्टल है। इस प्रदर्शन वातावरण में सभी फाइलिंग और भुगतान अभ्यास के लिए हैं; कोई वास्तविक बैंक कटौती नहीं होती है।',
+      disclaimer: 'अभ्यास व प्रदर्शन सूचना: आरटीआई साथी आरटीआई अधिनियम 2005 के सांविधिक नियमों के अनुपालन में बनाया गया एक शैक्षिक व अभ्यास पोर्टल है। इस प्रदर्शन वातावरण में सभी भुगतान और फाइलिंग सिमुलेटेड हैं; कोई वास्तविक बैंक कटौती नहीं होती है।',
       col1Title: 'आरटीआई कार्य',
       col1Items: [
         { label: 'आरटीआई दाखिल करें', view: 'onboarding' },
-        { label: 'आवेदन ट्रैक करें', view: 'dashboard' },
-        { label: 'प्रथम अपील दायर करें', view: 'dashboard' },
+        { label: 'आवेदन ट्रैक करें', view: 'status-lookup' },
+        { label: 'प्रथम अपील दायर करें', view: 'appeal-lookup' },
         { label: 'सहायता केंद्र', view: 'help' }
       ],
       col2Title: 'कानूनी मार्गदर्शन',
@@ -82,7 +82,7 @@ export default function Footer({ setActiveView, language, setHelpCategory }: Foo
   }[language];
 
   return (
-    <footer className="bg-[#0A192F] text-slate-200 border-t-2 border-[#123B5D] relative z-20 pb-16">
+    <footer className="bg-slate-900 text-slate-200 border-t border-slate-800 relative z-20 pb-16">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         
         {/* Main Grid: 5 Clean Columns */}

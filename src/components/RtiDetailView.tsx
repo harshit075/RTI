@@ -5,7 +5,7 @@ import {
   FileText, Clock, AlertCircle, CheckCircle2, ChevronRight, 
   ArrowLeft, Scale, Landmark, FileDown, FolderOpen, Eye, 
   X, Download, ShieldCheck, ArrowRight, Sparkles, Check, 
-  FileCheck2, BookOpen, AlertTriangle 
+  FileCheck2, BookOpen, AlertTriangle, Send
 } from 'lucide-react';
 import { 
   RTIApplication, TimelineEvent, DocumentItem, ResponseAnalysis, QuestionBreakdownItem 
@@ -46,6 +46,19 @@ export default function RtiDetailView({
   const [appealText, setAppealText] = useState('');
   const [isSubmittingAppeal, setIsSubmittingAppeal] = useState(false);
   const [appealSubmittedSuccess, setAppealSubmittedSuccess] = useState<{ ref: string } | null>(null);
+
+  // Second Appeal flow state
+  const [secondAppealReason, setSecondAppealReason] = useState('First Appellate Authority failed to respond within statutory 45 days limit');
+  const [secondAppealText, setSecondAppealText] = useState('');
+  const [isSubmittingSecondAppeal, setIsSubmittingSecondAppeal] = useState(false);
+  const [secondAppealSubmittedSuccess, setSecondAppealSubmittedSuccess] = useState<{ ref: string } | null>(null);
+
+  // Interactive Document Q&A state
+  const [chatQuery, setChatQuery] = useState('');
+  const [chatHistory, setChatHistory] = useState<Array<{ sender: 'user' | 'assistant'; text: string }>>([
+    { sender: 'assistant', text: 'Hello! I am your RTI Saathi Document Assistant. Ask me anything about the official CPIO response or disclosed records.' }
+  ]);
+  const [isChatLoading, setIsChatLoading] = useState(false);
 
   useEffect(() => {
     if (rti) {
@@ -114,6 +127,83 @@ Appellant: Aarav Sharma`;
     if (onApplicationUpdated) onApplicationUpdated(result.application);
   };
 
+  const handleOpenSecondAppeal = () => {
+    const defaultSecondAppealPetition = `BEFORE THE CENTRAL INFORMATION COMMISSION (CIC)
+(Second Appeal under Section 19(3) of the Right to Information Act, 2005)
+
+In the matter of:
+Appellant: Aarav Sharma (Citizen of India)
+Address: C-42, Malviya Nagar, Jaipur, Rajasthan - 302017
+
+VS
+
+1. Central Public Information Officer (CPIO), ${rti.authorityName || 'Public Authority'}
+2. First Appellate Authority (FAA), ${rti.authorityName || 'Public Authority'}
+
+1. PARTICULARS OF ORIGINAL APPLICATION:
+   a. Original Registration Number: ${rti.registrationNumber}
+   b. Date of Filing: ${rti.submittedDate}
+
+2. PARTICULARS OF FIRST APPEAL:
+   a. Date of First Appeal: ${rti.appealDate || '2026-08-15'}
+   b. First Appellate Authority Decision Date: None (Deemed Refusal/No order passed)
+
+3. GROUNDS FOR SECOND APPEAL:
+   a. The Appellant filed a First Appeal under Section 19(1) of the RTI Act 2005 on ${rti.appealDate || '2026-08-15'}.
+   b. The First Appellate Authority (FAA) failed to decide the appeal or issue any directions to CPIO within the maximum statutory limit of 45 days.
+   c. The CPIO continues to wrongfully withhold public records in violation of Section 7(1).
+
+4. PRAYER:
+   The Appellant prays that the Honorable Central Information Commission direct the CPIO to release all withheld completion certificates and inspect the road works, and impose personal statutory penalties under Section 20(1) on the delinquent officer.
+
+Date: ${new Date().toISOString().substring(0, 10)}
+Appellant: Aarav Sharma`;
+
+    setSecondAppealText(defaultSecondAppealPetition);
+    setActiveTab('appeal');
+  };
+
+  const handleSecondAppealSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmittingSecondAppeal(true);
+    const result = await appealService.fileSecondAppeal({
+      rtiId: rti.id,
+      reason: secondAppealReason,
+      petitionText: secondAppealText,
+      appellantName: 'Aarav Sharma'
+    });
+    setIsSubmittingSecondAppeal(false);
+    setSecondAppealSubmittedSuccess({ ref: result.appealRef });
+    if (onApplicationUpdated) onApplicationUpdated(result.application);
+  };
+
+  const handleChatSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!chatQuery.trim()) return;
+
+    const userMsg = chatQuery;
+    setChatHistory(prev => [...prev, { sender: 'user', text: userMsg }]);
+    setChatQuery('');
+    setIsChatLoading(true);
+
+    setTimeout(() => {
+      let reply = '';
+      const q = userMsg.toLowerCase();
+      if (q.includes('summarize') || q.includes('summary')) {
+        reply = `Summary of response document (${rti.registrationNumber}):\n- CPIO Manoj Pandey confirmed that a total of ₹1,42,50,000 was sanctioned for road development works.\n- Contract JPR/RD/2024/098 was awarded to the executing contractor.\n- Question #5 regarding safety completion audits and engineer structural inspection logs was withheld on the grounds of 'records under compilation'.`;
+      } else if (q.includes('withheld') || q.includes('question 5') || q.includes('inspect')) {
+        reply = `Regarding the safety and structural inspection logs (Question 5), the CPIO states: 'Records under compilation by the engineering wing.' No statutory Section 8(1) exemption is cited for withholding these records. Under Section 7(1) of the RTI Act, this constitutes an invalid withholding, forming strong grounds for appeal.`;
+      } else if (q.includes('contract') || q.includes('agreement') || q.includes('tender')) {
+        reply = `Yes, the CPIO response includes Annexure-B which contains a certified copy of the successful contractor work order #JPR/RD/2024/098.`;
+      } else {
+        reply = `Document Assistant Response: The CPIO letter references receipt of the statutory ₹10 fee under Transaction ID: ${rti.paymentId || 'TXN-2026-001245'} and provides asphalt vouchers in Annexure-A. Let me know if you would like me to draft a specific query or inspect other points.`;
+      }
+
+      setChatHistory(prev => [...prev, { sender: 'assistant', text: reply }]);
+      setIsChatLoading(false);
+    }, 800);
+  };
+
   return (
     <div className="flex-1 bg-[#F7F8FA] py-8 px-4 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl space-y-6">
@@ -161,6 +251,16 @@ Appellant: Aarav Sharma`;
                 >
                   <Scale className="h-4 w-4" />
                   File First Appeal ➔
+                </button>
+              )}
+
+              {rti.status === 'First Appeal Filed' && (
+                <button
+                  onClick={handleOpenSecondAppeal}
+                  className="rounded-xl bg-purple-700 hover:bg-purple-800 text-white px-5 py-2.5 text-xs font-black shadow-3xs flex items-center justify-center gap-1.5 cursor-pointer transition-all"
+                >
+                  <Scale className="h-4 w-4" />
+                  File Second Appeal (CIC) ➔
                 </button>
               )}
 
@@ -375,6 +475,84 @@ Appellant: Aarav Sharma`;
               )}
             </div>
 
+            {/* ASK RESPONSE DOCUMENT CHAT ASSISTANT */}
+            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-3xs space-y-4">
+              <div className="border-b border-slate-100 pb-3">
+                <h3 className="font-extrabold text-[#17212B] text-sm flex items-center gap-1.5">
+                  <Sparkles className="h-4 w-4 text-amber-500" />
+                  Ask Response Document Assistant
+                </h3>
+                <p className="text-[11px] text-slate-500 mt-0.5">
+                  Query disclosed official records and get instant summarized compliance answers.
+                </p>
+              </div>
+
+              {/* Chat history display */}
+              <div className="bg-[#F7F8FA] border border-[#D9E0E6] rounded-xl p-4 space-y-3 max-h-[220px] overflow-y-auto">
+                {chatHistory.map((msg, idx) => (
+                  <div key={idx} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+                    <div className={`p-3 rounded-2xl max-w-[85%] text-xs leading-relaxed ${
+                      msg.sender === 'user' 
+                        ? 'bg-[#123B5D] text-white rounded-br-none' 
+                        : 'bg-white text-slate-800 border border-slate-200 rounded-bl-none'
+                    }`}>
+                      {msg.text}
+                    </div>
+                  </div>
+                ))}
+                {isChatLoading && (
+                  <div className="flex justify-start">
+                    <div className="bg-white border border-slate-200 p-3 rounded-2xl rounded-bl-none text-xs text-slate-400 flex items-center gap-2">
+                      <span className="h-2 w-2 rounded-full bg-slate-400 animate-bounce" style={{ animationDelay: '0ms' }} />
+                      <span className="h-2 w-2 rounded-full bg-slate-400 animate-bounce" style={{ animationDelay: '150ms' }} />
+                      <span className="h-2 w-2 rounded-full bg-slate-400 animate-bounce" style={{ animationDelay: '300ms' }} />
+                      <span>Reading response PDF...</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Quick suggestions */}
+              <div className="flex flex-wrap gap-2 text-[11px]">
+                <button
+                  onClick={() => { setChatQuery('Summarize this CPIO response'); }}
+                  className="rounded-full border border-slate-200 px-3 py-1 bg-slate-50 text-slate-750 hover:bg-slate-100"
+                >
+                  "Summarize response"
+                </button>
+                <button
+                  onClick={() => { setChatQuery('Why was Question 5 withheld?'); }}
+                  className="rounded-full border border-slate-200 px-3 py-1 bg-slate-50 text-slate-755 hover:bg-slate-100"
+                >
+                  "Why is Q5 withheld?"
+                </button>
+                <button
+                  onClick={() => { setChatQuery('Is the contract agreement included?'); }}
+                  className="rounded-full border border-slate-200 px-3 py-1 bg-slate-50 text-slate-750 hover:bg-slate-100"
+                >
+                  "Is contract copy attached?"
+                </button>
+              </div>
+
+              {/* Chat Input form */}
+              <form onSubmit={handleChatSubmit} className="flex gap-2">
+                <input
+                  type="text"
+                  value={chatQuery}
+                  onChange={(e) => setChatQuery(e.target.value)}
+                  placeholder="Ask a question about this response document..."
+                  className="flex-1 px-3.5 py-2 text-xs border border-slate-200 rounded-xl bg-slate-50 outline-none focus:border-[#123B5D]"
+                />
+                <button
+                  type="submit"
+                  disabled={isChatLoading || !chatQuery.trim()}
+                  className="px-3.5 rounded-xl bg-[#123B5D] text-white flex items-center justify-center cursor-pointer hover:bg-[#0A2540] disabled:opacity-50"
+                >
+                  <Send className="h-4 w-4" />
+                </button>
+              </form>
+            </div>
+
           </div>
         )}
 
@@ -382,30 +560,36 @@ Appellant: Aarav Sharma`;
         {/* TAB 3: APPLICATION TIMELINE */}
         {/* ========================================================================= */}
         {activeTab === 'timeline' && (
-          <div className="rounded-2xl border border-[#D9E0E6] bg-white p-6 sm:p-8 shadow-3xs space-y-6">
+          <div className="glass-card rounded-2xl border border-slate-200/60 bg-white/80 p-6 sm:p-8 shadow-sm space-y-6">
             <div>
-              <h2 className="text-base font-black text-[#17212B]">
+              <h2 className="text-base font-black text-[#0f172a] bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-[#1e3a8a]">
                 Official Event-Driven Lifecycle Timeline
               </h2>
-              <p className="text-xs text-[#52606D] mt-0.5">
+              <p className="text-xs text-slate-500 mt-0.5 font-semibold">
                 Every statutory milestone from submission and fee verification to CPIO decisions.
               </p>
             </div>
 
-            <div className="relative pl-6 space-y-6 before:absolute before:left-2.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-[#D9E0E6]">
+            <div className="relative pl-6 space-y-6 before:absolute before:left-3 before:top-2 before:bottom-2 before:w-[3px] before:bg-gradient-to-b before:from-blue-600 before:via-blue-400/40 before:to-slate-200">
               {timelineEvents.map((evt) => (
                 <div key={evt.id} className="relative flex items-start gap-4">
-                  <div className={`absolute -left-6 h-5 w-5 rounded-full border-2 flex items-center justify-center ${
-                    evt.status === 'completed' ? 'bg-[#123B5D] border-white text-white' : 'bg-white border-slate-300 text-slate-400'
+                  <div className={`absolute -left-6.5 h-6 w-6 rounded-full border-2 flex items-center justify-center transition-all duration-300 ${
+                    evt.status === 'completed' 
+                      ? 'bg-[#1e3a8a] border-white text-white shadow-md ring-4 ring-blue-55' 
+                      : 'bg-white border-slate-300 text-slate-400 shadow-2xs'
                   }`}>
-                    {evt.status === 'completed' && <Check className="h-3 w-3" />}
+                    {evt.status === 'completed' ? (
+                      <Check className="h-3 w-3" />
+                    ) : (
+                      <span className="h-1.5 w-1.5 rounded-full bg-slate-300" />
+                    )}
                   </div>
                   <div className="space-y-0.5">
                     <div className="flex items-center gap-2">
-                      <h3 className="text-xs font-black text-[#17212B]">{evt.title}</h3>
-                      <span className="text-[10px] text-slate-400 font-semibold">{evt.date}</span>
+                      <h3 className={`text-xs font-extrabold ${evt.status === 'completed' ? 'text-[#0f172a]' : 'text-slate-500'}`}>{evt.title}</h3>
+                      <span className="text-[10px] text-slate-400 font-bold bg-slate-50 px-1.5 py-0.5 rounded">{evt.date}</span>
                     </div>
-                    <p className="text-xs text-[#52606D]">{evt.description}</p>
+                    <p className="text-xs text-slate-500 leading-relaxed font-medium">{evt.description}</p>
                   </div>
                 </div>
               ))}
@@ -461,63 +645,176 @@ Appellant: Aarav Sharma`;
             </div>
           </div>
         )}
-
-        {/* ========================================================================= */}
-        {/* TAB 5: FIRST APPEAL WORKSPACE */}
-        {/* ========================================================================= */}
         {activeTab === 'appeal' && (
-          <div className="rounded-2xl border border-[#D9E0E6] bg-white p-6 sm:p-8 shadow-3xs space-y-6">
-            <div>
-              <span className="text-[10px] font-black uppercase tracking-wider bg-purple-50 text-purple-800 border border-purple-200 px-2 py-0.5 rounded-md">
-                Section 19(1) First Appeal
-              </span>
-              <h2 className="text-lg font-black text-[#17212B] mt-2">
-                First Appellate Authority Redressal
-              </h2>
-              <p className="text-xs text-[#52606D] mt-0.5 leading-relaxed">
-                If the CPIO furnished incomplete information or failed to cite Section 8 exemptions, submit your First Appeal to senior department leadership. No additional fee is required.
-              </p>
-            </div>
+          <div className="space-y-6">
+            
+            {/* If Second Appeal already filed */}
+            {rti.status === 'Second Appeal Filed' && (
+              <div className="rounded-2xl border border-red-300 bg-red-50/20 p-6 sm:p-8 shadow-3xs space-y-4">
+                <div>
+                  <span className="text-[10px] font-black uppercase tracking-wider bg-red-700 text-white px-2 py-0.5 rounded-md">
+                    Section 19(3) Second Appeal — Pending Hearing
+                  </span>
+                  <h2 className="text-lg font-black text-slate-900 mt-2">
+                    Central Information Commission (CIC) Escalation
+                  </h2>
+                  <p className="text-xs text-slate-650 leading-relaxed mt-1">
+                    Your Second Appeal is active. The CIC will schedule a quasi-judicial hearing with the CPIO and Appellate Authority.
+                  </p>
+                </div>
 
-            <form onSubmit={handleFirstAppealSubmit} className="space-y-4">
-              <div>
-                <label className="text-[10px] font-black uppercase text-[#52606D] block mb-1">
-                  Statutory Ground for First Appeal
-                </label>
-                <select
-                  value={appealReason}
-                  onChange={(e) => setAppealReason(e.target.value)}
-                  className="w-full rounded-xl border border-[#D9E0E6] p-3 text-xs font-bold text-slate-800 bg-[#F7F8FA] outline-none focus:border-[#123B5D]"
-                >
-                  <option value="Information incomplete / withheld without Section 8 citation">Information incomplete / withheld without Section 8 citation</option>
-                  <option value="CPIO did not respond within statutory 30-day limit">CPIO did not respond within statutory 30-day limit</option>
-                  <option value="Unreasonable fee or document cost demanded">Unreasonable fee or document cost demanded</option>
-                  <option value="False or misleading information provided">False or misleading information provided</option>
-                </select>
-              </div>
+                <div className="p-4 rounded-xl bg-white border border-red-200 text-xs space-y-2">
+                  <div className="flex justify-between"><span className="text-slate-500 font-bold">CIC Registration No:</span> <strong className="text-red-800 font-mono">{rti.secondAppealRegNo || 'CIC/MEXTA/A/2026/92840'}</strong></div>
+                  <div className="flex justify-between"><span className="text-slate-500 font-bold">Filing Date:</span> <strong className="text-slate-800">{rti.secondAppealDate || '2026-08-26'}</strong></div>
+                  <div className="flex justify-between"><span className="text-slate-500 font-bold">Statutory Ground:</span> <strong className="text-slate-800">{rti.secondAppealReason}</strong></div>
+                </div>
 
-              <div>
-                <label className="text-[10px] font-black uppercase text-[#52606D] block mb-1">
-                  Appeal Petition Body (Pre-filled from Application)
-                </label>
-                <textarea
-                  rows={10}
-                  value={appealText}
-                  onChange={(e) => setAppealText(e.target.value)}
-                  className="w-full rounded-xl border border-[#D9E0E6] p-4 text-xs font-mono text-slate-800 bg-[#F7F8FA] outline-none focus:border-[#123B5D] leading-relaxed"
-                />
+                <div className="text-xs font-mono bg-slate-50 border border-slate-200 p-4 rounded-xl max-h-48 overflow-y-auto leading-relaxed whitespace-pre-wrap">
+                  {rti.notes || rti.secondAppealText}
+                </div>
               </div>
+            )}
 
-              <div className="flex justify-end gap-3 pt-2">
-                <button
-                  type="submit"
-                  disabled={isSubmittingAppeal}
-                  className="rounded-xl bg-[#123B5D] hover:bg-[#0A2540] text-white px-6 py-2.5 text-xs font-black shadow-3xs cursor-pointer transition-all"
-                >
-                  {isSubmittingAppeal ? 'Submitting...' : 'Submit First Appeal ➔'}
-                </button>
+            {/* If First Appeal is active and user wants to file a Second Appeal */}
+            {(rti.status === 'First Appeal Filed' || rti.status === 'FAA Decision Received') && (
+              <div className="space-y-6">
+                
+                {/* First Appeal Details (Read Only) */}
+                <div className="rounded-2xl border border-purple-200 bg-purple-50/20 p-6 shadow-3xs space-y-3">
+                  <span className="text-[10px] font-black uppercase bg-purple-100 text-purple-900 px-2 py-0.5 rounded-md">
+                    Active First Appeal under Section 19(1)
+                  </span>
+                  <h3 className="font-extrabold text-slate-950 text-sm">First Appeal Petition Details</h3>
+                  <div className="text-xs text-slate-650 space-y-1">
+                    <p>• Filed on: <strong>{rti.appealDate || '2026-08-15'}</strong></p>
+                    <p>• Ground: <strong>{rti.appealReason || 'Incomplete records received.'}</strong></p>
+                    <p>• Status: <strong>{rti.status}</strong></p>
+                  </div>
+                </div>
+
+                {/* File Second Appeal Form */}
+                <div className="rounded-2xl border border-[#D9E0E6] bg-white p-6 sm:p-8 shadow-3xs space-y-4">
+                  <div>
+                    <span className="text-[10px] font-black uppercase tracking-wider bg-red-50 text-red-800 border border-red-200 px-2 py-0.5 rounded-md">
+                      Section 19(3) Second Appeal Wizard
+                    </span>
+                    <h2 className="text-base font-black text-slate-900 mt-2">
+                      Escalate to Central Information Commission (CIC)
+                    </h2>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      If the FAA did not issue a decision within the maximum 45-day statutory window, or if their order is unsatisfactory, you have a statutory right to appeal directly to the CIC.
+                    </p>
+                  </div>
+
+                  <form onSubmit={handleSecondAppealSubmit} className="space-y-4 text-xs">
+                    <div>
+                      <label className="text-[10px] font-black uppercase text-[#52606D] block mb-1">
+                        Statutory Ground for Second Appeal
+                      </label>
+                      <select
+                        value={secondAppealReason}
+                        onChange={(e) => setSecondAppealReason(e.target.value)}
+                        className="w-full rounded-xl border border-[#D9E0E6] p-3 text-xs font-bold text-slate-850 bg-[#F7F8FA]"
+                      >
+                        <option value="First Appellate Authority failed to respond within statutory 45 days limit">FAA failed to respond within statutory 45 days limit (Deemed Refusal)</option>
+                        <option value="First Appellate Authority order is unsatisfactory and violates disclosure rules">First Appellate Authority order is unsatisfactory and violates disclosure rules</option>
+                        <option value="CPIO continues to withhold public records in defiance of Section 19(1) order">CPIO continues to withhold records in defiance of FAA order</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="text-[10px] font-black uppercase text-[#52606D] block mb-1">
+                        CIC Second Appeal Petition (Pre-filled from Case History)
+                      </label>
+                      <textarea
+                        rows={8}
+                        value={secondAppealText || `BEFORE THE CENTRAL INFORMATION COMMISSION (CIC)
+(Second Appeal under Section 19(3) of the Right to Information Act, 2005)
+
+Please click "Generate CIC Petition" or enter details.`}
+                        onChange={(e) => setSecondAppealText(e.target.value)}
+                        className="w-full rounded-xl border border-[#D9E0E6] p-4 text-xs font-mono text-slate-800 bg-[#F7F8FA] leading-relaxed"
+                      />
+                    </div>
+
+                    <div className="flex justify-between items-center pt-2">
+                      <button
+                        type="button"
+                        onClick={handleOpenSecondAppeal}
+                        className="rounded-xl border border-[#D9E0E6] hover:bg-slate-50 text-slate-700 px-4 py-2 text-xs font-bold"
+                      >
+                        Autofill CIC Petition
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={isSubmittingSecondAppeal}
+                        className="rounded-xl bg-purple-700 hover:bg-purple-800 text-white px-6 py-2.5 text-xs font-black shadow-3xs cursor-pointer"
+                      >
+                        {isSubmittingSecondAppeal ? 'Filing Second Appeal...' : 'Submit Second Appeal to CIC ➔'}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+
               </div>
-            </form>
+            )}
+
+            {/* Standard First Appeal if not appeal filed yet */}
+            {rti.status !== 'First Appeal Filed' && rti.status !== 'FAA Decision Received' && rti.status !== 'Second Appeal Filed' && (
+              <div className="rounded-2xl border border-[#D9E0E6] bg-white p-6 sm:p-8 shadow-3xs space-y-6">
+                <div>
+                  <span className="text-[10px] font-black uppercase tracking-wider bg-purple-50 text-purple-800 border border-purple-200 px-2 py-0.5 rounded-md">
+                    Section 19(1) First Appeal
+                  </span>
+                  <h2 className="text-lg font-black text-[#17212B] mt-2">
+                    First Appellate Authority Redressal
+                  </h2>
+                  <p className="text-xs text-[#52606D] mt-0.5 leading-relaxed">
+                    If the CPIO furnished incomplete information or failed to cite Section 8 exemptions, submit your First Appeal to senior department leadership. No additional fee is required.
+                  </p>
+                </div>
+
+                <form onSubmit={handleFirstAppealSubmit} className="space-y-4">
+                  <div>
+                    <label className="text-[10px] font-black uppercase text-[#52606D] block mb-1">
+                      Statutory Ground for First Appeal
+                    </label>
+                    <select
+                      value={appealReason}
+                      onChange={(e) => setAppealReason(e.target.value)}
+                      className="w-full rounded-xl border border-[#D9E0E6] p-3 text-xs font-bold text-slate-800 bg-[#F7F8FA] outline-none focus:border-[#123B5D]"
+                    >
+                      <option value="Information incomplete / withheld without Section 8 citation">Information incomplete / withheld without Section 8 citation</option>
+                      <option value="CPIO did not respond within statutory 30-day limit">CPIO did not respond within statutory 30-day limit</option>
+                      <option value="Unreasonable fee or document cost demanded">Unreasonable fee or document cost demanded</option>
+                      <option value="False or misleading information provided">False or misleading information provided</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] font-black uppercase text-[#52606D] block mb-1">
+                      Appeal Petition Body (Pre-filled from Application)
+                    </label>
+                    <textarea
+                      rows={10}
+                      value={appealText}
+                      onChange={(e) => setAppealText(e.target.value)}
+                      className="w-full rounded-xl border border-[#D9E0E6] p-4 text-xs font-mono text-slate-800 bg-[#F7F8FA] outline-none focus:border-[#123B5D] leading-relaxed"
+                    />
+                  </div>
+
+                  <div className="flex justify-end gap-3 pt-2">
+                    <button
+                      type="submit"
+                      disabled={isSubmittingAppeal}
+                      className="rounded-xl bg-[#123B5D] hover:bg-[#0A2540] text-white px-6 py-2.5 text-xs font-black shadow-3xs cursor-pointer transition-all"
+                    >
+                      {isSubmittingAppeal ? 'Submitting...' : 'Submit First Appeal ➔'}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
           </div>
         )}
 
@@ -577,6 +874,35 @@ Appellant: Aarav Sharma`;
 
             <button
               onClick={() => setAppealSubmittedSuccess(null)}
+              className="w-full rounded-xl bg-[#123B5D] hover:bg-[#0A2540] text-white py-2.5 text-xs font-bold"
+            >
+              Continue
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Second Appeal Success Modal */}
+      {secondAppealSubmittedSuccess && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl border border-slate-200 text-center space-y-4">
+            <div className="h-12 w-12 rounded-2xl bg-purple-100 text-purple-750 flex items-center justify-center mx-auto">
+              <CheckCircle2 className="h-7 w-7 text-purple-600" />
+            </div>
+            
+            <h3 className="text-lg font-black text-slate-900">Second Appeal Filed with CIC</h3>
+            <p className="text-xs text-slate-650 leading-relaxed">
+              Your Second Appeal has been formally registered with the Central Information Commission (CIC) under Section 19(3).
+            </p>
+
+            <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-left text-xs space-y-1">
+              <div className="flex justify-between"><span className="text-slate-500">CIC Ref No:</span> <strong className="text-[#123B5D]">{secondAppealSubmittedSuccess.ref}</strong></div>
+              <div className="flex justify-between"><span className="text-slate-500">Hearing Status:</span> <strong className="text-slate-850">Awaiting Board Allocation</strong></div>
+              <div className="flex justify-between"><span className="text-slate-500">Appeal Fee:</span> <strong className="text-emerald-700">₹0.00 (Exempt)</strong></div>
+            </div>
+
+            <button
+              onClick={() => setSecondAppealSubmittedSuccess(null)}
               className="w-full rounded-xl bg-[#123B5D] hover:bg-[#0A2540] text-white py-2.5 text-xs font-bold"
             >
               Continue

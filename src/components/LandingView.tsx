@@ -138,23 +138,27 @@ export default function LandingView({ setActiveView, language }: LandingViewProp
   }[language];
 
   return (
-    <div className="flex-1 bg-[#F7F8FA]">
+    <div className="flex-1 bg-[#f8fafc] grid-pattern relative overflow-hidden">
+      
+      {/* Background blurred decorative spheres */}
+      <div className="absolute top-24 left-1/10 w-96 h-96 rounded-full bg-blue-300/10 ambient-glow blur-3xl" />
+      <div className="absolute top-60 right-1/10 w-80 h-80 rounded-full bg-amber-350/10 ambient-glow blur-3xl" />
       
       {/* ========================================================================= */}
       {/* CENTRAL-VS-STATE JURISDICTION SCOPE NOTICE BANNER */}
       {/* ========================================================================= */}
-      <section className="bg-amber-50/90 border-b border-amber-200/80 px-4 py-3 text-xs">
+      <section className="bg-amber-50/80 backdrop-blur-md border-b border-amber-200/60 px-4 py-3.5 text-xs relative z-10">
         <div className="mx-auto max-w-7xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div className="flex items-start gap-2.5">
-            <AlertTriangle className="h-4 w-4 text-amber-700 shrink-0 mt-0.5" />
-            <p className="text-slate-800 leading-relaxed font-medium">
+            <AlertTriangle className="h-4 w-4 text-amber-800 shrink-0 mt-0.5" />
+            <p className="text-slate-800 leading-relaxed font-semibold">
               <strong className="text-amber-900 font-black mr-1">{t.scopeNoticeTitle}:</strong>
               {t.scopeNotice}
             </p>
           </div>
           <button
             onClick={() => setActiveView('authorities')}
-            className="text-[11px] font-extrabold text-[#123B5D] hover:underline shrink-0 cursor-pointer bg-white px-3 py-1 rounded-lg border border-amber-200 shadow-3xs"
+            className="text-[11px] font-extrabold text-[#1e3a8a] hover:underline shrink-0 cursor-pointer bg-white px-3.5 py-1.5 rounded-xl border border-amber-200 shadow-3xs transition-transform hover:scale-102"
           >
             Explore 2,000+ Public Authorities Directory ➔
           </button>
@@ -162,40 +166,40 @@ export default function LandingView({ setActiveView, language }: LandingViewProp
       </section>
 
       {/* ========================================================================= */}
-      {/* 1. HERO SECTION (Balanced 2-Column Citizen Service Layout) */}
+      {/* 1. HERO SECTION (Balanced 2-Column Citizen Layout) */}
       {/* ========================================================================= */}
-      <section className="border-b border-[#D9E0E6] bg-white py-12 lg:py-16">
+      <section className="relative py-14 lg:py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
             
             {/* Left Column: Heading & CTAs (7 cols) */}
-            <div className="lg:col-span-7 space-y-6">
+            <div className="lg:col-span-7 space-y-6 relative z-10">
               
-              <div className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1 text-xs font-extrabold text-[#123B5D] border border-blue-200/60">
-                <ShieldCheck className="h-3.5 w-3.5 text-[#123B5D]" />
+              <div className="inline-flex items-center gap-1.5 rounded-full bg-blue-50/80 backdrop-blur-xs px-3.5 py-1.5 text-xs font-black text-[#1e3a8a] border border-blue-200/50">
+                <ShieldCheck className="h-3.5 w-3.5 text-[#1e3a8a]" />
                 <span>RTI Act 2005 Citizen Portal</span>
               </div>
 
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-[#17212B] leading-[1.15]">
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-[#0f172a] leading-[1.12] bg-clip-text text-transparent bg-gradient-to-r from-slate-900 via-[#1e3a8a] to-[#0f172a]">
                 {t.heroTitle}
               </h1>
 
-              <p className="text-base sm:text-lg text-[#52606D] font-normal leading-relaxed max-w-2xl">
+              <p className="text-base sm:text-lg text-slate-500 font-medium leading-relaxed max-w-2xl">
                 {t.heroSub}
               </p>
 
               {/* Primary & Secondary CTAs */}
-              <div className="pt-2 flex flex-col sm:flex-row items-start sm:items-center gap-3">
+              <div className="pt-2 flex flex-col sm:flex-row items-center gap-3">
                 <button
                   onClick={() => setActiveView('onboarding')}
-                  className="w-full sm:w-auto inline-flex items-center justify-center rounded-xl bg-[#123B5D] hover:bg-[#0A2540] text-white px-7 py-3.5 text-sm font-black shadow-3xs cursor-pointer transition-all hover:scale-[1.01]"
+                  className="w-full sm:w-auto inline-flex items-center justify-center rounded-xl bg-[#1e3a8a] hover:bg-blue-900 text-white px-7 py-4 text-xs font-black shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:scale-95 transition-all duration-300 shrink-0 cursor-pointer"
                 >
                   {t.startRti}
                 </button>
 
                 <button
-                  onClick={() => setActiveView('dashboard')}
-                  className="w-full sm:w-auto inline-flex items-center justify-center rounded-xl bg-white border border-[#D9E0E6] hover:bg-slate-50 text-[#17212B] px-6 py-3.5 text-sm font-bold shadow-3xs cursor-pointer transition-colors"
+                  onClick={() => setActiveView('status-lookup')}
+                  className="w-full sm:w-auto inline-flex items-center justify-center rounded-xl bg-white/70 backdrop-blur-sm border border-slate-200 hover:bg-slate-50 text-[#0f172a] px-6 py-4 text-xs font-bold shadow-2xs hover:shadow-xs hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 shrink-0 cursor-pointer"
                 >
                   {t.trackRti}
                 </button>
@@ -205,9 +209,9 @@ export default function LandingView({ setActiveView, language }: LandingViewProp
               <div className="pt-1">
                 <button
                   onClick={() => setActiveView('authorities')}
-                  className="inline-flex items-center gap-1.5 text-xs font-extrabold text-[#123B5D] bg-blue-50/80 hover:bg-blue-100/80 border border-blue-200 px-4 py-2 rounded-xl transition-all cursor-pointer shadow-3xs"
+                  className="inline-flex items-center gap-1.5 text-xs font-extrabold text-[#1e3a8a] bg-blue-50/80 hover:bg-blue-100 border border-blue-200 px-4 py-2.5 rounded-xl transition-all cursor-pointer shadow-3xs"
                 >
-                  <Landmark className="h-3.5 w-3.5 text-[#123B5D]" />
+                  <Landmark className="h-3.5 w-3.5 text-[#1e3a8a]" />
                   <span>{t.notSureBtn}</span>
                 </button>
               </div>
@@ -215,69 +219,69 @@ export default function LandingView({ setActiveView, language }: LandingViewProp
             </div>
 
             {/* Right Column: Functional Quick Start Panel (5 cols) */}
-            <div className="lg:col-span-5">
-              <div className="rounded-2xl border border-[#D9E0E6] bg-[#F7F8FA] p-6 shadow-3xs space-y-4">
-                <div className="border-b border-[#D9E0E6] pb-3">
-                  <h2 className="text-sm font-black text-[#17212B] uppercase tracking-wider">
+            <div className="lg:col-span-5 relative z-10">
+              <div className="glass-card rounded-2xl p-6 shadow-md border border-slate-200/60 space-y-4 hover-lift">
+                <div className="border-b border-slate-100 pb-3">
+                  <h2 className="text-xs font-black text-[#0f172a] uppercase tracking-wider">
                     {t.quickStartTitle}
                   </h2>
                 </div>
 
-                <div className="space-y-2.5">
+                <div className="space-y-3">
                   <button
                     onClick={() => setActiveView('onboarding')}
-                    className="w-full p-3.5 rounded-xl bg-white hover:bg-blue-50/50 border border-[#D9E0E6] text-left transition-all flex items-center justify-between cursor-pointer group shadow-3xs"
+                    className="w-full p-4 rounded-xl bg-white/90 hover:bg-blue-50/20 border border-slate-200/70 hover:border-blue-400/40 text-left transition-all flex items-center justify-between cursor-pointer group shadow-3xs"
                   >
                     <div className="space-y-0.5">
-                      <div className="font-extrabold text-xs text-[#123B5D] flex items-center gap-1.5">
-                        <FileText className="h-4 w-4" />
+                      <div className="font-extrabold text-xs text-[#1e3a8a] flex items-center gap-1.5">
+                        <FileText className="h-4.5 w-4.5" />
                         <span>{t.quickStartFile}</span>
                       </div>
-                      <div className="text-[11px] text-[#52606D]">{t.quickStartFileDesc}</div>
+                      <div className="text-[11px] text-slate-500 font-medium">{t.quickStartFileDesc}</div>
                     </div>
-                    <ChevronRight className="h-4 w-4 text-slate-400 group-hover:text-[#123B5D] transition-colors shrink-0" />
+                    <ChevronRight className="h-4 w-4 text-slate-400 group-hover:text-[#1e3a8a] group-hover:translate-x-0.5 transition-all shrink-0" />
                   </button>
 
                   <button
-                    onClick={() => setActiveView('dashboard')}
-                    className="w-full p-3.5 rounded-xl bg-white hover:bg-blue-50/50 border border-[#D9E0E6] text-left transition-all flex items-center justify-between cursor-pointer group shadow-3xs"
+                    onClick={() => setActiveView('status-lookup')}
+                    className="w-full p-4 rounded-xl bg-white/90 hover:bg-blue-50/20 border border-slate-200/70 hover:border-blue-400/40 text-left transition-all flex items-center justify-between cursor-pointer group shadow-3xs"
                   >
                     <div className="space-y-0.5">
-                      <div className="font-extrabold text-xs text-[#123B5D] flex items-center gap-1.5">
-                        <Clock className="h-4 w-4" />
+                      <div className="font-extrabold text-xs text-[#1e3a8a] flex items-center gap-1.5">
+                        <Clock className="h-4.5 w-4.5" />
                         <span>{t.quickStartTrack}</span>
                       </div>
-                      <div className="text-[11px] text-[#52606D]">{t.quickStartTrackDesc}</div>
+                      <div className="text-[11px] text-slate-500 font-medium">{t.quickStartTrackDesc}</div>
                     </div>
-                    <ChevronRight className="h-4 w-4 text-slate-400 group-hover:text-[#123B5D] transition-colors shrink-0" />
+                    <ChevronRight className="h-4 w-4 text-slate-400 group-hover:text-[#1e3a8a] group-hover:translate-x-0.5 transition-all shrink-0" />
                   </button>
 
                   <button
                     onClick={() => setActiveView('authorities')}
-                    className="w-full p-3.5 rounded-xl bg-white hover:bg-blue-50/50 border border-[#D9E0E6] text-left transition-all flex items-center justify-between cursor-pointer group shadow-3xs"
+                    className="w-full p-4 rounded-xl bg-white/90 hover:bg-blue-50/20 border border-slate-200/70 hover:border-blue-400/40 text-left transition-all flex items-center justify-between cursor-pointer group shadow-3xs"
                   >
                     <div className="space-y-0.5">
-                      <div className="font-extrabold text-xs text-[#123B5D] flex items-center gap-1.5">
-                        <Landmark className="h-4 w-4" />
+                      <div className="font-extrabold text-xs text-[#1e3a8a] flex items-center gap-1.5">
+                        <Landmark className="h-4.5 w-4.5" />
                         <span>{t.quickStartAuth}</span>
                       </div>
-                      <div className="text-[11px] text-[#52606D]">{t.quickStartAuthDesc}</div>
+                      <div className="text-[11px] text-slate-500 font-medium">{t.quickStartAuthDesc}</div>
                     </div>
-                    <ChevronRight className="h-4 w-4 text-slate-400 group-hover:text-[#123B5D] transition-colors shrink-0" />
+                    <ChevronRight className="h-4 w-4 text-slate-400 group-hover:text-[#1e3a8a] group-hover:translate-x-0.5 transition-all shrink-0" />
                   </button>
 
                   <button
                     onClick={() => setActiveView('reconciliation')}
-                    className="w-full p-3.5 rounded-xl bg-white hover:bg-blue-50/50 border border-[#D9E0E6] text-left transition-all flex items-center justify-between cursor-pointer group shadow-3xs"
+                    className="w-full p-4 rounded-xl bg-white/90 hover:bg-blue-50/20 border border-slate-200/70 hover:border-blue-400/40 text-left transition-all flex items-center justify-between cursor-pointer group shadow-3xs"
                   >
                     <div className="space-y-0.5">
-                      <div className="font-extrabold text-xs text-[#123B5D] flex items-center gap-1.5">
-                        <RefreshCw className="h-4 w-4" />
+                      <div className="font-extrabold text-xs text-[#1e3a8a] flex items-center gap-1.5">
+                        <RefreshCw className="h-4.5 w-4.5 animate-pulse-slow" />
                         <span>{t.quickStartReconcile}</span>
                       </div>
-                      <div className="text-[11px] text-[#52606D]">{t.quickStartReconcileDesc}</div>
+                      <div className="text-[11px] text-slate-500 font-medium">{t.quickStartReconcileDesc}</div>
                     </div>
-                    <ChevronRight className="h-4 w-4 text-slate-400 group-hover:text-[#123B5D] transition-colors shrink-0" />
+                    <ChevronRight className="h-4 w-4 text-slate-400 group-hover:text-[#1e3a8a] group-hover:translate-x-0.5 transition-all shrink-0" />
                   </button>
                 </div>
               </div>
@@ -288,16 +292,16 @@ export default function LandingView({ setActiveView, language }: LandingViewProp
       </section>
 
       {/* ========================================================================= */}
-      {/* 2. HOW RTI SAATHI HELPS (4 Concise Steps with Statutory Clarity) */}
+      {/* 2. HOW RTI SAATHI HELPS (4 Steps with Card Layout) */}
       {/* ========================================================================= */}
-      <section className="py-14 bg-[#F7F8FA] border-b border-[#D9E0E6]">
+      <section className="py-16 bg-white/40 backdrop-blur-xs relative z-10">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           
-          <div className="max-w-2xl mb-10">
-            <h2 className="text-2xl font-black text-[#17212B] tracking-tight">
+          <div className="max-w-2xl mb-12">
+            <h2 className="text-2xl font-black text-[#0f172a] tracking-tight">
               {t.howTitle}
             </h2>
-            <p className="text-xs sm:text-sm text-[#52606D] mt-1 font-medium">
+            <p className="text-xs sm:text-sm text-slate-500 mt-1 font-medium">
               {t.howSub}
             </p>
           </div>
@@ -305,30 +309,32 @@ export default function LandingView({ setActiveView, language }: LandingViewProp
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
               {
-                step: '01',
+                step: 'Step 01',
                 title: 'Find the right authority',
                 desc: 'Describe what you need. We match the designated Central Ministry or Public Information Officer (CPIO) across 2,000+ public authorities.'
               },
               {
-                step: '02',
+                step: 'Step 02',
                 title: 'Build your request',
                 desc: 'Formulate adaptive, legally disclosable questions under Section 6(1) with automated Section 8 exemption screening.'
               },
               {
-                step: '03',
+                step: 'Step 03',
                 title: 'Track your application',
                 desc: 'Monitor the 30-day statutory countdown from registration and fee confirmation to CPIO response delivery.'
               },
               {
-                step: '04',
+                step: 'Step 04',
                 title: 'Understand response & appeal',
                 desc: 'Review disclosures point-by-point. If records are withheld, escalate with pre-filled First Appeal (FAA) and Second Appeal (CIC) petitions.'
               }
             ].map((s, idx) => (
-              <div key={idx} className="space-y-2 border-l-2 border-[#123B5D] pl-4">
-                <span className="text-xs font-black text-[#123B5D] tracking-widest">{s.step}</span>
-                <h3 className="font-extrabold text-sm text-[#17212B]">{s.title}</h3>
-                <p className="text-xs text-[#52606D] leading-relaxed font-normal">{s.desc}</p>
+              <div key={idx} className="bg-white/80 border border-slate-200/50 hover:border-blue-300/40 p-5 rounded-2xl shadow-3xs hover-lift flex flex-col justify-between">
+                <div className="space-y-3">
+                  <span className="text-[10px] font-black text-[#1e3a8a] bg-blue-50/80 px-2 py-0.5 rounded-md border border-blue-200/30 uppercase tracking-widest inline-block">{s.step}</span>
+                  <h3 className="font-extrabold text-sm text-[#0f172a]">{s.title}</h3>
+                  <p className="text-xs text-slate-500 leading-relaxed font-normal">{s.desc}</p>
+                </div>
               </div>
             ))}
           </div>
@@ -337,78 +343,86 @@ export default function LandingView({ setActiveView, language }: LandingViewProp
       </section>
 
       {/* ========================================================================= */}
-      {/* 3. INTELLIGENT AUTHORITY FINDER SECTION */}
+      {/* 3. INTELLIGENT AUTHORITY FINDER SECTION (Dark Dashboard Theme) */}
       {/* ========================================================================= */}
-      <section className="py-14 bg-white border-b border-[#D9E0E6]">
+      <section className="py-10 relative z-10">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           
-          <div className="max-w-3xl space-y-2 mb-8">
-            <h2 className="text-2xl font-black text-[#17212B] tracking-tight">
-              {t.authFinderTitle}
-            </h2>
-            <p className="text-xs sm:text-sm text-[#52606D] font-normal leading-relaxed">
-              {t.authFinderSub}
-            </p>
-          </div>
-
-          <form onSubmit={handleFindAuthority} className="max-w-3xl space-y-3">
-            <div className="flex flex-col sm:flex-row gap-2">
-              <div className="relative flex-1">
-                <Search className="absolute left-3.5 top-3.5 h-4 w-4 text-slate-400" />
-                <input
-                  type="text"
-                  value={authorityQuery}
-                  onChange={(e) => setAuthorityQuery(e.target.value)}
-                  placeholder={t.authFinderPlaceholder}
-                  className="w-full rounded-xl border border-[#D9E0E6] bg-slate-50 pl-10 pr-4 py-3 text-xs font-medium text-slate-800 outline-none focus:border-[#123B5D] focus:bg-white transition-all shadow-3xs"
-                />
-              </div>
-
-              <button
-                type="submit"
-                disabled={isSearchingAuth || !authorityQuery.trim()}
-                className="rounded-xl bg-[#123B5D] hover:bg-[#0A2540] text-white px-6 py-3 text-xs font-extrabold shadow-3xs cursor-pointer transition-all disabled:opacity-50 shrink-0"
-              >
-                {isSearchingAuth ? 'Searching...' : t.findBtn}
-              </button>
+          <div className="bg-gradient-to-br from-slate-900 via-[#0f172a] to-blue-950 text-white rounded-3xl p-6 sm:p-10 shadow-lg border border-slate-800/80 overflow-hidden relative">
+            <div className="absolute -right-20 -bottom-20 w-80 h-80 rounded-full bg-blue-500/10 blur-3xl pointer-events-none" />
+            <div className="absolute -left-20 -top-20 w-80 h-80 rounded-full bg-amber-500/5 blur-3xl pointer-events-none" />
+            
+            <div className="max-w-3xl space-y-2 mb-8 relative z-10">
+              <span className="text-[10px] font-black uppercase tracking-wider bg-blue-500/20 text-blue-300 border border-blue-500/30 px-2.5 py-1 rounded-full">
+                💡 Smart Matching System
+              </span>
+              <h2 className="text-2xl font-black tracking-tight text-white mt-3">
+                {t.authFinderTitle}
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-400 font-normal leading-relaxed">
+                {t.authFinderSub}
+              </p>
             </div>
 
-            {/* Suggestion Result Output */}
-            {authorityResult && authorityResult.suggestedAuthority && (
-              <div className="mt-4 rounded-2xl border border-blue-200 bg-blue-50/60 p-5 space-y-3 animate-in fade-in">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-black uppercase tracking-wider bg-[#123B5D] text-white px-2 py-0.5 rounded-md">
-                    Suggested Public Authority ({authorityResult.confidence}% Match)
-                  </span>
-                  <span className="text-[11px] font-bold text-slate-500">
-                    Jurisdiction: {authorityResult.jurisdictionLevel}
-                  </span>
+            <form onSubmit={handleFindAuthority} className="max-w-3xl space-y-4 relative z-10">
+              <div className="flex flex-col sm:flex-row gap-2">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3.5 top-3.5 h-4.5 w-4.5 text-slate-400" />
+                  <input
+                    type="text"
+                    value={authorityQuery}
+                    onChange={(e) => setAuthorityQuery(e.target.value)}
+                    placeholder={t.authFinderPlaceholder}
+                    className="w-full rounded-xl border border-slate-700 bg-slate-800/40 pl-11 pr-4 py-3.5 text-xs font-semibold text-white outline-none focus:border-blue-400 focus:bg-slate-900/80 transition-all shadow-3xs"
+                  />
                 </div>
 
-                <div className="space-y-1">
-                  <h4 className="font-extrabold text-sm text-[#123B5D]">
-                    {authorityResult.suggestedAuthority.name}
-                  </h4>
-                  <p className="text-xs text-slate-700 font-medium">
-                    {authorityResult.reason}
-                  </p>
-                </div>
-
-                <div className="pt-2 flex items-center justify-between border-t border-blue-200/80">
-                  <span className="text-[11px] text-slate-600">
-                    CPIO: <strong>{authorityResult.suggestedAuthority.cpioName}</strong> ({authorityResult.suggestedAuthority.department})
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setActiveView('onboarding')}
-                    className="text-xs font-black text-[#123B5D] hover:underline inline-flex items-center gap-1 cursor-pointer"
-                  >
-                    Draft Request for this Authority ➔
-                  </button>
-                </div>
+                <button
+                  type="submit"
+                  disabled={isSearchingAuth || !authorityQuery.trim()}
+                  className="rounded-xl bg-blue-600 hover:bg-blue-700 text-white px-7 py-3 text-xs font-black shadow-md cursor-pointer transition-all disabled:opacity-50 hover-lift"
+                >
+                  {isSearchingAuth ? 'Searching...' : t.findBtn}
+                </button>
               </div>
-            )}
-          </form>
+
+              {/* Suggestion Result Output */}
+              {authorityResult && authorityResult.suggestedAuthority && (
+                <div className="mt-4 rounded-2xl border border-blue-500/30 bg-blue-950/40 p-5 space-y-3.5 animate-in fade-in duration-300">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-black uppercase tracking-wider bg-blue-600 text-white px-2.5 py-0.5 rounded-md">
+                      Suggested Public Authority ({authorityResult.confidence}% Match)
+                    </span>
+                    <span className="text-[11px] font-bold text-slate-400">
+                      Jurisdiction: {authorityResult.jurisdictionLevel}
+                    </span>
+                  </div>
+
+                  <div className="space-y-1">
+                    <h4 className="font-extrabold text-sm text-blue-300">
+                      {authorityResult.suggestedAuthority.name}
+                    </h4>
+                    <p className="text-xs text-slate-300 leading-relaxed font-medium">
+                      {authorityResult.reason}
+                    </p>
+                  </div>
+
+                  <div className="pt-3 flex flex-col sm:flex-row sm:items-center justify-between border-t border-slate-800 gap-2">
+                    <span className="text-[11px] text-slate-400">
+                      CPIO: <strong className="text-white font-bold">{authorityResult.suggestedAuthority.cpioName}</strong> ({authorityResult.suggestedAuthority.department})
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setActiveView('onboarding')}
+                      className="text-xs font-black text-blue-450 hover:text-blue-300 transition-colors inline-flex items-center gap-1 cursor-pointer self-end"
+                    >
+                      Draft Request for this Authority ➔
+                    </button>
+                  </div>
+                </div>
+              )}
+            </form>
+          </div>
 
         </div>
       </section>
@@ -416,32 +430,32 @@ export default function LandingView({ setActiveView, language }: LandingViewProp
       {/* ========================================================================= */}
       {/* 4. COMPREHENSIVE FAQS & 30-DAY STATUTORY TIMELINE RULES */}
       {/* ========================================================================= */}
-      <section className="py-14 bg-[#F7F8FA] border-b border-[#D9E0E6]">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-6">
+      <section className="py-16 relative z-10">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-8">
           
           <div className="max-w-3xl space-y-2">
-            <h2 className="text-2xl font-black text-[#17212B] tracking-tight">
+            <h2 className="text-2xl font-black text-[#0f172a] tracking-tight">
               {language === 'en' ? 'Key Statutory Rules & FAQs' : 'महत्वपूर्ण कानूनी नियम व प्रश्न'}
             </h2>
-            <p className="text-xs sm:text-sm text-[#52606D] font-normal leading-relaxed">
+            <p className="text-xs sm:text-sm text-slate-550 font-medium leading-relaxed">
               {language === 'en' 
                 ? 'Everything citizens need to know about timelines, deemed refusals, and appeals under the RTI Act 2005.'
                 : 'आरटीआई अधिनियम 2005 के तहत समयसीमा, डीम्ड रिफ्यूजल और अपीलों के बारे में आवश्यक जानकारी।'}
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {homepageFaqs.map((faq, idx) => (
-              <div key={idx} className="rounded-2xl border border-[#D9E0E6] bg-white p-5 shadow-3xs space-y-2">
+              <div key={idx} className="glass-card rounded-2xl p-5 hover-lift shadow-3xs space-y-2.5">
                 <div className="flex justify-between items-center">
-                  <span className="text-[10px] font-black uppercase text-[#123B5D] bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-md">
+                  <span className="text-[10px] font-black uppercase text-[#1e3a8a] bg-blue-50 border border-blue-200/50 px-2 py-0.5 rounded-md">
                     {faq.citation}
                   </span>
                 </div>
-                <h3 className="font-extrabold text-sm text-[#17212B]">
+                <h3 className="font-extrabold text-sm text-[#0f172a]">
                   {faq.q}
                 </h3>
-                <p className="text-xs text-[#52606D] leading-relaxed font-normal">
+                <p className="text-xs text-slate-500 leading-relaxed font-normal">
                   {faq.a}
                 </p>
               </div>

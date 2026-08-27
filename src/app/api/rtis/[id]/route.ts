@@ -51,7 +51,14 @@ export async function GET(
       secondAppealReason: r.second_appeal_reason,
       secondAppealDate: r.second_appeal_date,
       secondAppealText: r.second_appeal_text,
-      secondAppealRegNo: r.second_appeal_reg_no
+      secondAppealRegNo: r.second_appeal_reg_no,
+      parentId: r.parent_id,
+      childRegistrations: r.child_registrations,
+      remarksTrail: r.remarks_trail,
+      additionalFeeAmount: r.additional_fee_amount,
+      additionalFeeReason: r.additional_fee_reason,
+      additionalFeeStatus: r.additional_fee_status,
+      requiredDocDescription: r.required_doc_description
     };
 
     return NextResponse.json(item);
@@ -87,6 +94,13 @@ export async function PATCH(
     await query('ALTER TABLE rtis ADD COLUMN IF NOT EXISTS second_appeal_date TEXT;', []);
     await query('ALTER TABLE rtis ADD COLUMN IF NOT EXISTS second_appeal_text TEXT;', []);
     await query('ALTER TABLE rtis ADD COLUMN IF NOT EXISTS second_appeal_reg_no TEXT;', []);
+    await query('ALTER TABLE rtis ADD COLUMN IF NOT EXISTS parent_id TEXT;', []);
+    await query('ALTER TABLE rtis ADD COLUMN IF NOT EXISTS child_registrations TEXT[];', []);
+    await query('ALTER TABLE rtis ADD COLUMN IF NOT EXISTS remarks_trail JSONB;', []);
+    await query('ALTER TABLE rtis ADD COLUMN IF NOT EXISTS additional_fee_amount INT;', []);
+    await query('ALTER TABLE rtis ADD COLUMN IF NOT EXISTS additional_fee_reason TEXT;', []);
+    await query('ALTER TABLE rtis ADD COLUMN IF NOT EXISTS additional_fee_status TEXT;', []);
+    await query('ALTER TABLE rtis ADD COLUMN IF NOT EXISTS required_doc_description TEXT;', []);
     
     // Dynamically build SET query fields based on body params
     const fields: string[] = [];
@@ -109,7 +123,14 @@ export async function PATCH(
       secondAppealReason: 'second_appeal_reason',
       secondAppealDate: 'second_appeal_date',
       secondAppealText: 'second_appeal_text',
-      secondAppealRegNo: 'second_appeal_reg_no'
+      secondAppealRegNo: 'second_appeal_reg_no',
+      parentId: 'parent_id',
+      childRegistrations: 'child_registrations',
+      remarksTrail: 'remarks_trail',
+      additionalFeeAmount: 'additional_fee_amount',
+      additionalFeeReason: 'additional_fee_reason',
+      additionalFeeStatus: 'additional_fee_status',
+      requiredDocDescription: 'required_doc_description'
     };
 
     for (const [key, val] of Object.entries(body)) {
@@ -162,7 +183,14 @@ export async function PATCH(
       secondAppealReason: r.second_appeal_reason,
       secondAppealDate: r.second_appeal_date,
       secondAppealText: r.second_appeal_text,
-      secondAppealRegNo: r.second_appeal_reg_no
+      secondAppealRegNo: r.second_appeal_reg_no,
+      parentId: r.parent_id,
+      childRegistrations: r.child_registrations,
+      remarksTrail: r.remarks_trail,
+      additionalFeeAmount: r.additional_fee_amount,
+      additionalFeeReason: r.additional_fee_reason,
+      additionalFeeStatus: r.additional_fee_status,
+      requiredDocDescription: r.required_doc_description
     };
 
     return NextResponse.json(updated);

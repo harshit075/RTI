@@ -15,6 +15,8 @@ import ProfileView from '../components/ProfileView';
 import ContextualHelp from '../components/ContextualHelp';
 import ReconciliationView from '../components/ReconciliationView';
 import AuthView from '../components/AuthView';
+import GovernmentPortalView from '../components/GovernmentPortalView';
+import PublicLookupView from '../components/PublicLookupView';
 
 import { 
   User, RTIApplication, NotificationItem 
@@ -224,6 +226,15 @@ export default function Home() {
           />
         )}
 
+        {activeView === 'government' && (
+          <GovernmentPortalView 
+            language={language}
+            setActiveView={setActiveView}
+            rtis={rtis}
+            onRefresh={refreshApplications}
+          />
+        )}
+
         {activeView === 'profile' && (
           <ProfileView 
             language={language}
@@ -235,6 +246,17 @@ export default function Home() {
             currentUser={currentUser}
             onResetData={handleResetData}
             setActiveView={setActiveView}
+          />
+        )}
+
+        {['status-lookup', 'appeal-lookup', 'history-lookup'].includes(activeView) && (
+          <PublicLookupView 
+            language={language}
+            setActiveView={setActiveView}
+            initialTab={
+              activeView === 'appeal-lookup' ? 'appeal' :
+              activeView === 'history-lookup' ? 'history' : 'status'
+            }
           />
         )}
       </main>

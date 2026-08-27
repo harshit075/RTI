@@ -26,7 +26,11 @@ export type RTIStatus =
   | 'First Appeal Filed' 
   | 'FAA Decision Received' 
   | 'Second Appeal Filed'
-  | 'Completed';
+  | 'Completed'
+  | 'Returned'
+  | 'Transferred'
+  | 'Additional Fee Due'
+  | 'Document Required';
 
 export type PaymentStatus = 'Pending' | 'Success' | 'Failed';
 
@@ -36,6 +40,13 @@ export interface QuestionBreakdownItem {
   note: string;
   sourceDoc?: string;
   sourcePage?: number;
+}
+
+export interface RemarkMilestone {
+  date: string;
+  status: RTIStatus;
+  remark: string;
+  officer: string;
 }
 
 export interface RTIApplication {
@@ -65,6 +76,35 @@ export interface RTIApplication {
   secondAppealRegNo?: string;
   questionBreakdowns?: QuestionBreakdownItem[];
   aiAnalysis?: string;
+  
+  // Widen data model for missing features
+  parentId?: string;
+  childRegistrations?: string[];
+  remarksTrail?: RemarkMilestone[];
+  additionalFeeAmount?: number;
+  additionalFeeReason?: string;
+  additionalFeeStatus?: 'Pending' | 'Paid';
+  requiredDocDescription?: string;
+
+  // Demographic & BPL fields
+  applicantName?: string;
+  applicantEmail?: string;
+  applicantPhone?: string;
+  gender?: string;
+  addressLine1?: string;
+  addressLine2?: string;
+  addressLine3?: string;
+  pinCode?: string;
+  stateName?: string;
+  areaStatus?: string;
+  educationLevel?: string;
+  educationQual?: string;
+  phoneNo?: string;
+  isIndianCitizen?: boolean;
+  bplStatus?: boolean;
+  bplCardNo?: string;
+  bplYear?: string;
+  bplAuthority?: string;
 }
 
 export type TimelineEventStatus = 'completed' | 'current' | 'upcoming';
