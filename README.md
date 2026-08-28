@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🇮🇳 RTI Saathi (आरटीआई साथी)
+# 🇮🇳 RTI Saathi (आरटीआई साथी) 
 ### *Next-Generation Citizen Right to Information Gateway & Statutory AI Assistant*
 
 **Empowering 1.4 Billion Citizens with AI-Guided Transparency, Statutory Legal Compliance, and End-to-End Appellate Redressal.**
