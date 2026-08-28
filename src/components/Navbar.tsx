@@ -127,7 +127,7 @@ export default function Navbar({
     <div className="w-full flex flex-col z-50 bg-white">
       {/* 1. Top Accessibility Dark Bar */}
       <div className="w-full bg-[#172B5B] text-white py-1.5 px-4 sm:px-6 lg:px-8 border-b border-[#0f1d3e] text-[11px] font-medium hidden md:block">
-        <div className="mx-auto max-w-7xl flex items-center justify-between">
+        <div className="mx-auto max-w-[1360px] flex items-center justify-between">
           <div className="flex items-center gap-1.5">
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
             <span>{language === 'en' ? 'Citizen Right to Information Gateway' : 'नागरिक सूचना का अधिकार प्रवेशद्वार'}</span>
@@ -182,7 +182,7 @@ export default function Navbar({
 
       {/* 2. Main Sticky White Navbar */}
       <header className="sticky top-0 w-full bg-white border-b border-[#E2E8F0] shadow-xs h-[72px] flex items-center z-45">
-        <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto flex w-full max-w-[1360px] items-center justify-between px-4 sm:px-6 lg:px-8">
           
           {/* Left: Brand Logo & Title */}
           <div 

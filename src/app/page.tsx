@@ -2,9 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
-import Footer from '../components/Footer';
+import Footer from '../components/FooterFixed';
 import NoticeBar from '../components/NoticeBar';
-import LandingView from '../components/LandingView';
+import LandingView from '../components/LandingViewFixed';
 import OnboardingView from '../components/OnboardingView';
 import BuilderView from '../components/BuilderView';
 import DashboardView from '../components/DashboardView';
