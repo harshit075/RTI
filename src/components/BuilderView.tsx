@@ -161,7 +161,7 @@ export default function BuilderView({
         submittedDate: new Date().toISOString().substring(0, 10),
         expectedDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().substring(0, 10),
         status: 'Submitted' as const,
-        paymentStatus: (bplStatus ? 'Success' : 'Success') as const, // Fee waived counts as success/paid for submission
+        paymentStatus: 'Success' as const, // Fee waived counts as success/paid for submission
         registrationNumber: regNo,
         answeredCount: 0,
         totalQuestions: questions.length,
