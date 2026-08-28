@@ -2,9 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
-import Footer from '../components/Footer';
+import Footer from '../components/FooterFixed';
 import NoticeBar from '../components/NoticeBar';
-import LandingView from '../components/LandingView';
+import LandingView from '../components/LandingViewFixed';
 import OnboardingView from '../components/OnboardingView';
 import BuilderView from '../components/BuilderView';
 import DashboardView from '../components/DashboardView';
@@ -15,6 +15,8 @@ import ProfileView from '../components/ProfileView';
 import ContextualHelp from '../components/ContextualHelp';
 import ReconciliationView from '../components/ReconciliationView';
 import AuthView from '../components/AuthView';
+import GovernmentPortalView from '../components/GovernmentPortalView';
+import PublicLookupView from '../components/PublicLookupView';
 
 import { 
   User, RTIApplication, NotificationItem 
@@ -133,6 +135,7 @@ export default function Home() {
         markNotificationsRead={markNotificationsRead}
         currentUser={currentUser}
         onLogout={handleLogout}
+        setHelpCategory={setHelpCategory}
       />
 
       {/* Dismissible Official Notice Bar */}
@@ -148,6 +151,7 @@ export default function Home() {
           <LandingView 
             setActiveView={setActiveView} 
             language={language} 
+            setHelpCategory={setHelpCategory}
           />
         )}
 
@@ -224,6 +228,15 @@ export default function Home() {
           />
         )}
 
+        {activeView === 'government' && (
+          <GovernmentPortalView 
+            language={language}
+            setActiveView={setActiveView}
+            rtis={rtis}
+            onRefresh={refreshApplications}
+          />
+        )}
+
         {activeView === 'profile' && (
           <ProfileView 
             language={language}
@@ -235,6 +248,17 @@ export default function Home() {
             currentUser={currentUser}
             onResetData={handleResetData}
             setActiveView={setActiveView}
+          />
+        )}
+
+        {['status-lookup', 'appeal-lookup', 'history-lookup'].includes(activeView) && (
+          <PublicLookupView 
+            language={language}
+            setActiveView={setActiveView}
+            initialTab={
+              activeView === 'appeal-lookup' ? 'appeal' :
+              activeView === 'history-lookup' ? 'history' : 'status'
+            }
           />
         )}
       </main>

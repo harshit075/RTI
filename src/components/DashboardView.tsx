@@ -184,25 +184,28 @@ export default function DashboardView({
   }[language];
 
   return (
-    <div className="flex-1 bg-[#F7F8FA] py-8 px-4 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-7xl space-y-6">
+    <div className="flex-1 bg-[#f8fafc] grid-pattern relative overflow-hidden py-8 px-4 sm:px-6 lg:px-8">
+      <div className="absolute top-20 left-10 w-96 h-96 rounded-full bg-blue-300/10 ambient-glow blur-3xl pointer-events-none" />
+      <div className="absolute bottom-10 right-20 w-80 h-80 rounded-full bg-amber-250/10 ambient-glow blur-3xl pointer-events-none" />
+      
+      <div className="mx-auto max-w-7xl space-y-6 relative z-10">
         
         {/* ========================================================================= */}
         {/* TOP HEADER */}
         {/* ========================================================================= */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-[#D9E0E6]">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-[#17212B]">
+            <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-[#0f172a] bg-clip-text text-transparent bg-gradient-to-r from-slate-900 via-[#1e3a8a] to-[#0f172a]">
               {t.greeting}
             </h1>
-            <p className="text-xs sm:text-sm text-[#52606D] mt-1 font-medium">
+            <p className="text-xs sm:text-sm text-slate-500 mt-1 font-semibold">
               {t.sub}
             </p>
           </div>
 
           <button
             onClick={() => setActiveView('onboarding')}
-            className="inline-flex items-center justify-center rounded-xl bg-[#123B5D] hover:bg-[#0A2540] text-white px-5 py-2.5 text-xs font-black shadow-3xs cursor-pointer transition-all self-start sm:self-auto"
+            className="inline-flex items-center justify-center rounded-xl bg-[#1e3a8a] hover:bg-blue-900 text-white px-5 py-3 text-xs font-black shadow-md cursor-pointer transition-all hover-lift self-start sm:self-auto"
           >
             {t.startRti}
           </button>
@@ -212,20 +215,20 @@ export default function DashboardView({
         {/* ACTION REQUIRED HIGHLIGHT CARD */}
         {/* ========================================================================= */}
         {actionRequiredItem ? (
-          <div className="rounded-2xl border-2 border-rose-300 bg-rose-50/70 p-5 sm:p-6 shadow-3xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div className="space-y-1.5 flex-1">
+          <div className="glass-card rounded-2xl border-rose-350 bg-rose-50/40 p-5 sm:p-6 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 animate-glow">
+            <div className="space-y-1.5 flex-1 text-xs">
               <div className="flex items-center gap-2">
-                <span className="text-[10px] font-black uppercase tracking-wider bg-rose-700 text-white px-2 py-0.5 rounded-md">
+                <span className="text-[10px] font-black uppercase tracking-wider bg-rose-600 text-white px-2 py-0.5 rounded-md animate-pulse">
                   {t.actionTitle}
                 </span>
                 <span className="text-xs font-mono font-bold text-slate-700">
                   {actionRequiredItem.registrationNumber}
                 </span>
               </div>
-              <h3 className="text-sm sm:text-base font-extrabold text-[#17212B]">
+              <h3 className="text-sm sm:text-base font-extrabold text-[#0f172a]">
                 {actionRequiredItem.title}
               </h3>
-              <p className="text-xs text-slate-700 font-medium leading-relaxed">
+              <p className="text-xs text-slate-600 font-semibold leading-relaxed">
                 {actionRequiredItem.responseSummary || 'Response received from public authority. Review the disclosure to determine if all 5 requested items were furnished.'}
               </p>
             </div>
@@ -235,14 +238,14 @@ export default function DashboardView({
                 setSelectedRtiId(actionRequiredItem.id);
                 setActiveView('detail');
               }}
-              className="rounded-xl bg-rose-700 hover:bg-rose-800 text-white px-5 py-2.5 text-xs font-black shadow-3xs cursor-pointer transition-all shrink-0 self-end sm:self-auto"
+              className="rounded-xl bg-rose-700 hover:bg-rose-800 text-white px-5 py-2.5 text-xs font-black shadow-3xs cursor-pointer transition-all shrink-0 self-end sm:self-auto hover-lift"
             >
               {t.actionReview}
             </button>
           </div>
         ) : (
-          <div className="rounded-2xl border border-[#D9E0E6] bg-white p-4 text-xs font-medium text-[#52606D] flex items-center gap-2">
-            <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+          <div className="glass-card rounded-2xl border-slate-200 bg-white/70 p-4 text-xs font-semibold text-slate-600 flex items-center gap-2">
+            <CheckCircle2 className="h-4.5 w-4.5 text-emerald-600 shrink-0" />
             <span>{t.allCaughtUp}</span>
           </div>
         )}
@@ -254,69 +257,69 @@ export default function DashboardView({
           
           <button
             onClick={() => setActiveFilter('Active')}
-            className={`p-5 rounded-2xl border text-left transition-all cursor-pointer shadow-3xs ${
-              activeFilter === 'Active' ? 'border-[#123B5D] bg-white ring-1 ring-[#123B5D]' : 'border-[#D9E0E6] bg-white hover:bg-slate-50'
+            className={`p-5 rounded-2xl border-t-4 text-left transition-all cursor-pointer shadow-3xs hover-lift ${
+              activeFilter === 'Active' ? 'border-t-[#1e3a8a] border-x-slate-300 border-b-slate-300 bg-white ring-1 ring-blue-50' : 'border-t-blue-600 border-x-slate-200 border-b-slate-200 bg-white hover:bg-slate-50'
             }`}
           >
-            <span className="text-[11px] font-bold uppercase tracking-wider text-[#52606D] block">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">
               {t.statActive}
             </span>
             <div className="mt-2 flex items-baseline gap-2">
-              <span className="text-2xl sm:text-3xl font-black text-[#123B5D]">
+              <span className="text-2xl sm:text-3xl font-black text-[#1e3a8a]">
                 {stats.activeCount}
               </span>
-              <span className="text-[11px] text-amber-700 font-semibold">Under processing</span>
+              <span className="text-[10px] text-amber-700 font-bold bg-amber-50 px-1.5 py-0.5 rounded">In Process</span>
             </div>
           </button>
 
           <button
             onClick={() => setActiveFilter('Action Required')}
-            className={`p-5 rounded-2xl border text-left transition-all cursor-pointer shadow-3xs ${
-              activeFilter === 'Action Required' ? 'border-rose-600 bg-white ring-1 ring-rose-600' : 'border-[#D9E0E6] bg-white hover:bg-slate-50'
+            className={`p-5 rounded-2xl border-t-4 text-left transition-all cursor-pointer shadow-3xs hover-lift ${
+              activeFilter === 'Action Required' ? 'border-t-rose-600 border-x-slate-300 border-b-slate-300 bg-white ring-1 ring-rose-50' : 'border-t-rose-500 border-x-slate-200 border-b-slate-200 bg-white hover:bg-slate-50'
             }`}
           >
-            <span className="text-[11px] font-bold uppercase tracking-wider text-[#52606D] block">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">
               {t.statAction}
             </span>
             <div className="mt-2 flex items-baseline gap-2">
               <span className="text-2xl sm:text-3xl font-black text-rose-700">
                 {stats.actionRequiredCount}
               </span>
-              <span className="text-[11px] text-rose-700 font-semibold">Review needed</span>
+              <span className="text-[10px] text-rose-750 font-bold bg-rose-50 px-1.5 py-0.5 rounded">Action Needed</span>
             </div>
           </button>
 
           <button
             onClick={() => setActiveFilter('Awaiting Response')}
-            className={`p-5 rounded-2xl border text-left transition-all cursor-pointer shadow-3xs ${
-              activeFilter === 'Awaiting Response' ? 'border-[#123B5D] bg-white ring-1 ring-[#123B5D]' : 'border-[#D9E0E6] bg-white hover:bg-slate-50'
+            className={`p-5 rounded-2xl border-t-4 text-left transition-all cursor-pointer shadow-3xs hover-lift ${
+              activeFilter === 'Awaiting Response' ? 'border-t-amber-600 border-x-slate-300 border-b-slate-300 bg-white ring-1 ring-amber-50' : 'border-t-amber-500 border-x-slate-200 border-b-slate-200 bg-white hover:bg-slate-50'
             }`}
           >
-            <span className="text-[11px] font-bold uppercase tracking-wider text-[#52606D] block">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">
               {t.statAwaiting}
             </span>
             <div className="mt-2 flex items-baseline gap-2">
-              <span className="text-2xl sm:text-3xl font-black text-slate-800">
+              <span className="text-2xl sm:text-3xl font-black text-amber-700">
                 {stats.awaitingResponseCount}
               </span>
-              <span className="text-[11px] text-slate-500 font-semibold">CPIO assigned</span>
+              <span className="text-[10px] text-amber-750 font-bold bg-amber-50 px-1.5 py-0.5 rounded">Awaiting Reply</span>
             </div>
           </button>
 
           <button
             onClick={() => setActiveFilter('All')}
-            className={`p-5 rounded-2xl border text-left transition-all cursor-pointer shadow-3xs ${
-              activeFilter === 'All' ? 'border-[#123B5D] bg-white ring-1 ring-[#123B5D]' : 'border-[#D9E0E6] bg-white hover:bg-slate-50'
+            className={`p-5 rounded-2xl border-t-4 text-left transition-all cursor-pointer shadow-3xs hover-lift ${
+              activeFilter === 'All' ? 'border-t-[#1e3a8a] border-x-slate-300 border-b-slate-300 bg-white ring-1 ring-blue-50' : 'border-t-slate-500 border-x-slate-200 border-b-slate-200 bg-white hover:bg-slate-50'
             }`}
           >
-            <span className="text-[11px] font-bold uppercase tracking-wider text-[#52606D] block">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">
               {t.statTotal}
             </span>
             <div className="mt-2 flex items-baseline gap-2">
-              <span className="text-2xl sm:text-3xl font-black text-[#123B5D]">
+              <span className="text-2xl sm:text-3xl font-black text-[#1e3a8a]">
                 {stats.totalApplications}
               </span>
-              <span className="text-[11px] text-slate-500 font-semibold">Filed across portal</span>
+              <span className="text-[10px] text-slate-700 font-bold bg-slate-50 px-1.5 py-0.5 rounded">Total Filed</span>
             </div>
           </button>
 
@@ -328,19 +331,19 @@ export default function DashboardView({
         <div className="space-y-4">
           
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
-            <h2 className="text-base font-black text-[#17212B] flex items-center gap-2">
-              <FileText className="h-4.5 w-4.5 text-[#123B5D]" />
+            <h2 className="text-base font-black text-[#0f172a] flex items-center gap-2">
+              <FileText className="h-4.5 w-4.5 text-[#1e3a8a]" />
               <span>{t.tableHeading} ({filteredRtis.length})</span>
             </h2>
 
             <div className="w-full md:w-80 relative">
-              <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-slate-400" />
+              <Search className="absolute left-3.5 top-3 h-3.5 w-3.5 text-slate-400" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={t.searchPlaceholder}
-                className="w-full rounded-xl border border-[#D9E0E6] bg-white pl-9 pr-3 py-1.5 text-xs text-slate-800 outline-none focus:border-[#123B5D] shadow-3xs"
+                className="w-full rounded-xl border border-slate-200 bg-white/90 pl-9 pr-3 py-2 text-xs font-semibold text-slate-800 outline-none focus:border-[#1e3a8a] focus:bg-white shadow-3xs transition-all"
               />
             </div>
           </div>

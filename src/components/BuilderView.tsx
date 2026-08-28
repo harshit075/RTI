@@ -60,9 +60,24 @@ export default function BuilderView({
   // Applicant details
   const [name, setName] = useState('Aarav Sharma');
   const [email, setEmail] = useState('aarav.sharma@example.com');
+  const [confirmEmail, setConfirmEmail] = useState('aarav.sharma@example.com');
   const [phone, setPhone] = useState('+91 90000 00000');
+  const [gender, setGender] = useState('Male');
+  const [addressLine1, setAddressLine1] = useState('Flat 402, Block C, Heritage Apartments');
+  const [addressLine2, setAddressLine2] = useState('Siri Fort Area');
+  const [addressLine3, setAddressLine3] = useState('New Delhi');
+  const [pinCode, setPinCode] = useState('110049');
+  const [country, setCountry] = useState('India');
+  const [stateName, setStateName] = useState('Delhi');
+  const [areaStatus, setAreaStatus] = useState('Urban');
+  const [educationLevel, setEducationLevel] = useState('Literate');
+  const [educationQual, setEducationQual] = useState('Graduate');
+  const [phoneNo, setPhoneNo] = useState('');
+  const [isIndianCitizen, setIsIndianCitizen] = useState(true);
   const [bplStatus, setBplStatus] = useState<boolean>(false);
   const [bplCardNo, setBplCardNo] = useState('');
+  const [bplYear, setBplYear] = useState('');
+  const [bplAuthority, setBplAuthority] = useState('');
   
   // Payment simulation state
   const [paymentMethod, setPaymentMethod] = useState<'upi' | 'card' | 'netbanking'>('upi');
@@ -115,7 +130,11 @@ export default function BuilderView({
   };
 
   const proceedToPayment = () => {
-    if (bplStatus && bplCardNo.trim()) {
+    if (bplStatus) {
+      if (!bplCardNo.trim() || !bplYear.trim() || !bplAuthority.trim()) {
+        alert("Please provide all BPL details (Card Number, Year of Issue, and Issuing Authority) to proceed with fee waiver.");
+        return;
+      }
       simulateSubmission();
     } else {
       setStep('payment');
@@ -142,10 +161,29 @@ export default function BuilderView({
         submittedDate: new Date().toISOString().substring(0, 10),
         expectedDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().substring(0, 10),
         status: 'Submitted' as const,
-        paymentStatus: 'Success' as const,
+        paymentStatus: (bplStatus ? 'Success' : 'Success') as const, // Fee waived counts as success/paid for submission
         registrationNumber: regNo,
         answeredCount: 0,
-        totalQuestions: questions.length
+        totalQuestions: questions.length,
+        // Persist demographics & BPL info
+        applicantName: name,
+        applicantEmail: email,
+        applicantPhone: phone,
+        gender,
+        addressLine1,
+        addressLine2,
+        addressLine3,
+        pinCode,
+        stateName,
+        areaStatus,
+        educationLevel,
+        educationQual,
+        phoneNo,
+        isIndianCitizen,
+        bplStatus,
+        bplCardNo: bplStatus ? bplCardNo : '',
+        bplYear: bplStatus ? bplYear : '',
+        bplAuthority: bplStatus ? bplAuthority : ''
       };
       
       addNewRti(newApp);
@@ -373,7 +411,7 @@ export default function BuilderView({
           {/* Applicant Credentials */}
           <div className="rounded-2xl border border-[#D9E0E6] bg-white p-6 shadow-3xs space-y-4">
             <h3 className="font-extrabold text-sm text-[#17212B]">
-              Applicant Details (Section 6(1))
+              Applicant Details (Section 6(1) / G05 Compliance Checklist)
             </h3>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
@@ -396,7 +434,31 @@ export default function BuilderView({
                 />
               </div>
               <div>
-                <label className="block text-[10px] font-black text-[#52606D] uppercase mb-1">Mobile</label>
+                <label className="block text-[10px] font-black text-[#52606D] uppercase mb-1">Confirm Email-ID</label>
+                <input
+                  type="email"
+                  value={confirmEmail}
+                  onChange={(e) => setConfirmEmail(e.target.value)}
+                  className="w-full rounded-xl border border-[#D9E0E6] p-2.5 text-xs font-bold text-slate-800 bg-[#F7F8FA]"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+              <div>
+                <label className="block text-[10px] font-black text-[#52606D] uppercase mb-1">Gender</label>
+                <select
+                  value={gender}
+                  onChange={(e) => setGender(e.target.value)}
+                  className="w-full rounded-xl border border-[#D9E0E6] p-2.5 text-xs font-bold text-slate-800 bg-[#F7F8FA]"
+                >
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Third Gender">Third Gender</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-[10px] font-black text-[#52606D] uppercase mb-1">Mobile Number</label>
                 <input
                   type="tel"
                   value={phone}
@@ -404,22 +466,194 @@ export default function BuilderView({
                   className="w-full rounded-xl border border-[#D9E0E6] p-2.5 text-xs font-bold text-slate-800 bg-[#F7F8FA]"
                 />
               </div>
+              <div>
+                <label className="block text-[10px] font-black text-[#52606D] uppercase mb-1">Citizenship</label>
+                <div className="flex items-center gap-2 p-2.5 bg-[#F7F8FA] border border-[#D9E0E6] rounded-xl h-[38px]">
+                  <input
+                    type="checkbox"
+                    checked={isIndianCitizen}
+                    onChange={(e) => setIsIndianCitizen(e.target.checked)}
+                    className="h-4 w-4 text-[#123B5D]"
+                  />
+                  <span className="text-slate-850 font-bold text-[11px]">Indian Citizen</span>
+                </div>
+              </div>
             </div>
 
-            {/* BPL fee waiver toggle */}
-            <div className="p-3.5 rounded-xl border border-slate-200 bg-[#F7F8FA] text-xs flex items-center justify-between">
-              <div>
-                <span className="font-bold text-slate-800">Below Poverty Line (BPL) Fee Waiver</span>
-                <p className="text-[11px] text-slate-500">Statutory ₹10 fee is completely waived under Section 7(5).</p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+              <div className="sm:col-span-2">
+                <label className="block text-[10px] font-black text-[#52606D] uppercase mb-1">Address Line 1</label>
+                <input
+                  type="text"
+                  value={addressLine1}
+                  onChange={(e) => setAddressLine1(e.target.value)}
+                  placeholder="House No, Street, Landmark"
+                  className="w-full rounded-xl border border-[#D9E0E6] p-2.5 text-xs font-bold text-slate-800 bg-[#F7F8FA]"
+                />
               </div>
-              <input
-                type="checkbox"
-                checked={bplStatus}
-                onChange={(e) => setBplStatus(e.target.checked)}
-                className="h-4 w-4 rounded border-slate-300 text-[#123B5D]"
-              />
+              <div>
+                <label className="block text-[10px] font-black text-[#52606D] uppercase mb-1">Pin Code</label>
+                <input
+                  type="text"
+                  value={pinCode}
+                  onChange={(e) => setPinCode(e.target.value)}
+                  placeholder="6-digit PIN"
+                  className="w-full rounded-xl border border-[#D9E0E6] p-2.5 text-xs font-mono font-bold text-slate-800 bg-[#F7F8FA]"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+              <div>
+                <label className="block text-[10px] font-black text-[#52606D] uppercase mb-1">Address Line 2</label>
+                <input
+                  type="text"
+                  value={addressLine2}
+                  onChange={(e) => setAddressLine2(e.target.value)}
+                  className="w-full rounded-xl border border-[#D9E0E6] p-2.5 text-xs font-bold text-slate-800 bg-[#F7F8FA]"
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] font-black text-[#52606D] uppercase mb-1">Address Line 3</label>
+                <input
+                  type="text"
+                  value={addressLine3}
+                  onChange={(e) => setAddressLine3(e.target.value)}
+                  className="w-full rounded-xl border border-[#D9E0E6] p-2.5 text-xs font-bold text-slate-800 bg-[#F7F8FA]"
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] font-black text-[#52606D] uppercase mb-1">State / UT</label>
+                <input
+                  type="text"
+                  value={stateName}
+                  onChange={(e) => setStateName(e.target.value)}
+                  className="w-full rounded-xl border border-[#D9E0E6] p-2.5 text-xs font-bold text-slate-800 bg-[#F7F8FA]"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
+              <div>
+                <label className="block text-[10px] font-black text-[#52606D] uppercase mb-1">Area Status</label>
+                <select
+                  value={areaStatus}
+                  onChange={(e) => setAreaStatus(e.target.value)}
+                  className="w-full rounded-xl border border-[#D9E0E6] p-2.5 text-xs font-bold text-slate-800 bg-[#F7F8FA]"
+                >
+                  <option value="Urban">Urban</option>
+                  <option value="Rural">Rural</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-[10px] font-black text-[#52606D] uppercase mb-1">Education Status</label>
+                <select
+                  value={educationLevel}
+                  onChange={(e) => setEducationLevel(e.target.value)}
+                  className="w-full rounded-xl border border-[#D9E0E6] p-2.5 text-xs font-bold text-slate-800 bg-[#F7F8FA]"
+                >
+                  <option value="Literate">Literate</option>
+                  <option value="Illiterate">Illiterate</option>
+                </select>
+              </div>
+              {educationLevel === 'Literate' && (
+                <div>
+                  <label className="block text-[10px] font-black text-[#52606D] uppercase mb-1">Educational Qualification</label>
+                  <select
+                    value={educationQual}
+                    onChange={(e) => setEducationQual(e.target.value)}
+                    className="w-full rounded-xl border border-[#D9E0E6] p-2.5 text-xs font-bold text-slate-800 bg-[#F7F8FA]"
+                  >
+                    <option value="Below Primary">Below Primary</option>
+                    <option value="Primary">Primary</option>
+                    <option value="Middle">Middle</option>
+                    <option value="Secondary">Secondary</option>
+                    <option value="Graduate">Graduate</option>
+                    <option value="Above Graduate">Above Graduate</option>
+                  </select>
+                </div>
+              )}
+              <div>
+                <label className="block text-[10px] font-black text-[#52606D] uppercase mb-1">Phone (Landline)</label>
+                <input
+                  type="text"
+                  value={phoneNo}
+                  onChange={(e) => setPhoneNo(e.target.value)}
+                  className="w-full rounded-xl border border-[#D9E0E6] p-2.5 text-xs font-bold text-slate-800 bg-[#F7F8FA]"
+                />
+              </div>
             </div>
           </div>
+
+            {/* BPL fee waiver toggle */}
+            <div className="p-4 rounded-xl border border-slate-200 bg-[#F7F8FA] text-xs space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="font-bold text-slate-800">Below Poverty Line (BPL) Fee Waiver</span>
+                  <p className="text-[11px] text-slate-500">Statutory ₹10 fee is completely waived under Section 7(5).</p>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={bplStatus}
+                  onChange={(e) => setBplStatus(e.target.checked)}
+                  className="h-4 w-4 rounded border-slate-300 text-[#123B5D]"
+                />
+              </div>
+
+              {bplStatus && (
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 border-t border-slate-200 animate-in fade-in duration-200">
+                  <div>
+                    <label className="block text-[10px] font-black text-[#52606D] uppercase mb-1">BPL Card No.</label>
+                    <input
+                      type="text"
+                      value={bplCardNo}
+                      onChange={(e) => setBplCardNo(e.target.value)}
+                      placeholder="Enter Card Number"
+                      className="w-full rounded-xl border border-[#D9E0E6] p-2 text-xs font-bold text-slate-800 bg-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black text-[#52606D] uppercase mb-1">Year of Issue</label>
+                    <input
+                      type="text"
+                      value={bplYear}
+                      onChange={(e) => setBplYear(e.target.value)}
+                      placeholder="e.g. 2024"
+                      className="w-full rounded-xl border border-[#D9E0E6] p-2 text-xs font-bold text-slate-800 bg-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black text-[#52606D] uppercase mb-1">Issuing Authority</label>
+                    <input
+                      type="text"
+                      value={bplAuthority}
+                      onChange={(e) => setBplAuthority(e.target.value)}
+                      placeholder="e.g. Tehsildar / Food Dept"
+                      className="w-full rounded-xl border border-[#D9E0E6] p-2 text-xs font-bold text-slate-800 bg-white"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Supporting Document Upload drag/drop area */}
+            <div className="p-4 rounded-xl border-2 border-dashed border-slate-300 hover:border-[#123B5D] transition-colors bg-slate-50/50 text-xs text-center space-y-2">
+              <UploadCloud className="h-8 w-8 text-slate-400 mx-auto" />
+              <div>
+                <span className="font-bold text-slate-800">
+                  Upload Supporting Document {bplStatus ? '(Compulsory BPL Proof)' : '(Optional)'}
+                </span>
+                <p className="text-[10px] text-slate-500 mt-0.5">
+                  Drag and drop or click to browse. Only PDF is permitted, maximum 1 MB limit.
+                </p>
+              </div>
+              
+              {/* Mock upload success info */}
+              <div className="flex items-center justify-center gap-1.5 text-emerald-800 font-bold bg-emerald-50 py-1.5 px-3 rounded-lg border border-emerald-200 inline-block text-[11px] max-w-xs mx-auto">
+                <FileText className="h-3.5 w-3.5 shrink-0" />
+                <span className="truncate">supporting_evidence.pdf (142 KB) — Uploaded ✓</span>
+              </div>
+            </div>
 
           <div className="flex justify-between items-center">
             <button

@@ -28,18 +28,26 @@ export interface QuestionBreakdown {
   note: string;
 }
 
+export interface RemarkMilestone {
+  date: string;
+  status: string;
+  remark: string;
+  officer: string;
+}
+
 export interface RTIApplication {
   id: string;
   title: string;
   authorityId: string;
+  authorityName?: string;
   subject: string;
   questions: string[];
   submittedDate: string;
   expectedDate: string;
-  status: 'Draft' | 'Processing' | 'Submitted' | 'Response Pending' | 'Response Received' | 'Action Required' | 'First Appeal Filed' | 'FAA Decision Received' | 'Second Appeal Filed';
+  status: 'Draft' | 'Processing' | 'Submitted' | 'Response Pending' | 'Response Received' | 'Action Required' | 'First Appeal Filed' | 'FAA Decision Received' | 'Second Appeal Filed' | 'Completed' | 'Returned' | 'Transferred' | 'Additional Fee Due' | 'Document Required';
   paymentId?: string;
   paymentStatus: 'Pending' | 'Success' | 'Failed';
-  registrationNumber?: string;
+  registrationNumber: string;
   responseDocumentUrl?: string;
   responseDate?: string;
   responseSummary?: string;
@@ -54,6 +62,13 @@ export interface RTIApplication {
   secondAppealRegNo?: string;
   questionBreakdowns?: QuestionBreakdown[];
   aiAnalysis?: string;
+  parentId?: string;
+  childRegistrations?: string[];
+  remarksTrail?: RemarkMilestone[];
+  additionalFeeAmount?: number;
+  additionalFeeReason?: string;
+  additionalFeeStatus?: 'Pending' | 'Paid';
+  requiredDocDescription?: string;
 }
 
 export interface DemoUser {
