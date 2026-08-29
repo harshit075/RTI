@@ -1,10 +1,11 @@
 <div align="center">
 
 # 🇮🇳 ParDarshi (पारदर्शी) 
-### *Next-Generation Citizen Right to Information Gateway & Statutory AI Assistant*
+### *Next-Generation Citizen Right to Information Gateway & Statutory AI Assistant — Engineered End-to-End with Codex*
 
-**Empowering 1.4 Billion Citizens with AI-Guided Transparency, Statutory Legal Compliance, and End-to-End Appellate Redressal.**
+**Empowering 1.4 Billion Citizens with AI-Guided Transparency, Statutory Legal Compliance, and End-to-End Appellate Redressal — Architected & Synthesized on Codex.**
 
+[![Built with Codex](https://img.shields.io/badge/Built_with-Codex-000000?style=for-the-badge&logo=openai&logoColor=white)](https://openai.com)
 [![Next.js 16](https://img.shields.io/badge/Next.js-16.3.2-black?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Tailwind CSS 4](https://img.shields.io/badge/Tailwind_CSS-4.0-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
@@ -12,7 +13,7 @@
 [![Digital India](https://img.shields.io/badge/Digital_India-NeGD_Aligned-F59E0B?style=for-the-badge)](https://digitalindia.gov.in)
 [![RTI Act 2005](https://img.shields.io/badge/Statutory_Law-RTI_Act_2005-123B5D?style=for-the-badge)](https://dopt.gov.in)
 
-[Live Architecture](#-end-to-end-citizen-journey-flow) • [Comparison Matrix](#-legacy-rti-portals-vs-pardarshi) • [For Government & Policy](#-tailored-overview-by-stakeholder) • [For Developers](#-for-engineers--developers) • [Statutory Compliance](#-statutory-compliance-matrix)
+[Live Architecture](#-end-to-end-citizen-journey-flow) • [Comparison Matrix](#-legacy-rti-portals-vs-pardarshi) • [Codex AI Engine](#-codex-powered-statutory-ai-engine) • [For Government & Policy](#-tailored-overview-by-stakeholder) • [For Developers](#-for-engineers--developers) • [Statutory Compliance](#-statutory-compliance-matrix)
 
 ---
 
@@ -27,6 +28,9 @@ The **Right to Information (RTI) Act, 2005** stands as the cornerstone of partic
 4. **Appellate Drop-off**: Citizens abandoning valid requests when Public Information Officers (CPIOs) miss the 30-day deadline (*Deemed Refusal under Section 7(2)*).
 
 **ParDarshi** bridges these systemic gaps by pairing an **AI-Assisted Legal Drafting Copilot** with a **comprehensive 770+ District Geographic Directory**, **Bharatkosh payment simulation**, **30-day statutory timeline monitoring**, and **1-click First Appeal (FAA) & Second Appeal (CIC) escalation**.
+
+> [!IMPORTANT]
+> **Engineered with Codex:** ParDarshi was conceived, designed, and synthesized end-to-end on **Codex**. Every layer — from the 770+ District geographic graph traversal and statutory legal prompt engines (`Section 2(f)` record framing, `Section 8` real-time exemption screening, `Section 19` appeal generation) to the Next.js 16 App Router architecture, Bharatkosh payment simulation, and WCAG 2.2 AA accessibility modules — was built with Codex.
 
 ---
 
@@ -59,7 +63,8 @@ The **Right to Information (RTI) Act, 2005** stands as the cornerstone of partic
 </td>
 <td width="50%" valign="top">
 
-### 💻 For Engineers & Software Architects
+### 💻 For Engineers & Software Architects (Codex-Powered)
+- **100% Codex Synthesized Codebase**: Zero boilerplate drag; entire domain architecture, state management, and statutory rules engine generated through Codex.
 - **Modern Next.js 16 & Turbopack Core**: 600ms cold compilation, sub-second HMR, and zero client-side layout shifts.
 - **Decoupled Services Layer**: Strict singleton service abstractions (`authService`, `rtiService`, `deadlineService`, `authorityService`, `appealService`, `aiService`).
 - **Resilient Dual-Mode Storage**: PostgreSQL support with auto-reconciling in-memory fallback.
@@ -163,9 +168,15 @@ src/
     ├── timelineService.ts           # Dynamic milestone event generator
     ├── documentService.ts           # Certified document repository & previews
     ├── notificationService.ts       # Alert dispatching & unread badge counters
-    ├── appealService.ts             # First (FAA) & Second (CIC) Appeal petition generator
-    └── aiService.ts                 # Assisted drafting & response discrepancy analyzer
 ```
+
+### 🧠 Codex-Powered Statutory AI Engine (`aiService.ts`)
+
+ParDarshi embeds Codex intelligence directly into the statutory RTI lifecycle:
+
+1. **Section 2(f) Query Transformer**: Translates natural-language or interrogative citizen queries (*"Why is my road broken?"*) into legally precise, disclosable material-record requests (*"Provide certified copies of work orders, bitumen test logs, and financial sanctions for Ward 42"*).
+2. **Section 8(1) Exemption Guard**: Real-time statutory screening against exempt classifications (national security, cabinet deliberations, commercial secrets, personal data) prior to submission.
+3. **Discrepancy Breakdown & Appeal Generator**: Parses dense official CPIO response letters against the original application, automatically drafting First Appeal (FAA) and Second Appeal (CIC) petitions citing statutory violations (*Section 7(1), Section 7(2), Section 19(1)*).
 
 ---
 
@@ -287,4 +298,4 @@ ParDarshi adheres to the **Guidelines for Indian Government Websites (GIGW 3.0)*
 - **Repository**: [harshit075/RTI](https://github.com/harshit075/RTI)
 - **Branch**: `main`
 - **License**: MIT
-- Built with dedication for transparency, citizen empowerment, and digital governance.
+- **Built on Codex**: Designed, coded, and architected end-to-end on **Codex** for transparency, citizen empowerment, and digital governance in India.
