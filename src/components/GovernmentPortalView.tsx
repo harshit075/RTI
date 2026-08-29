@@ -820,12 +820,32 @@ export default function GovernmentPortalView({
             )}
 
             {/* Quick Policy Checklist Box */}
-            <div className="bg-slate-800 text-white rounded-2xl p-5 space-y-3">
-              <span className="text-[10px] font-black tracking-wider uppercase text-amber-400 block">RTI Act 2005 Directives</span>
-              <ul className="text-[11px] text-slate-300 space-y-2 leading-relaxed">
-                <li>• **Section 7(1)**: 30 days is the absolute deadline. Failure to comply invokes a ₹250/day personal penalty on CPIO.</li>
-                <li>• **Section 8(1)**: Non-disclosure requires citing specific sub-exemptions (a to j).</li>
-                <li>• **Section 6(3)**: Target department transfer must occur within 5 calendar days.</li>
+            <div className="bg-[#0f1d2e] border border-slate-700/80 text-white rounded-2xl p-5 shadow-sm space-y-3.5">
+              <div className="flex items-center gap-2">
+                <Scale className="h-4 w-4 text-amber-400 shrink-0" />
+                <span className="text-[11px] font-black tracking-wider uppercase text-amber-400">
+                  RTI Act 2005 Directives
+                </span>
+              </div>
+              <ul className="text-xs text-slate-200 space-y-2.5 leading-relaxed">
+                <li className="flex items-start gap-2">
+                  <span className="text-amber-400 font-bold mt-0.5">•</span>
+                  <span>
+                    <strong className="text-amber-300 font-extrabold">Section 7(1):</strong> 30 days is the absolute statutory deadline. Failure to comply invokes a ₹250/day personal penalty on the CPIO.
+                  </span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-amber-400 font-bold mt-0.5">•</span>
+                  <span>
+                    <strong className="text-amber-300 font-extrabold">Section 8(1):</strong> Non-disclosure strictly requires citing specific statutory exemption clauses (a to j).
+                  </span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-amber-400 font-bold mt-0.5">•</span>
+                  <span>
+                    <strong className="text-amber-300 font-extrabold">Section 6(3):</strong> Inter-departmental transfer must be executed within 5 calendar days of receipt.
+                  </span>
+                </li>
               </ul>
             </div>
 
