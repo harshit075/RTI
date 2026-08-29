@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { 
   Sparkles, CheckCircle2, ChevronRight, CornerDownRight, Landmark, 
   AlertCircle, AlertTriangle, Edit2, ShieldCheck, QrCode, CreditCard, Lock, ArrowRight,
-  TrendingUp, CircleDot, Info, UploadCloud, FileText, Check, ArrowLeft, Download
+  TrendingUp, CircleDot, Info, UploadCloud, FileText, Check, ArrowLeft, Download, Printer
 } from 'lucide-react';
 import { mockAuthorities, Authority } from '../data/mockData';
 
@@ -161,7 +161,7 @@ export default function BuilderView({
         submittedDate: new Date().toISOString().substring(0, 10),
         expectedDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().substring(0, 10),
         status: 'Submitted' as const,
-        paymentStatus: (bplStatus ? 'Success' : 'Success') as const, // Fee waived counts as success/paid for submission
+        paymentStatus: 'Success' as const, // Fee waived counts as success/paid for submission
         registrationNumber: regNo,
         answeredCount: 0,
         totalQuestions: questions.length,
@@ -779,18 +779,35 @@ export default function BuilderView({
               <span className="text-slate-500 font-bold">Public Authority</span>
               <span className="font-semibold text-slate-800">{draftRti?.authorityName || currentAuth.name}</span>
             </div>
+            <div className="flex justify-between border-b border-slate-200/60 pb-2">
+              <span className="text-slate-500 font-bold">Nodal Officer Contact</span>
+              <span className="font-semibold text-slate-800">Shri R.K. Saxena (011-24010690)</span>
+            </div>
             <div className="flex justify-between">
               <span className="text-slate-500 font-bold">Statutory 30-Day Deadline</span>
               <span className="font-semibold text-slate-800">Within 30 Days ({new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().substring(0, 10)})</span>
             </div>
           </div>
 
-          <div className="flex justify-center pt-2">
+          <div className="flex flex-col sm:flex-row gap-2.5 justify-center pt-2">
+            <button
+              onClick={() => window.print()}
+              className="rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 px-5 py-2.5 text-xs font-bold shadow-3xs cursor-pointer transition-all flex items-center justify-center gap-1.5"
+            >
+              <Printer className="h-4 w-4 text-slate-600" />
+              <span>Print Filing Receipt</span>
+            </button>
+            <button
+              onClick={() => setActiveView('status-lookup')}
+              className="rounded-xl border border-blue-200 bg-blue-50 hover:bg-blue-100 text-[#123B5D] px-5 py-2.5 text-xs font-bold shadow-3xs cursor-pointer transition-all flex items-center justify-center gap-1.5"
+            >
+              <span>Track in Status Lookup</span>
+            </button>
             <button
               onClick={() => setActiveView('dashboard')}
-              className="rounded-xl bg-[#123B5D] hover:bg-[#0A2540] text-white px-7 py-3 text-xs font-black shadow-3xs cursor-pointer transition-all"
+              className="rounded-xl bg-[#123B5D] hover:bg-[#0A2540] text-white px-6 py-2.5 text-xs font-black shadow-3xs cursor-pointer transition-all flex items-center justify-center"
             >
-              Go to Dashboard to Track ➔
+              <span>Go to Dashboard ➔</span>
             </button>
           </div>
         </div>

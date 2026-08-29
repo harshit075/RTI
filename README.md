@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🇮🇳 RTI Saathi (आरटीआई साथी) 
+# 🇮🇳 ParDarshi (पारदर्शी) 
 ### *Next-Generation Citizen Right to Information Gateway & Statutory AI Assistant*
 
 **Empowering 1.4 Billion Citizens with AI-Guided Transparency, Statutory Legal Compliance, and End-to-End Appellate Redressal.**
@@ -12,7 +12,7 @@
 [![Digital India](https://img.shields.io/badge/Digital_India-NeGD_Aligned-F59E0B?style=for-the-badge)](https://digitalindia.gov.in)
 [![RTI Act 2005](https://img.shields.io/badge/Statutory_Law-RTI_Act_2005-123B5D?style=for-the-badge)](https://dopt.gov.in)
 
-[Live Architecture](#-end-to-end-citizen-journey-flow) • [Comparison Matrix](#-legacy-rti-portals-vs-rti-saathi) • [For Government & Policy](#-tailored-overview-by-stakeholder) • [For Developers](#-for-engineers--developers) • [Statutory Compliance](#-statutory-compliance-matrix)
+[Live Architecture](#-end-to-end-citizen-journey-flow) • [Comparison Matrix](#-legacy-rti-portals-vs-pardarshi) • [For Government & Policy](#-tailored-overview-by-stakeholder) • [For Developers](#-for-engineers--developers) • [Statutory Compliance](#-statutory-compliance-matrix)
 
 ---
 
@@ -26,13 +26,13 @@ The **Right to Information (RTI) Act, 2005** stands as the cornerstone of partic
 3. **Statutory Exemption Violations**: Unknowingly seeking records exempt under Section 8(1).
 4. **Appellate Drop-off**: Citizens abandoning valid requests when Public Information Officers (CPIOs) miss the 30-day deadline (*Deemed Refusal under Section 7(2)*).
 
-**RTI Saathi** bridges these systemic gaps by pairing an **AI-Assisted Legal Drafting Copilot** with a **comprehensive 770+ District Geographic Directory**, **Bharatkosh payment simulation**, **30-day statutory timeline monitoring**, and **1-click First Appeal (FAA) & Second Appeal (CIC) escalation**.
+**ParDarshi** bridges these systemic gaps by pairing an **AI-Assisted Legal Drafting Copilot** with a **comprehensive 770+ District Geographic Directory**, **Bharatkosh payment simulation**, **30-day statutory timeline monitoring**, and **1-click First Appeal (FAA) & Second Appeal (CIC) escalation**.
 
 ---
 
-## ⚡ Legacy RTI Portals vs. RTI Saathi
+## ⚡ Legacy RTI Portals vs. ParDarshi
 
-| Capability / Flow | Traditional RTI Portals | RTI Saathi |
+| Capability / Flow | Traditional RTI Portals | ParDarshi |
 |---|---|---|
 | **Question Formulation** | Unstructured plain text area (high rejection rate due to "Why" questions) | **Statutory AI Copilot** automatically translates citizen intent into disclosable Section 2(f) material records. |
 | **Department Discovery** | Static 2,000+ alphabetical dropdown list with no search | **Intelligent Authority Matcher** with 36 States/UTs & 770+ Districts geographic search. |
@@ -126,7 +126,7 @@ flowchart TD
 
 ## 🏗️ System Architecture & Services Layer
 
-RTI Saathi is organized into clean, decoupled domain boundaries:
+ParDarshi is organized into clean, decoupled domain boundaries:
 
 ```
 src/
@@ -171,9 +171,9 @@ src/
 
 ## ⚖️ Statutory Compliance Matrix
 
-RTI Saathi is architected strictly against the legal mandates of the **Right to Information Act, 2005** and the **RTI Rules, 2012**:
+ParDarshi is architected strictly against the legal mandates of the **Right to Information Act, 2005** and the **RTI Rules, 2012**:
 
-| Statutory Section | Legal Mandate | RTI Saathi Implementation |
+| Statutory Section | Legal Mandate | ParDarshi Implementation |
 |---|---|---|
 | **Section 2(f)** | Definition of *"Information"* (material records only) | AI drafting copilot rewrites questions into concrete requests for records (*bills, work orders, muster rolls, test reports*). |
 | **Section 3** | Citizen Right to Information | Open access to all Indian citizens with bilingual accessibility. |
@@ -258,7 +258,7 @@ curl -s http://localhost:3000/api/rtis/rti-road-jaipur-1245 | jq .
 
 ## 🎨 Design System & Accessibility Standards
 
-RTI Saathi adheres to the **Guidelines for Indian Government Websites (GIGW 3.0)** and **WCAG 2.2 Level AA**:
+ParDarshi adheres to the **Guidelines for Indian Government Websites (GIGW 3.0)** and **WCAG 2.2 Level AA**:
 
 ```css
 /* Core Government Design Tokens */
@@ -279,7 +279,7 @@ RTI Saathi adheres to the **Guidelines for Indian Government Websites (GIGW 3.0)
 ## 📢 Practice & Demonstration Notice
 
 > [!NOTE]
-> **Demonstration Environment Notice:** RTI Saathi is an educational and civic practice gateway built in compliance with statutory RTI Act 2005 workflows. In this demonstration environment, all filing and payment steps are simulated for training and public awareness with zero real banking charges.
+> **Demonstration Environment Notice:** ParDarshi is an educational and civic practice gateway built in compliance with statutory RTI Act 2005 workflows. In this demonstration environment, all filing and payment steps are simulated for training and public awareness with zero real banking charges.
 
 ---
 

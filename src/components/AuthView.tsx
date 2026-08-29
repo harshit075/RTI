@@ -113,7 +113,7 @@ export default function AuthView({
               </div>
               <div>
                 <h1 className="text-lg font-black tracking-tight text-white">
-                  RTI Saathi
+                  ParDarshi
                 </h1>
                 <p className="text-[11px] text-slate-300 font-medium">Citizen Information Gateway</p>
               </div>
@@ -234,7 +234,7 @@ export default function AuthView({
                   disabled={loading}
                   className="w-full rounded-xl bg-[#123B5D] hover:bg-[#0A2540] text-white py-3 text-xs font-black shadow-3xs cursor-pointer transition-all"
                 >
-                  {loading ? 'Signing in...' : 'Sign In to RTI Saathi'}
+                  {loading ? 'Signing in...' : 'Sign In to ParDarshi'}
                 </button>
               </form>
 
@@ -254,7 +254,7 @@ export default function AuthView({
           {mode === 'signup' && (
             <div className="space-y-4">
               <div>
-                <h3 className="text-xl font-black text-[#17212B]">Create your RTI Saathi account</h3>
+                <h3 className="text-xl font-black text-[#17212B]">Create your ParDarshi account</h3>
                 <p className="text-xs text-[#52606D] mt-0.5">
                   Track applications, manage documents, and stay informed about your RTIs.
                 </p>
@@ -439,7 +439,7 @@ export default function AuthView({
                   Step {onboardingStep} of 3
                 </span>
                 <h3 className="text-lg font-black text-[#17212B] mt-0.5">
-                  {onboardingStep === 1 && 'What would you like to use RTI Saathi for?'}
+                  {onboardingStep === 1 && 'What would you like to use ParDarshi for?'}
                   {onboardingStep === 2 && 'Where are you looking for information?'}
                   {onboardingStep === 3 && 'Your Citizen Workspace is Ready!'}
                 </h3>

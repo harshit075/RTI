@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "RTI Saathi - Ask the Government. Track the Answer.",
+  title: "ParDarshi - Ask the Government. Track the Answer.",
   description: "File, track, and manage your Right to Information requests in one clear, guided journey.",
 };
 

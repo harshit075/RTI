@@ -85,6 +85,10 @@ export interface RTIApplication {
   additionalFeeReason?: string;
   additionalFeeStatus?: 'Pending' | 'Paid';
   requiredDocDescription?: string;
+  transferredToAuthority?: string;
+  transferredRegNo?: string;
+  supportingDocName?: string;
+  supportingDocSize?: string;
 
   // Demographic & BPL fields
   applicantName?: string;
@@ -230,7 +234,7 @@ export interface SearchResultItem {
   title: string;
   snippet: string;
   category: string;
-  sourceType: 'Official Source' | 'RTI Saathi Guide' | 'Statutory Rule';
+  sourceType: 'Official Source' | 'ParDarshi Guide' | 'Statutory Rule';
   sourceName: string;
   url?: string;
   date?: string;

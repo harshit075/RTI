@@ -477,7 +477,7 @@ export const seedNotifications: NotificationItem[] = [
   },
   {
     id: 'notif-5',
-    title: 'Welcome to RTI Saathi! Your citizen portal is configured and ready.',
+    title: 'Welcome to ParDarshi! Your citizen portal is configured and ready.',
     time: '5 days ago',
     type: 'info',
     read: true
@@ -506,8 +506,8 @@ export const seedSearchResults: SearchResultItem[] = [
     title: 'How to File a First Appeal when Information is Incomplete',
     snippet: 'If a CPIO supplies partial information or fails to cite valid Section 8 exemption clauses, citizens can file a First Appeal to the designated First Appellate Authority (FAA).',
     category: 'Appeals',
-    sourceType: 'RTI Saathi Guide',
-    sourceName: 'RTI Saathi Citizen Handbook'
+    sourceType: 'ParDarshi Guide',
+    sourceName: 'ParDarshi Citizen Handbook'
   },
   {
     id: 'res-4',

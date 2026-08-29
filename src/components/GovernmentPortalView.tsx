@@ -32,7 +32,7 @@ export default function GovernmentPortalView({
   const [selectedApp, setSelectedApp] = useState<RTIApplication | null>(null);
   
   // Action details
-  const [actionType, setActionType] = useState<'response' | 'fee' | 'doc' | 'transfer' | 'assign' | 'faa-decision' | null>(null);
+  const [actionType, setActionType] = useState<'response' | 'fee' | 'doc' | 'transfer' | 'assign' | 'return' | 'faa-decision' | null>(null);
 
   // Form input states
   const [responseText, setResponseText] = useState('');
@@ -42,6 +42,7 @@ export default function GovernmentPortalView({
   const [docRequestReason, setDocRequestReason] = useState('Citizen identity confirmation (Aadhaar or Passport) or BPL Certificate required to proceed.');
   const [transferTargetId, setTransferTargetId] = useState('ugc');
   const [assignCpioName, setAssignCpioName] = useState('Shri Manoj Pandey');
+  const [returnReason, setReturnReason] = useState('Application returned to applicant. RTI applications for State Government or Local Body authorities cannot be accepted on the Central RTI Online Portal. In accordance with DoPT statutory guidelines, the application fee is not refundable.');
   const [faaDecisionText, setFaaDecisionText] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -58,7 +59,7 @@ export default function GovernmentPortalView({
 
   // Filter queues
   const nodalQueue = rtis.filter(r => r.status === 'Submitted');
-  const cpioQueue = rtis.filter(r => r.status === 'Response Pending' || r.status === 'Processing' || r.status === 'Action Required');
+  const cpioQueue = rtis.filter(r => r.status === 'Response Pending' || r.status === 'Processing' || r.status === 'Action Required' || r.status === 'Additional Fee Due' || r.status === 'Document Required');
   const faaQueue = rtis.filter(r => r.status === 'First Appeal Filed');
 
   const executeAction = async () => {
@@ -85,8 +86,9 @@ export default function GovernmentPortalView({
         await rtiService.updateRTI(selectedApp.id, {
           authorityId: transferTargetId,
           authorityName: targetAuth.name,
-          registrationNumber: newReg,
-          status: 'Submitted',
+          transferredToAuthority: targetAuth.name,
+          transferredRegNo: newReg,
+          status: 'Transferred',
           notes: `Transferred under Section 6(3) to ${targetAuth.name}. Original Reg: ${selectedApp.registrationNumber}.`
         });
         await notificationService.addNotification(
@@ -95,12 +97,27 @@ export default function GovernmentPortalView({
           selectedApp.id
         );
       } 
+      else if (actionType === 'return') {
+        // Nodal Officer returns out-of-scope / state application
+        await rtiService.updateRTI(selectedApp.id, {
+          status: 'Returned',
+          notes: returnReason
+        });
+        await notificationService.addNotification(
+          `Application Returned: Your RTI request ${selectedApp.registrationNumber} has been returned (Non-refundable fee).`,
+          'alert',
+          selectedApp.id
+        );
+      }
       else if (actionType === 'fee') {
         // CPIO requests additional fee
         await rtiService.updateRTI(selectedApp.id, {
-          status: 'Action Required',
+          status: 'Additional Fee Due',
+          additionalFeeAmount: Number(feeAmount) || 80,
+          additionalFeeReason: feeReason,
+          additionalFeeStatus: 'Pending',
           notes: `Additional Fee of ₹${feeAmount} requested by CPIO. Reason: ${feeReason}.`,
-          appealReason: `Fee requested: ₹${feeAmount}` // repurpose field for display
+          appealReason: `Fee requested: ₹${feeAmount}`
         });
         await notificationService.addNotification(
           `Action Required: CPIO requested additional fee of ₹${feeAmount} for application ${selectedApp.registrationNumber}. Reason: ${feeReason}`,
@@ -111,9 +128,10 @@ export default function GovernmentPortalView({
       else if (actionType === 'doc') {
         // CPIO requests additional supporting document
         await rtiService.updateRTI(selectedApp.id, {
-          status: 'Action Required',
+          status: 'Document Required',
+          requiredDocDescription: docRequestReason,
           notes: `Additional document requested by CPIO. Reason: ${docRequestReason}.`,
-          appealReason: `Document requested` // repurpose field for display
+          appealReason: `Document requested`
         });
         await notificationService.addNotification(
           `Action Required: CPIO requested supporting documents for application ${selectedApp.registrationNumber}. Reason: ${docRequestReason}`,
@@ -536,10 +554,10 @@ export default function GovernmentPortalView({
                   <div className="font-extrabold text-[#123B5D] uppercase text-[10px]">Select Action</div>
 
                   {activeTab === 'nodal' && (
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-3 gap-1.5">
                       <button
                         onClick={() => setActionType('assign')}
-                        className={`py-2 rounded-xl text-xs font-bold border ${
+                        className={`py-2 rounded-xl text-[10.5px] font-bold border text-center ${
                           actionType === 'assign' ? 'bg-[#123B5D] border-[#123B5D] text-white' : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
                         }`}
                       >
@@ -547,11 +565,19 @@ export default function GovernmentPortalView({
                       </button>
                       <button
                         onClick={() => setActionType('transfer')}
-                        className={`py-2 rounded-xl text-xs font-bold border ${
+                        className={`py-2 rounded-xl text-[10.5px] font-bold border text-center ${
                           actionType === 'transfer' ? 'bg-[#123B5D] border-[#123B5D] text-white' : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
                         }`}
                       >
-                        Transfer Sec 6(3)
+                        Transfer 6(3)
+                      </button>
+                      <button
+                        onClick={() => setActionType('return')}
+                        className={`py-2 rounded-xl text-[10.5px] font-bold border text-center ${
+                          actionType === 'return' ? 'bg-rose-700 border-rose-700 text-white' : 'bg-rose-50 border-rose-200 text-rose-800 hover:bg-rose-100'
+                        }`}
+                      >
+                        Return (State)
                       </button>
                     </div>
                   )}
@@ -647,6 +673,30 @@ export default function GovernmentPortalView({
                         className="w-full rounded-xl bg-[#123B5D] text-white py-2 text-xs font-black"
                       >
                         {isSubmitting ? 'Transferring...' : 'Execute Section 6(3) Transfer'}
+                      </button>
+                    </div>
+                  )}
+
+                  {actionType === 'return' && (
+                    <div className="space-y-3 text-xs">
+                      <div>
+                        <label className="block text-[10px] font-black text-rose-600 uppercase mb-1">Return Remark to Applicant</label>
+                        <textarea
+                          rows={3}
+                          value={returnReason}
+                          onChange={(e) => setReturnReason(e.target.value)}
+                          className="w-full rounded-xl border border-rose-200 p-2 text-slate-800 bg-rose-50/50"
+                        />
+                      </div>
+                      <div className="text-[10px] text-rose-800 bg-rose-50 p-2 rounded-lg leading-relaxed">
+                        Statutory Rule: Applications for State Government bodies are returned without fee refund.
+                      </div>
+                      <button
+                        onClick={executeAction}
+                        disabled={isSubmitting}
+                        className="w-full rounded-xl bg-rose-700 hover:bg-rose-800 text-white py-2 text-xs font-black cursor-pointer"
+                      >
+                        {isSubmitting ? 'Returning...' : 'Confirm Application Return (No Refund)'}
                       </button>
                     </div>
                   )}

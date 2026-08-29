@@ -101,7 +101,7 @@ export default function LandingView({ setActiveView, language, setHelpCategory }
       quickActionPayment: 'Payments',
       quickActionPaymentDesc: 'View payment history, transaction status, and fee receipts.',
       
-      howHeading: 'How RTI Saathi works',
+      howHeading: 'How ParDarshi works',
       howStep1Title: 'Find the authority',
       howStep1Desc: 'Identify the appropriate Public Information Officer.',
       howStep2Title: 'Build your request',
@@ -193,7 +193,7 @@ export default function LandingView({ setActiveView, language, setHelpCategory }
       quickActionPayment: 'भुगतान व रसीदें',
       quickActionPaymentDesc: 'भुगतान इतिहास, लेनदेन की स्थिति और शुल्क रसीदें प्राप्त करें।',
       
-      howHeading: 'आरटीआई साथी कैसे काम करता है',
+      howHeading: 'पारदर्शी कैसे काम करता है',
       howStep1Title: 'विभाग खोजें',
       howStep1Desc: 'सही लोक सूचना अधिकारी की पहचान करने के लिए खोजें।',
       howStep2Title: 'आवेदन तैयार करें',

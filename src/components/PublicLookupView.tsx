@@ -165,6 +165,11 @@ interface PublicLookupViewProps {
 
 export default function PublicLookupView({ language, initialTab = 'status', setActiveView }: PublicLookupViewProps) {
   const [activeTab, setActiveTab] = useState<'status' | 'appeal' | 'history'>(initialTab);
+
+  useEffect(() => {
+    setActiveTab(initialTab);
+  }, [initialTab]);
+
   const [regNo, setRegNo] = useState('');
   const [email, setEmail] = useState('');
   const [mobile, setMobile] = useState('');
@@ -440,7 +445,7 @@ export default function PublicLookupView({ language, initialTab = 'status', setA
             {/* Header Stamp */}
             <div className="border-4 border-double border-[#123B5D] p-5 text-center relative overflow-hidden">
               <div className="absolute right-4 top-4 border-2 border-emerald-600 text-emerald-600 text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded rotate-12 bg-white">
-                VERIFIED BY RTI SAATHI
+                VERIFIED BY PARDARSHI
               </div>
               <h2 className="text-[#123B5D] text-lg font-black tracking-widest">GOVERNMENT OF INDIA</h2>
               <h3 className="text-slate-700 text-xs font-bold mt-0.5">STATUTORY FILING RECEIPT & ACKNOWLEDGEMENT</h3>
@@ -650,13 +655,58 @@ export default function PublicLookupView({ language, initialTab = 'status', setA
                   {/* Status Badge */}
                   <span className={`text-[10.5px] font-black px-3 py-1 rounded-full text-center tracking-wide shadow-3xs ${
                     matchedRti.status === 'Submitted' ? 'bg-blue-100 text-blue-900 border border-blue-200' :
-                    matchedRti.status === 'Processing' ? 'bg-amber-100 text-amber-900 border border-amber-200' :
+                    matchedRti.status === 'Processing' || matchedRti.status === 'Response Pending' ? 'bg-amber-100 text-amber-900 border border-amber-200' :
                     matchedRti.status === 'Response Received' || matchedRti.status === 'Completed' ? 'bg-emerald-100 text-emerald-900 border border-emerald-200' :
+                    matchedRti.status === 'Returned' ? 'bg-rose-100 text-rose-900 border border-rose-200' :
+                    matchedRti.status === 'Transferred' ? 'bg-indigo-100 text-indigo-900 border border-indigo-200' :
+                    matchedRti.status === 'Additional Fee Due' ? 'bg-amber-100 text-amber-900 border border-amber-300 animate-pulse' :
+                    matchedRti.status === 'Document Required' ? 'bg-purple-100 text-purple-900 border border-purple-200 animate-pulse' :
+                    matchedRti.status === 'First Appeal Filed' ? 'bg-orange-100 text-orange-900 border border-orange-200' :
+                    matchedRti.status === 'FAA Decision Received' ? 'bg-teal-100 text-teal-900 border border-teal-200' :
                     'bg-slate-100 text-slate-900 border border-slate-200'
                   }`}>
                     {matchedRti.status}
                   </span>
                 </div>
+
+                {/* Statutory Transfer Banner (G21) */}
+                {matchedRti.status === 'Transferred' && (
+                  <div className="rounded-2xl border border-indigo-300 bg-indigo-50/80 p-4 text-xs space-y-2">
+                    <div className="flex items-center gap-2 font-black text-indigo-950">
+                      <ArrowRight className="h-4 w-4 text-indigo-600 shrink-0" />
+                      <span>Application Transferred under Section 6(3)</span>
+                    </div>
+                    <p className="text-slate-700 leading-relaxed">
+                      This application was transferred to <strong>{matchedRti.transferredToAuthority || 'the receiving Public Authority'}</strong>. 
+                      Please track your new registration reference: <strong className="font-mono text-indigo-900">{matchedRti.transferredRegNo || matchedRti.registrationNumber}</strong>.
+                    </p>
+                    {matchedRti.transferredRegNo && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setRegNo(matchedRti.transferredRegNo || '');
+                          setMatchedRti(null);
+                        }}
+                        className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-700 hover:text-indigo-900 underline cursor-pointer"
+                      >
+                        Track Transfer Reference Now ➔
+                      </button>
+                    )}
+                  </div>
+                )}
+
+                {/* Statutory Return Banner (G02, G20) */}
+                {matchedRti.status === 'Returned' && (
+                  <div className="rounded-2xl border border-rose-300 bg-rose-50/80 p-4 text-xs space-y-2">
+                    <div className="flex items-center gap-2 font-black text-rose-950">
+                      <AlertTriangle className="h-4 w-4 text-rose-600 shrink-0" />
+                      <span>Application Returned to Applicant (Fee Non-Refundable)</span>
+                    </div>
+                    <p className="text-slate-700 leading-relaxed">
+                      {matchedRti.notes || 'This application has been returned because it pertains to a State Government / Local Body entity. The Central RTI Online portal only accepts filings for Central Public Authorities. Under statutory portal guidelines, the application fee is not refundable.'}
+                    </p>
+                  </div>
+                )}
 
                 <div className="grid grid-cols-2 gap-4 border-t border-b border-slate-100 py-3 text-xs">
                   <div>

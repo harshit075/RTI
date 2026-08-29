@@ -14,15 +14,15 @@ interface FooterProps {
 export default function Footer({ setActiveView, language, setHelpCategory }: FooterProps) {
   const t = {
     en: {
-      brand: 'RTI Saathi',
+      brand: 'ParDarshi',
       tagline: 'Right to Information Act, 2005',
       desc: 'Empowering citizens to access information and promoting transparency and accountability in governance.',
       servicesTitle: 'RTI Services',
       learnTitle: 'Learn',
       supportTitle: 'Support',
       contactTitle: 'Contact Us',
-      rights: '© 2026 RTI Saathi. All rights reserved.',
-      disclaimer: 'Practice & Demonstration Notice: RTI Saathi is an educational and civic practice gateway built in compliance with statutory RTI Act 2005 workflows. In this demonstration environment, all filing and payment steps are simulated for training and public awareness with zero real banking charges.',
+      rights: '© 2026 ParDarshi. All rights reserved.',
+      disclaimer: 'Practice & Demonstration Notice: ParDarshi is an educational and civic practice gateway built in compliance with statutory RTI Act 2005 workflows. In this demonstration environment, all filing and payment steps are simulated for training and public awareness with zero real banking charges.',
       links: [
         { label: 'Privacy Policy', view: 'help' },
         { label: 'Terms of Use', view: 'help' },
@@ -30,15 +30,15 @@ export default function Footer({ setActiveView, language, setHelpCategory }: Foo
       ]
     },
     hi: {
-      brand: 'आरटीआई साथी',
+      brand: 'पारदर्शी',
       tagline: 'सूचना का अधिकार अधिनियम, 2005',
       desc: 'नागरिकों को सूचना तक पहुँच प्रदान कर सशक्त बनाना और शासन में पारदर्शिता व जवाबदेही को बढ़ावा देना।',
       servicesTitle: 'आरटीआई सेवाएं',
       learnTitle: 'जानकारी',
       supportTitle: 'सहायता',
       contactTitle: 'हमसे संपर्क करें',
-      rights: '© 2026 आरटीआई साथी। सर्वाधिकार सुरक्षित।',
-      disclaimer: 'अभ्यास व प्रदर्शन सूचना: आरटीआई साथी आरटीआई अधिनियम 2005 के सांविधिक नियमों के अनुपालन में बनाया गया एक शैक्षिक व अभ्यास पोर्टल है। इस प्रदर्शन वातावरण में सभी भुगतान और फाइलिंग सिमुलेटेड हैं; कोई वास्तविक बैंक कटौती नहीं होती है।',
+      rights: '© 2026 पारदर्शी। सर्वाधिकार सुरक्षित।',
+      disclaimer: 'अभ्यास व प्रदर्शन सूचना: पारदर्शी आरटीआई अधिनियम 2005 के सांविधिक नियमों के अनुपालन में बनाया गया एक शैक्षिक व अभ्यास पोर्टल है। इस प्रदर्शन वातावरण में सभी भुगतान और फाइलिंग सिमुलेटेड हैं; कोई वास्तविक बैंक कटौती नहीं होती है।',
       links: [
         { label: 'गोपनीयता नीति', view: 'help' },
         { label: 'उपयोग की शर्तें', view: 'help' },

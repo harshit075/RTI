@@ -5,7 +5,7 @@ import {
   FileText, Clock, AlertCircle, CheckCircle2, ChevronRight, 
   ArrowLeft, Scale, Landmark, FileDown, FolderOpen, Eye, 
   X, Download, ShieldCheck, ArrowRight, Sparkles, Check, 
-  FileCheck2, BookOpen, AlertTriangle, Send
+  FileCheck2, BookOpen, AlertTriangle, Send, Printer
 } from 'lucide-react';
 import { 
   RTIApplication, TimelineEvent, DocumentItem, ResponseAnalysis, QuestionBreakdownItem 
@@ -56,7 +56,7 @@ export default function RtiDetailView({
   // Interactive Document Q&A state
   const [chatQuery, setChatQuery] = useState('');
   const [chatHistory, setChatHistory] = useState<Array<{ sender: 'user' | 'assistant'; text: string }>>([
-    { sender: 'assistant', text: 'Hello! I am your RTI Saathi Document Assistant. Ask me anything about the official CPIO response or disclosed records.' }
+    { sender: 'assistant', text: 'Hello! I am your ParDarshi Document Assistant. Ask me anything about the official CPIO response or disclosed records.' }
   ]);
   const [isChatLoading, setIsChatLoading] = useState(false);
 
@@ -271,6 +271,14 @@ Appellant: Aarav Sharma`;
                 <FolderOpen className="h-4 w-4" />
                 Case Documents ({documents.length})
               </button>
+
+              <button
+                onClick={() => window.print()}
+                className="rounded-xl bg-white border border-[#D9E0E6] hover:bg-slate-50 text-slate-700 px-4 py-2.5 text-xs font-bold shadow-3xs flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <Printer className="h-4 w-4" />
+                Print Case Record
+              </button>
             </div>
           </div>
 
@@ -410,13 +418,13 @@ Appellant: Aarav Sharma`;
               </div>
             </div>
 
-            {/* RTI SAATHI ANALYSIS (SECONDARY ASSISTANCE) */}
+            {/* PARDARSHI ANALYSIS (SECONDARY ASSISTANCE) */}
             <div className="rounded-2xl border border-blue-200 bg-white p-6 shadow-3xs space-y-4">
               <div className="border-b border-slate-100 pb-3 flex items-center justify-between">
                 <div>
                   <div className="flex items-center gap-1.5 text-xs font-extrabold text-[#123B5D]">
                     <Sparkles className="h-3.5 w-3.5 text-amber-500" />
-                    <span>RTI Saathi Analysis (AI-Assisted Explanation)</span>
+                    <span>ParDarshi Analysis (AI-Assisted Explanation)</span>
                   </div>
                   <p className="text-[11px] text-[#52606D] mt-0.5">
                     Point-by-point verification of requested items against the official response document.

@@ -561,7 +561,7 @@ export default function OnboardingView({ setActiveView, setDraftRti, language }:
                 <AlertTriangle className="h-5 w-5 text-amber-700 shrink-0 mt-0.5" />
                 <div className="text-xs text-slate-800 leading-relaxed font-medium">
                   <strong className="text-amber-900 font-bold block mb-0.5">State Level Jurisdiction Warning</strong>
-                  Local municipalities and district offices fall under the State Government of <strong>{geoState}</strong>. Central RTI Saathi handles Central public authorities only. Filing here may result in CPIO rejection.
+                  Local municipalities and district offices fall under the State Government of <strong>{geoState}</strong>. Central ParDarshi handles Central public authorities only. Filing here may result in CPIO rejection.
                 </div>
               </div>
               <div className="pt-2 border-t border-amber-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 text-xs">

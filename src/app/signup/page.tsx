@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import AuthView from '../../components/AuthView';
 import Navbar from '../../components/Navbar';
-import Footer from '../../components/FooterFixed';
+import Footer from '../../components/Footer';
 import { seedNotifications, seedUser } from '../../services/seedData';
 import { NotificationItem, User } from '../../services/types';
 

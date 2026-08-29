@@ -266,7 +266,7 @@ export const mockNotifications: MockNotification[] = [
   },
   {
     id: 'notif-5',
-    title: 'Welcome to RTI Saathi! Your citizen workspace is configured and ready.',
+    title: 'Welcome to ParDarshi! Your citizen workspace is configured and ready.',
     time: '5 days ago',
     type: 'info',
     read: true

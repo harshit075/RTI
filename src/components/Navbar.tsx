@@ -81,7 +81,7 @@ export default function Navbar({
 
   const t = {
     en: {
-      brand: 'RTI Saathi',
+      brand: 'ParDarshi',
       tagline: 'Right to Information Act, 2005',
       fileRti: 'File an RTI',
       trackApp: 'Track Application',
@@ -97,7 +97,7 @@ export default function Navbar({
       noNotifications: 'No unread notifications'
     },
     hi: {
-      brand: 'आरटीआई साथी',
+      brand: 'पारदर्शी',
       tagline: 'सूचना का अधिकार अधिनियम, 2005',
       fileRti: 'आरटीआई दाखिल करें',
       trackApp: 'आवेदन ट्रैक करें',
