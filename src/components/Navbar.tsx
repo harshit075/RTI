@@ -4,9 +4,49 @@ import React, { useState, useRef, useEffect } from 'react';
 import { 
   FileText, Bell, Globe, User, Shield, Sliders, Menu, X, 
   ChevronDown, LogOut, CheckCircle2, BookmarkCheck, Sparkles, 
-  Eye, HelpCircle, BookOpen, Search, Landmark, Scale, AlertTriangle
+  Eye, HelpCircle, BookOpen, Search, Landmark, Scale, AlertTriangle,
+  Building2, ExternalLink, MapPin
 } from 'lucide-react';
 import { User as UserModel, NotificationItem } from '../services/types';
+
+export const stateRtiPortals = [
+  { state: 'Andhra Pradesh', url: 'https://apic.nic.in/', label: 'AP Information Commission', code: 'AP' },
+  { state: 'Arunachal Pradesh', url: 'https://arunachalpradesh.gov.in/', label: 'Arunachal State RTI', code: 'AR' },
+  { state: 'Assam', url: 'https://rtionline.assam.gov.in/', label: 'Assam RTI Online Portal', code: 'AS' },
+  { state: 'Bihar', url: 'http://rtionline.bihar.gov.in/', label: 'Jaankari Bihar RTI Portal', code: 'BR' },
+  { state: 'Chandigarh (UT)', url: 'https://chandigarh.gov.in/', label: 'Chandigarh Administration', code: 'CH' },
+  { state: 'Chhattisgarh', url: 'https://rtionline.cg.gov.in/', label: 'CG RTI Online Portal', code: 'CG' },
+  { state: 'Delhi (NCT)', url: 'https://rtionline.delhi.gov.in/', label: 'Delhi RTI Online Portal', code: 'DL' },
+  { state: 'Goa', url: 'https://goarti.gov.in/', label: 'Goa Online RTI Gateway', code: 'GA' },
+  { state: 'Gujarat', url: 'https://rtionline.gujarat.gov.in/', label: 'Gujarat RTI Online', code: 'GJ' },
+  { state: 'Haryana', url: 'https://rtiharyana.gov.in/', label: 'Haryana State RTI Portal', code: 'HR' },
+  { state: 'Himachal Pradesh', url: 'https://hprti.hp.gov.in/', label: 'HP RTI Online Gateway', code: 'HP' },
+  { state: 'Jammu & Kashmir', url: 'https://jkrtt.jk.gov.in/', label: 'J&K Information Portal', code: 'JK' },
+  { state: 'Jharkhand', url: 'https://rtionline.jharkhand.gov.in/', label: 'Jharkhand RTI Portal', code: 'JH' },
+  { state: 'Karnataka', url: 'https://rti.karnataka.gov.in/', label: 'Karnataka Mahiti Kanaja', code: 'KA' },
+  { state: 'Kerala', url: 'https://rtionline.kerala.gov.in/', label: 'Kerala State RTI Online', code: 'KL' },
+  { state: 'Ladakh (UT)', url: 'https://ladakh.nic.in/', label: 'Ladakh UT Administration', code: 'LA' },
+  { state: 'Madhya Pradesh', url: 'https://rtionline.mp.gov.in/', label: 'MP RTI Online Portal', code: 'MP' },
+  { state: 'Maharashtra', url: 'https://rtionline.maharashtra.gov.in/', label: 'MahaRTI Online Portal', code: 'MH' },
+  { state: 'Manipur', url: 'https://manipur.gov.in/', label: 'Manipur State RTI Portal', code: 'MN' },
+  { state: 'Meghalaya', url: 'https://megrti.gov.in/', label: 'Meghalaya Online RTI', code: 'ML' },
+  { state: 'Mizoram', url: 'https://mizoram.gov.in/', label: 'Mizoram Information Portal', code: 'MZ' },
+  { state: 'Nagaland', url: 'https://nagaland.gov.in/', label: 'Nagaland State Portal', code: 'NL' },
+  { state: 'Odisha', url: 'https://rtiodisha.gov.in/', label: 'Odisha RTI Central Portal', code: 'OD' },
+  { state: 'Puducherry (UT)', url: 'https://py.gov.in/', label: 'Puducherry Government', code: 'PY' },
+  { state: 'Punjab', url: 'http://infocommpunjab.com/', label: 'Punjab State Info Commission', code: 'PB' },
+  { state: 'Rajasthan', url: 'https://rtionline.rajasthan.gov.in/', label: 'Rajasthan RTI Portal', code: 'RJ' },
+  { state: 'Sikkim', url: 'https://sikkim.gov.in/', label: 'Sikkim State RTI Portal', code: 'SK' },
+  { state: 'Tamil Nadu', url: 'https://rtionline.tn.gov.in/', label: 'Tamil Nadu RTI Online', code: 'TN' },
+  { state: 'Telangana', url: 'https://tsic.nic.in/', label: 'Telangana Info Commission', code: 'TS' },
+  { state: 'Tripura', url: 'https://tripura.gov.in/', label: 'Tripura State RTI Gateway', code: 'TR' },
+  { state: 'Uttar Pradesh', url: 'http://rtionline.up.gov.in/', label: 'UP RTI Online Portal', code: 'UP' },
+  { state: 'Uttarakhand', url: 'https://rtionline.uk.gov.in/', label: 'Uttarakhand RTI Online', code: 'UK' },
+  { state: 'West Bengal', url: 'https://wbic.gov.in/', label: 'WB Information Commission', code: 'WB' },
+  { state: 'Andaman & Nicobar', url: 'https://andaman.gov.in/', label: 'A&N Administration', code: 'AN' },
+  { state: 'Daman, Diu & DNH', url: 'https://daman.nic.in/', label: 'DNH & DD Administration', code: 'DN' },
+  { state: 'Lakshadweep', url: 'https://lakshadweep.gov.in/', label: 'UT of Lakshadweep', code: 'LD' }
+];
 
 interface NavbarProps {
   activeView: string;
@@ -52,8 +92,12 @@ export default function Navbar({
   const [showAccessibilityMenu, setShowAccessibilityMenu] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showLearnMenu, setShowLearnMenu] = useState(false);
+  const [showStatePortalsMenu, setShowStatePortalsMenu] = useState(false);
+  const [stateSearch, setStateSearch] = useState('');
+  const [mobileStateExpanded, setMobileStateExpanded] = useState(false);
 
   const learnMenuRef = useRef<HTMLDivElement>(null);
+  const statePortalsMenuRef = useRef<HTMLDivElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const accessibilityMenuRef = useRef<HTMLDivElement>(null);
   const notificationsMenuRef = useRef<HTMLDivElement>(null);
@@ -64,6 +108,9 @@ export default function Navbar({
     function handleClickOutside(event: MouseEvent) {
       if (learnMenuRef.current && !learnMenuRef.current.contains(event.target as Node)) {
         setShowLearnMenu(false);
+      }
+      if (statePortalsMenuRef.current && !statePortalsMenuRef.current.contains(event.target as Node)) {
+        setShowStatePortalsMenu(false);
       }
       if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
         setShowUserMenu(false);
@@ -260,10 +307,102 @@ export default function Navbar({
               {t.firstAppeal}
             </button>
 
+            {/* State RTI Portals Dropdown */}
+            <div className="relative" ref={statePortalsMenuRef}>
+              <button
+                onClick={() => {
+                  setShowStatePortalsMenu(!showStatePortalsMenu);
+                  setShowLearnMenu(false);
+                }}
+                className={`rounded-lg px-3 py-2 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                  showStatePortalsMenu
+                    ? 'bg-[#EFF6FF] text-[#2563EB]' 
+                    : 'text-[#64748B] hover:bg-[#F8FAFC] hover:text-[#0F172A]'
+                }`}
+                title="Direct links to all State & UT Government RTI Portals"
+              >
+                <Building2 className="h-3.5 w-3.5 text-blue-600 shrink-0" />
+                <span>{language === 'en' ? 'State RTI Portals' : 'राज्य आरटीआई पोर्टल'}</span>
+                <ChevronDown className={`h-3 w-3 transition-transform ${showStatePortalsMenu ? 'rotate-180' : ''}`} />
+              </button>
+
+              {showStatePortalsMenu && (
+                <div className="absolute left-0 mt-2.5 w-80 sm:w-96 rounded-2xl border border-slate-200 bg-white p-3 shadow-2xl ring-1 ring-black/5 z-55 animate-in fade-in slide-in-from-top-1">
+                  <div className="px-2 pb-2 mb-2 border-b border-slate-100 flex flex-col gap-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-black uppercase tracking-wider text-[#123B5D] flex items-center gap-1">
+                        <MapPin className="h-3.5 w-3.5 text-blue-600" />
+                        {language === 'en' ? 'State Government Portals (36 States & UTs)' : 'राज्य सरकार आरटीआई पोर्टल (36 राज्य व संघ क्षेत्र)'}
+                      </span>
+                      <span className="text-[10px] font-bold text-slate-400">Click to Open ↗</span>
+                    </div>
+
+                    {/* Quick filter input */}
+                    <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-xs">
+                      <Search className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                      <input 
+                        type="text"
+                        value={stateSearch}
+                        onChange={(e) => setStateSearch(e.target.value)}
+                        placeholder="Search state e.g. Delhi, Maharashtra, UP..."
+                        className="bg-transparent text-xs text-slate-800 outline-none w-full placeholder:text-slate-400 font-medium"
+                      />
+                      {stateSearch && (
+                        <button onClick={() => setStateSearch('')} className="text-slate-400 hover:text-slate-600">
+                          <X className="h-3 w-3" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Scrollable list of state portals */}
+                  <div className="max-h-72 overflow-y-auto space-y-1 pr-1 custom-scrollbar">
+                    {stateRtiPortals
+                      .filter(s => s.state.toLowerCase().includes(stateSearch.toLowerCase()) || s.label.toLowerCase().includes(stateSearch.toLowerCase()) || s.code.toLowerCase().includes(stateSearch.toLowerCase()))
+                      .map(item => (
+                        <a
+                          key={item.state}
+                          href={item.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center justify-between px-2.5 py-2 rounded-xl hover:bg-blue-50/70 border border-transparent hover:border-blue-100 transition-all text-xs group cursor-pointer"
+                        >
+                          <div className="flex items-center gap-2">
+                            <span className="h-5 w-6 rounded bg-slate-100 text-slate-700 font-mono font-bold text-[10px] flex items-center justify-center shrink-0 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                              {item.code}
+                            </span>
+                            <div>
+                              <div className="font-extrabold text-slate-800 group-hover:text-blue-700 transition-colors">
+                                {item.state}
+                              </div>
+                              <div className="text-[10px] text-slate-400 font-medium truncate max-w-[190px]">
+                                {item.label}
+                              </div>
+                            </div>
+                          </div>
+
+                          <span className="text-[11px] font-bold text-blue-600 group-hover:text-blue-800 flex items-center gap-0.5 opacity-80 group-hover:opacity-100">
+                            Visit <ExternalLink className="h-3 w-3" />
+                          </span>
+                        </a>
+                      ))}
+                  </div>
+
+                  <div className="mt-2 pt-2 border-t border-slate-100 px-2 text-[10.5px] text-slate-500 flex items-center gap-1.5 bg-slate-50 rounded-lg p-2">
+                    <Shield className="h-3.5 w-3.5 text-blue-600 shrink-0" />
+                    <span>State and municipal queries fall under respective State RTI portals under Section 19.</span>
+                  </div>
+                </div>
+              )}
+            </div>
+
             {/* Learn Dropdown */}
             <div className="relative" ref={learnMenuRef}>
               <button
-                onClick={() => setShowLearnMenu(!showLearnMenu)}
+                onClick={() => {
+                  setShowLearnMenu(!showLearnMenu);
+                  setShowStatePortalsMenu(false);
+                }}
                 className={`rounded-lg px-3 py-2 text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
                   activeView === 'help'
                     ? 'bg-[#EFF6FF] text-[#2563EB]' 
@@ -625,6 +764,38 @@ export default function Navbar({
             >
               {t.learn}
             </button>
+
+            {/* Mobile State Portals Accordion */}
+            <div className="border border-blue-100 rounded-xl bg-blue-50/40 p-2 space-y-2">
+              <button
+                onClick={() => setMobileStateExpanded(!mobileStateExpanded)}
+                className="w-full flex items-center justify-between text-xs font-extrabold text-[#123B5D]"
+              >
+                <div className="flex items-center gap-1.5">
+                  <Building2 className="h-4 w-4 text-blue-600" />
+                  <span>{language === 'en' ? 'State RTI Portals (36 States & UTs)' : 'राज्य आरटीआई पोर्टल (36 राज्य)'}</span>
+                </div>
+                <ChevronDown className={`h-3.5 w-3.5 transition-transform ${mobileStateExpanded ? 'rotate-180' : ''}`} />
+              </button>
+
+              {mobileStateExpanded && (
+                <div className="max-h-48 overflow-y-auto space-y-1 pt-1">
+                  {stateRtiPortals.map(item => (
+                    <a
+                      key={item.state}
+                      href={item.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-between px-2 py-1.5 bg-white rounded-lg text-xs font-bold text-slate-800 hover:text-blue-600 shadow-3xs"
+                    >
+                      <span>{item.state}</span>
+                      <ExternalLink className="h-3 w-3 text-blue-500" />
+                    </a>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <button 
               onClick={() => {
                 setActiveView('government');
