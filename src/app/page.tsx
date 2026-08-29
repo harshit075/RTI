@@ -168,6 +168,7 @@ export default function Home() {
           <OnboardingView 
             setActiveView={setActiveView} 
             setDraftRti={setDraftRti}
+            draftRti={draftRti}
             language={language} 
           />
         )}

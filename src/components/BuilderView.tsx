@@ -4,7 +4,8 @@ import React, { useState } from 'react';
 import { 
   Sparkles, CheckCircle2, ChevronRight, CornerDownRight, Landmark, 
   AlertCircle, AlertTriangle, Edit2, ShieldCheck, QrCode, CreditCard, Lock, ArrowRight,
-  TrendingUp, CircleDot, Info, UploadCloud, FileText, Check, ArrowLeft, Download, Printer
+  TrendingUp, CircleDot, Info, UploadCloud, FileText, Check, ArrowLeft, Download, Printer,
+  Plus, Trash2, RotateCcw
 } from 'lucide-react';
 import { mockAuthorities, Authority } from '../data/mockData';
 
@@ -29,33 +30,84 @@ export default function BuilderView({
   const currentAuth = mockAuthorities.find(a => a.id === (draftRti?.authorityId || 'morth')) || mockAuthorities[0];
   const isState = currentAuth?.level === 'State' || draftRti?.isStateDept;
   
+  // Helper to parse initial questions from user draft input
+  const parseQuestionsFromDraft = (draft: any, loc: string) => {
+    if (!draft) {
+      return [
+        `Provide copies of administrative and technical sanctions issued for public projects in ${loc || 'New Delhi'} during 2022-2025.`,
+        'Provide the total funds sanctioned, released, and actually spent on this specific project during the mentioned time period.',
+        'Provide a copy of the contract agreement, tender awards, and work order issued to the contractor.',
+        'Provide copies of all inspection reports, safety compliance logs, and completion certificates issued by project auditors.'
+      ];
+    }
+
+    if (draft.topic === 'passport') {
+      return [
+        'Provide the date on which police verification was requested and the date it was received by CPV office.',
+        'Provide copies of all internal notes, verification reviews, and officer remarks regarding passport file DL2068472910.',
+        'State the official reasons and policy rules under which the passport has not been dispatched yet.',
+        'Provide the current status and expected dispatch date of the passport.'
+      ];
+    }
+
+    if (draft.rawText && draft.rawText.trim().length > 0) {
+      const lines = draft.rawText
+        .split(/\n+/)
+        .map((l: string) => l.trim().replace(/^[\d\.\-\*]+\s*/, ''))
+        .filter((l: string) => l.length > 5);
+
+      if (lines.length >= 2) {
+        return lines;
+      } else if (lines.length === 1) {
+        return [
+          lines[0],
+          'Provide certified copies of all file notings, administrative approvals, and sanction orders concerning the above matter.',
+          'Provide an itemized statement of funds sanctioned, released, and utilized under this head during 2022-2025.',
+          'Provide names and designations of the competent officers/authorities accountable for processing and resolving this matter.'
+        ];
+      }
+    }
+
+    return [
+      `Provide copies of administrative and technical sanctions issued for ${draft.topic || 'the project'} in ${loc} during 2022-2025.`,
+      'Provide total funds sanctioned, released, and actually spent on this specific project during the mentioned period.',
+      'Provide a copy of contract agreement, tender awards, and work order issued to the contractor.',
+      'Provide copies of all inspection reports, safety compliance logs, and completion certificates.'
+    ];
+  };
+
   // Form fields
-  const [location, setLocation] = useState(draftRti?.location || 'Budgam, Jammu and Kashmir');
+  const [location, setLocation] = useState(draftRti?.location || 'New Delhi');
   const [timeFrom, setTimeFrom] = useState('2022-01-01');
   const [timeTo, setTimeTo] = useState('2025-12-31');
   const [selectedDocs, setSelectedDocs] = useState<string[]>(['Expenditure', 'Work order', 'Inspection report']);
   
-  // Edited questions
+  // Edited questions & Subject
   const [subject, setSubject] = useState(
     draftRti?.topic === 'passport' 
       ? 'Status and delays in passport issuance' 
-      : `Expenditure and sanction records for road project in ${draftRti?.location || location || 'Budgam, Jammu and Kashmir'}`
+      : (draftRti?.rawText && draftRti.rawText.length < 90)
+        ? `Inquiry regarding: ${draftRti.rawText.trim()}`
+        : `Expenditure and sanction records in ${draftRti?.location || location || 'New Delhi'}`
   );
 
-  const initialGenerated = draftRti?.topic === 'passport' ? [
-    'Provide the date on which police verification was requested and the date it was received by CPV office.',
-    'Provide copies of all internal notes, verification reviews, and officer remarks regarding passport file DL2068472910.',
-    'State the official reasons and policy rules under which the passport has not been dispatched yet.',
-    'Provide the current status and expected dispatch date of the passport.'
-  ] : [
-    `Provide copies of the administrative and technical sanctions issued for the road project in ${draftRti?.location || location || 'Budgam, Jammu and Kashmir'} during 2022-2025.`,
-    'Provide the total funds sanctioned, released, and actually spent on this specific project during the mentioned time period.',
-    'Provide a copy of the contract agreement, tender awards, and work order issued to the contractor.',
-    'Provide copies of all inspection reports, safety compliance logs, and completion certificates issued by the project auditors.',
-    'Provide details of quality materials test reports conducted during road construction.'
-  ];
+  const [questions, setQuestions] = useState<string[]>(() => parseQuestionsFromDraft(draftRti, location));
 
-  const [questions, setQuestions] = useState<string[]>(initialGenerated);
+  // Sync state if draftRti updates
+  React.useEffect(() => {
+    if (draftRti) {
+      const loc = draftRti.location || location;
+      setLocation(loc);
+      if (draftRti.topic === 'passport') {
+        setSubject('Status and delays in passport issuance');
+      } else if (draftRti.rawText && draftRti.rawText.trim().length > 0 && draftRti.rawText.length < 90) {
+        setSubject(`Inquiry regarding: ${draftRti.rawText.trim()}`);
+      } else {
+        setSubject(`Expenditure and sanction records in ${loc}`);
+      }
+      setQuestions(parseQuestionsFromDraft(draftRti, loc));
+    }
+  }, [draftRti]);
   
   // Applicant details
   const [name, setName] = useState('Aarav Sharma');
@@ -336,9 +388,19 @@ export default function BuilderView({
               </div>
 
               <div>
-                <label className="block text-[10px] font-black text-[#52606D] uppercase mb-2">
-                  Information Requested (Edit If Required)
-                </label>
+                <div className="flex justify-between items-center mb-2">
+                  <label className="block text-[10px] font-black text-[#52606D] uppercase">
+                    Information Requested (Edit or Add Items)
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setQuestions(prev => [...prev, 'Provide certified copies of file notings and inspection reports related to this matter.'])}
+                    className="inline-flex items-center gap-1 text-[11px] font-bold text-[#123B5D] hover:underline cursor-pointer bg-blue-50 px-2 py-0.5 rounded-lg border border-blue-200"
+                  >
+                    <Plus className="h-3 w-3" /> Add Question Item
+                  </button>
+                </div>
+
                 <div className="space-y-3">
                   {questions.map((q, idx) => (
                     <div key={idx} className="flex gap-2.5 items-start">
@@ -351,6 +413,16 @@ export default function BuilderView({
                         onChange={(e) => handleQuestionChange(idx, e.target.value)}
                         className="flex-1 rounded-xl border border-[#D9E0E6] p-3 text-xs text-slate-800 outline-none focus:border-[#123B5D] bg-[#F7F8FA] leading-relaxed shadow-3xs"
                       />
+                      {questions.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => setQuestions(prev => prev.filter((_, i) => i !== idx))}
+                          className="text-slate-400 hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 mt-1 cursor-pointer transition-colors"
+                          title="Remove this question"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -808,6 +880,15 @@ export default function BuilderView({
               className="rounded-xl bg-[#123B5D] hover:bg-[#0A2540] text-white px-6 py-2.5 text-xs font-black shadow-3xs cursor-pointer transition-all flex items-center justify-center"
             >
               <span>Go to Dashboard ➔</span>
+            </button>
+            <button
+              onClick={() => {
+                setStep('editor');
+                setActiveView('onboarding');
+              }}
+              className="rounded-xl border border-slate-350 bg-white hover:bg-slate-50 text-slate-800 px-5 py-2.5 text-xs font-bold shadow-3xs cursor-pointer transition-all flex items-center justify-center"
+            >
+              <span>+ File Another RTI</span>
             </button>
           </div>
         </div>

@@ -10,13 +10,15 @@ import { Authority, mockTemplates, geographicHierarchy, mockAuthorities } from '
 interface OnboardingViewProps {
   setActiveView: (view: string) => void;
   setDraftRti: (data: any) => void;
+  draftRti?: any;
   language: 'en' | 'hi';
 }
 
-export default function OnboardingView({ setActiveView, setDraftRti, language }: OnboardingViewProps) {
+export default function OnboardingView({ setActiveView, setDraftRti, draftRti, language }: OnboardingViewProps) {
   const [acceptedGuidelines, setAcceptedGuidelines] = useState(false);
-  const [selectedTopic, setSelectedTopic] = useState('');
-  const [rawText, setRawText] = useState('');
+  const [guidelinesAgreed, setGuidelinesAgreed] = useState(false);
+  const [selectedTopic, setSelectedTopic] = useState(draftRti?.topic || '');
+  const [rawText, setRawText] = useState(draftRti?.rawText || '');
   const [analyzing, setAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<any>(null);
   const [authorities, setAuthorities] = useState<Authority[]>(mockAuthorities);
@@ -236,18 +238,51 @@ export default function OnboardingView({ setActiveView, setDraftRti, language }:
     }, 1200);
   };
 
-  const proceedToBuilder = () => {
-    if (!analysisResult) return;
-    
-    // Save state in the parent
+  const proceedToBuilder = (forcedAuth?: Authority) => {
+    let auth = forcedAuth || (analysisResult?.suggestedAuth) || authorities[0] || mockAuthorities[0];
+    let loc = geoDistrict ? `${geoDistrict}, ${geoState}` : (draftRti?.location || 'National / Central');
+    let topic = selectedTopic || 'General Inquiry';
+    let processedText = rawText.trim();
+
+    // Auto-detect authority if not analyzed yet
+    if (!analysisResult && !forcedAuth) {
+      const lt = rawText.toLowerCase();
+      if (selectedTopic === 'passport' || lt.includes('passport')) {
+        auth = authorities.find(a => a.id === 'passport') || auth;
+        topic = 'passport';
+      } else if (selectedTopic === 'aadhaar' || lt.includes('aadhaar') || lt.includes('uidai')) {
+        auth = authorities.find(a => a.id === 'uidai') || auth;
+        topic = 'aadhaar';
+      } else if (selectedTopic === 'railway' || lt.includes('railway') || lt.includes('train')) {
+        auth = authorities.find(a => a.id === 'railways') || auth;
+        topic = 'railway';
+      } else if (selectedTopic === 'epf' || lt.includes('epf') || lt.includes('provident')) {
+        auth = authorities.find(a => a.id === 'epfo') || auth;
+        topic = 'epf';
+      } else if (selectedTopic === 'road' || lt.includes('road') || lt.includes('highway') || lt.includes('construction')) {
+        auth = authorities.find(a => a.id === 'morth') || auth;
+        topic = 'road';
+      } else if (selectedTopic === 'education' || lt.includes('ugc') || lt.includes('college') || lt.includes('school')) {
+        auth = authorities.find(a => a.id === 'ugc') || auth;
+        topic = 'education';
+      }
+    }
+
+    if (analysisResult) {
+      loc = analysisResult.location || loc;
+      topic = analysisResult.extractedTopic || topic;
+      processedText = analysisResult.isIndicInput ? analysisResult.indicTranslation : rawText;
+    }
+
+    // Save state in parent
     setDraftRti({
-      topic: analysisResult.extractedTopic,
-      authorityId: analysisResult.suggestedAuth.id,
-      authorityName: analysisResult.suggestedAuth.name,
-      location: analysisResult.location,
-      timePeriod: analysisResult.timePeriod,
-      rawText: analysisResult.isIndicInput ? analysisResult.indicTranslation : rawText,
-      isStateDept: analysisResult.isStateDept
+      topic,
+      authorityId: auth.id,
+      authorityName: auth.name,
+      location: loc,
+      timePeriod: analysisResult?.timePeriod || '2022-2025',
+      rawText: processedText || (topic === 'passport' ? 'Status and delays in passport issuance' : 'Expenditure and sanction records for public project'),
+      isStateDept: analysisResult?.isStateDept || false
     });
     
     setActiveView('builder');
@@ -321,15 +356,13 @@ export default function OnboardingView({ setActiveView, setDraftRti, language }:
           </div>
 
           <div className="pt-4 border-t border-slate-100 space-y-4">
-            <label className="flex items-start gap-3 p-3 bg-slate-50 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-100 transition-colors">
+            <label className="flex items-start gap-3 p-3.5 bg-slate-50 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-100 transition-colors select-none">
               <input
                 type="checkbox"
                 id="guidelines-checkbox"
-                className="h-4 w-4 rounded border-slate-300 text-[#123B5D] focus:ring-[#123B5D] shrink-0 mt-0.5"
-                onChange={(e) => {
-                  const check = document.getElementById('guidelines-submit-btn') as HTMLButtonElement;
-                  if (check) check.disabled = !e.target.checked;
-                }}
+                checked={guidelinesAgreed}
+                onChange={(e) => setGuidelinesAgreed(e.target.checked)}
+                className="h-4 w-4 rounded border-slate-300 text-[#123B5D] focus:ring-[#123B5D] shrink-0 mt-0.5 cursor-pointer"
               />
               <span className="text-[11.5px] font-bold text-slate-800 leading-normal">
                 {language === 'hi'
@@ -349,11 +382,11 @@ export default function OnboardingView({ setActiveView, setDraftRti, language }:
               <button
                 type="button"
                 id="guidelines-submit-btn"
-                disabled
+                disabled={!guidelinesAgreed}
                 onClick={() => setAcceptedGuidelines(true)}
                 className="flex-1 px-5 py-3 rounded-xl bg-[#123B5D] hover:bg-[#0f172a] text-white font-extrabold text-xs shadow-md disabled:bg-slate-300 disabled:cursor-not-allowed transition-all cursor-pointer text-center flex items-center justify-center gap-1.5"
               >
-                <span>{language === 'hi' ? 'जमा करें और आगे बढ़ें' : 'Submit & Proceed'}</span>
+                <span>{language === 'hi' ? 'दिशानिर्देश स्वीकार करें और जारी रखें' : 'Accept Guidelines & Continue'}</span>
                 <ArrowRight className="h-4 w-4" />
               </button>
             </div>
@@ -545,7 +578,7 @@ export default function OnboardingView({ setActiveView, setDraftRti, language }:
                   const bodyText = geoLocalBody || `Municipal Corporation / District Administration of ${geoDistrict}`;
                   const insertStatement = `Regarding public records, work tenders, funds allocation and execution reports under ${bodyText}, District ${geoDistrict}, ${geoState}.\n`;
                   if (!rawText.includes(geoDistrict)) {
-                    setRawText(prev => insertStatement + (prev ? '\n' + prev : ''));
+                    setRawText((prev: string) => insertStatement + (prev ? '\n' + prev : ''));
                   }
                 }}
                 className="px-3.5 py-2 rounded-lg bg-primary-navy hover:bg-primary-blue text-white text-xs font-bold shadow-xs flex items-center gap-1.5 shrink-0 cursor-pointer transition-all"
@@ -648,11 +681,21 @@ export default function OnboardingView({ setActiveView, setDraftRti, language }:
             />
           </div>
 
-          <div className="flex justify-end pt-2">
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-3 pt-3 border-t border-slate-100">
             <button
+              type="button"
+              onClick={() => proceedToBuilder()}
+              className="w-full sm:w-auto rounded-xl border border-slate-300 bg-white px-5 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 flex items-center justify-center gap-1.5 cursor-pointer shadow-3xs"
+            >
+              <span>{language === 'en' ? 'Directly Draft Application' : 'सीधे आवेदन तैयार करें'}</span>
+              <ArrowRight className="h-3.5 w-3.5" />
+            </button>
+
+            <button
+              type="button"
               onClick={runAnalysis}
               disabled={analyzing || !rawText.trim()}
-              className="rounded-xl bg-primary-navy px-6 py-3 text-xs font-bold text-white hover:bg-primary-blue disabled:bg-slate-300 disabled:cursor-not-allowed flex items-center gap-2 shadow transition-all cursor-pointer"
+              className="w-full sm:w-auto rounded-xl bg-[#123B5D] hover:bg-[#0A2540] px-6 py-2.5 text-xs font-bold text-white disabled:bg-slate-300 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-3xs transition-all cursor-pointer"
             >
               {analyzing ? (
                 <>
@@ -661,8 +704,8 @@ export default function OnboardingView({ setActiveView, setDraftRti, language }:
                 </>
               ) : (
                 <>
-                  <Sparkles className="h-4 w-4 text-yellow-300" />
-                  {language === 'en' ? 'Analyze & Find Department' : 'विश्लेषण करें और विभाग खोजें'}
+                  <Sparkles className="h-4 w-4 text-amber-300" />
+                  {language === 'en' ? 'AI Analyze & Find Authority' : 'विभाग का AI विश्लेषण करें'}
                 </>
               )}
             </button>
@@ -895,7 +938,7 @@ export default function OnboardingView({ setActiveView, setDraftRti, language }:
                 Choose Different Category
               </button>
               <button
-                onClick={proceedToBuilder}
+                onClick={() => proceedToBuilder()}
                 className="rounded-xl bg-primary-navy hover:bg-primary-blue px-6 py-2.5 text-xs font-bold text-white flex items-center justify-center gap-1.5 shadow cursor-pointer transition-all"
               >
                 Proceed to Draft Application
