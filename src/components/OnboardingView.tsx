@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import { 
   Sparkles, HelpCircle, CheckCircle, AlertTriangle, ArrowRight, 
-  CornerDownRight, Landmark, Search, BarChart, MapPin, Building2, ExternalLink 
+  CornerDownRight, Landmark, Search, BarChart, MapPin, Building2, ExternalLink, Check 
 } from 'lucide-react';
 import { Authority, mockTemplates, geographicHierarchy, mockAuthorities } from '../data/mockData';
 
@@ -28,6 +28,7 @@ export default function OnboardingView({ setActiveView, setDraftRti, draftRti, l
   const [geoDistrict, setGeoDistrict] = useState('');
   const [geoLocalBody, setGeoLocalBody] = useState('');
   const [districtSearch, setDistrictSearch] = useState('');
+  const [geoInsertedFeedback, setGeoInsertedFeedback] = useState(false);
 
   const selectedStateObj = useMemo(() => {
     return geographicHierarchy.find(s => s.name === geoState);
@@ -114,6 +115,34 @@ export default function OnboardingView({ setActiveView, setDraftRti, draftRti, l
     setGeoDistrict(dist);
     setGeoLocalBody('');
     setDistrictSearch('');
+  };
+
+  const handleInsertGeoIntoQuery = () => {
+    const bodyText = geoLocalBody || `Municipal Corporation / District Administration of ${geoDistrict}`;
+    const insertStatement = `Regarding public records, work tenders, funds allocation and execution reports under ${bodyText}, District ${geoDistrict}, ${geoState}.\n`;
+
+    setRawText((prev: string) => {
+      const trimmed = (prev || '').trim();
+      if (!trimmed) {
+        return insertStatement.trim();
+      }
+      // If it already starts with a previous geo insert line, update it cleanly
+      if (trimmed.startsWith('Regarding public records')) {
+        const remaining = trimmed.split('\n').filter(line => !line.startsWith('Regarding public records')).join('\n').trim();
+        return insertStatement.trim() + (remaining ? '\n\n' + remaining : '');
+      }
+      return insertStatement.trim() + '\n\n' + trimmed;
+    });
+
+    setGeoInsertedFeedback(true);
+    setTimeout(() => setGeoInsertedFeedback(false), 2500);
+
+    // Smoothly scroll and focus the query box
+    const textarea = document.getElementById('rti-query-textarea');
+    if (textarea) {
+      textarea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      textarea.focus();
+    }
   };
 
   const runAnalysis = () => {
@@ -574,17 +603,25 @@ export default function OnboardingView({ setActiveView, setDraftRti, draftRti, l
 
               <button
                 type="button"
-                onClick={() => {
-                  const bodyText = geoLocalBody || `Municipal Corporation / District Administration of ${geoDistrict}`;
-                  const insertStatement = `Regarding public records, work tenders, funds allocation and execution reports under ${bodyText}, District ${geoDistrict}, ${geoState}.\n`;
-                  if (!rawText.includes(geoDistrict)) {
-                    setRawText((prev: string) => insertStatement + (prev ? '\n' + prev : ''));
-                  }
-                }}
-                className="px-3.5 py-2 rounded-lg bg-primary-navy hover:bg-primary-blue text-white text-xs font-bold shadow-xs flex items-center gap-1.5 shrink-0 cursor-pointer transition-all"
+                id="insert-geo-btn"
+                onClick={handleInsertGeoIntoQuery}
+                className={`px-4 py-2 rounded-xl text-xs font-black shadow-3xs flex items-center gap-1.5 shrink-0 cursor-pointer transition-all ${
+                  geoInsertedFeedback
+                    ? 'bg-emerald-700 hover:bg-emerald-800 text-white scale-105'
+                    : 'bg-[#123B5D] hover:bg-[#0A2540] text-white'
+                }`}
               >
-                <CornerDownRight className="h-3.5 w-3.5" />
-                Insert into Query Box
+                {geoInsertedFeedback ? (
+                  <>
+                    <Check className="h-4 w-4 text-emerald-200" />
+                    <span>Inserted into Query Box ✓</span>
+                  </>
+                ) : (
+                  <>
+                    <CornerDownRight className="h-4 w-4" />
+                    <span>Insert into Query Box</span>
+                  </>
+                )}
               </button>
             </div>
 
@@ -673,11 +710,12 @@ export default function OnboardingView({ setActiveView, setDraftRti, draftRti, l
             </p>
 
             <textarea
+              id="rti-query-textarea"
               rows={6}
               value={rawText}
               onChange={(e) => setRawText(e.target.value)}
               placeholder={language === 'en' ? 'Type your request description here...' : 'यहाँ अपना विवरण टाइप करें...'}
-              className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-900 outline-none focus:border-primary-blue focus:bg-white bg-slate-50 leading-relaxed font-medium transition-all"
+              className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-900 outline-none focus:border-[#123B5D] focus:bg-white bg-slate-50 leading-relaxed font-medium transition-all shadow-3xs"
             />
           </div>
 
